@@ -1,0 +1,261 @@
+import React from 'react'
+import { useAtomValue, useSetAtom } from 'jotai';
+import { currentReaderAttachmentAtom, readerAnnotationsAtom, readerTextSelectionAtom, currentMessageFiltersAtom, removeItemFromMessageAtom, currentMessageItemsAtom, currentMessageCollectionsAtom, currentMessageExternalFilesAtom, removeExternalFileFromMessageAtom, clearMessageContextAtom } from '../../atoms/messageComposition';
+import { currentNoteItemAtom } from '../../atoms/zoteroContext';
+import { removePopupMessagesByTypeAtom } from '../../atoms/ui';
+import { TextSelectionButton } from '../input/TextSelectionButton';
+// import { ZoteroIcon, ZOTERO_ICONS } from './icons/ZoteroIcon';
+import AddSourcesMenu from '../ui/menus/AddSourcesMenu';
+import { AddSourcesMenuHandle, AddSourcesQuerySource } from '@beaver/agent-ui/composer/useAddSourcesMenu';
+import { SearchMenuCloseReason } from '@beaver/agent-ui/primitives/SearchMenu';
+import { LibraryButton } from '../library/LibraryButton';
+import { CollectionButton } from '../library/CollectionButton';
+import { TagButton } from '../library/TagButton';
+import { MessageItemButton } from '../input/MessageItemButton';
+import { ReaderAnnotationsButton } from '../input/ReaderAnnotationsButton';
+import { MessageCollectionButton } from '../input/MessageCollectionButton';
+import { ExternalFileButton } from '../input/ExternalFileButton';
+import { collectionReferenceKey } from '@beaver/agent-core/types/zotero';
+import { ChipWithListPopup } from '@beaver/agent-ui/chat/ChipPopup';
+import { buildItemsSummaryListPopup } from '../input/MessageItemChipPopup';
+
+const MAX_ATTACHMENTS = 4;
+
+const MessageAttachmentDisplay = ({
+    isAddAttachmentMenuOpen,
+    menuPosition,
+    addSourcesSearchQuery,
+    addSourcesQuerySource,
+    onAddSourcesQueryChange,
+    onOpenAddSourcesMenu,
+    onDismissAddSourcesMenu,
+    onCommitAddSourcesMenu,
+    onResetAddSourcesQuery,
+    addSourcesMenuRef,
+    menuPortalContainer,
+    onAfterMenuInitialFocus,
+    disabled = false,
+    verticalPosition = 'above',
+}: {
+    isAddAttachmentMenuOpen: boolean;
+    menuPosition: { x: number; y: number };
+    /** The Add Sources menu's search query. */
+    addSourcesSearchQuery: string;
+    /** Whether that query is typed in the chat editor or in the menu itself. */
+    addSourcesQuerySource: AddSourcesQuerySource;
+    onAddSourcesQueryChange: (query: string) => void;
+    onOpenAddSourcesMenu: (menuPosition: { x: number; y: number }) => void;
+    onDismissAddSourcesMenu: (reason: SearchMenuCloseReason) => void;
+    onCommitAddSourcesMenu: () => void;
+    onResetAddSourcesQuery: () => void;
+    addSourcesMenuRef?: React.Ref<AddSourcesMenuHandle>;
+    menuPortalContainer?: HTMLElement | null;
+    onAfterMenuInitialFocus?: () => void;
+    disabled?: boolean;
+    verticalPosition?: 'above' | 'below';
+}) => {
+    const currentReaderAttachment = useAtomValue(currentReaderAttachmentAtom);
+    const readerAnnotations = useAtomValue(readerAnnotationsAtom);
+    const currentNoteItem = useAtomValue(currentNoteItemAtom);
+    const readerTextSelection = useAtomValue(readerTextSelectionAtom);
+    const currentMessageFilters = useAtomValue(currentMessageFiltersAtom);
+    const { libraryIds: currentLibraryIds, collectionIds: currentCollectionIds, tagSelections: currentTagSelections } = currentMessageFilters;
+    const currentMessageItems = useAtomValue(currentMessageItemsAtom);
+    const currentMessageCollections = useAtomValue(currentMessageCollectionsAtom);
+    const currentMessageExternalFiles = useAtomValue(currentMessageExternalFilesAtom);
+    const removeExternalFileFromMessage = useSetAtom(removeExternalFileFromMessageAtom);
+    const removeItemFromMessage = useSetAtom(removeItemFromMessageAtom);
+    const clearMessageContext = useSetAtom(clearMessageContextAtom);
+    const removePopupMessagesByType = useSetAtom(removePopupMessagesByTypeAtom);
+
+    const selectedLibraries = currentLibraryIds
+        .map(id => Zotero.Libraries.get(id))
+        .filter(lib => lib) as Zotero.Library[];
+
+    const selectedCollections = currentCollectionIds
+        .map(id => {
+            try {
+                return Zotero.Collections.get(id);
+            } catch {
+                return null;
+            }
+        })
+        .filter((collection): collection is Zotero.Collection => Boolean(collection));
+
+    const filteredMessageItems = React.useMemo(
+        () => {
+            // The open paper's highlights are deliberately not in here: they
+            // arrive as a set and get one chip of their own
+            // (`readerAnnotationsAtom`), so a paper with thirty marks does not
+            // push every other source into the overflow. A highlight in this
+            // list was attached on its own — the one the user chose Explain
+            // or Ask on — and keeps its own chip even when it is also one of
+            // the paper's set.
+            return currentMessageItems.filter(
+                (item) => (!currentReaderAttachment || item.key !== currentReaderAttachment.key)
+                    && (!currentNoteItem || item.key !== currentNoteItem.key),
+            );
+        },
+        [currentMessageItems, currentNoteItem, currentReaderAttachment],
+    );
+    // The paper's highlights that already have a chip of their own.
+    const separatelyShownAnnotationKeys = React.useMemo(
+        () => new Set(
+            filteredMessageItems
+                .filter((item) => item.isAnnotation())
+                .map((item) => `${item.libraryID}-${item.key}`),
+        ),
+        [filteredMessageItems],
+    );
+    const readerAnnotationsInSet = readerAnnotations.filter(
+        (annotation) => !separatelyShownAnnotationKeys.has(`${annotation.libraryID}-${annotation.key}`),
+    ).length;
+    const displayedMessageItems = React.useMemo(
+        () => filteredMessageItems.slice(0, MAX_ATTACHMENTS),
+        [filteredMessageItems],
+    );
+    const overflowMessageItems = React.useMemo(
+        () => filteredMessageItems.slice(MAX_ATTACHMENTS),
+        [filteredMessageItems],
+    );
+    const overflowCount = overflowMessageItems.length;
+    const overflowPopup = React.useMemo(
+        () => overflowCount > 0
+            ? buildItemsSummaryListPopup(overflowMessageItems)
+            : null,
+        [overflowCount, overflowMessageItems],
+    );
+
+    // Count of editable (removable) context items currently attached. Excludes
+    // the non-removable reader attachment and note tab item.
+    const removableContextCount =
+        filteredMessageItems.length +
+        (readerAnnotationsInSet > 0 ? 1 : 0) +
+        selectedLibraries.length +
+        selectedCollections.length +
+        currentTagSelections.length +
+        currentMessageCollections.length +
+        currentMessageExternalFiles.length +
+        (readerTextSelection ? 1 : 0);
+
+    // Offer "Remove all" only when there is more than one removable item
+    const handleRemoveAll = removableContextCount > 1
+        ? () => {
+            clearMessageContext();
+            removePopupMessagesByType(['items_summary']);
+        }
+        : undefined;
+
+    return (
+        <div className="composer-attachments display-flex flex-wrap gap-col-3 gap-row-2 mb-2">
+            <AddSourcesMenu
+                showText={
+                    currentMessageItems.length == 0 &&
+                    !currentReaderAttachment &&
+                    !currentNoteItem &&
+                    selectedLibraries.length == 0 &&
+                    selectedCollections.length == 0 &&
+                    currentTagSelections.length == 0 &&
+                    currentMessageExternalFiles.length == 0 &&
+                    currentMessageCollections.length == 0
+                }
+                ref={addSourcesMenuRef}
+                isMenuOpen={isAddAttachmentMenuOpen}
+                menuPosition={menuPosition}
+                searchQuery={addSourcesSearchQuery}
+                querySource={addSourcesQuerySource}
+                onQueryChange={onAddSourcesQueryChange}
+                onOpen={onOpenAddSourcesMenu}
+                onDismiss={onDismissAddSourcesMenu}
+                onCommit={onCommitAddSourcesMenu}
+                onResetQuery={onResetAddSourcesQuery}
+                menuPortalContainer={menuPortalContainer}
+                onAfterMenuInitialFocus={onAfterMenuInitialFocus}
+                disabled={disabled}
+                verticalPosition={verticalPosition}
+            />
+
+            {/* Selected Libraries */}
+            {selectedLibraries.map(library => (
+                <LibraryButton key={library.libraryID} library={library} onRemoveAll={handleRemoveAll} />
+            ))}
+
+            {/* Selected Collections */}
+            {selectedCollections.map(collection => (
+                <CollectionButton key={collection.id} collection={collection} onRemoveAll={handleRemoveAll} />
+            ))}
+
+            {/* Selected Tags */}
+            {currentTagSelections.map(tag => (
+                <TagButton key={tag.id} tag={tag} onRemoveAll={handleRemoveAll} />
+            ))}
+
+            {/* Current message collections */}
+            {currentMessageCollections.map(col => (
+                <MessageCollectionButton key={collectionReferenceKey(col)} collection={col} onRemoveAll={handleRemoveAll} />
+            ))}
+
+            {/* Current reader attachment */}
+            {currentReaderAttachment && (
+                <MessageItemButton item={currentReaderAttachment} canEdit={false} tabContextType="reader" />
+            )}
+
+            {/* The open paper's own highlights, as one chip */}
+            <ReaderAnnotationsButton
+                onRemoveAll={handleRemoveAll}
+                shownSeparately={separatelyShownAnnotationKeys}
+            />
+
+            {/* Current note tab item */}
+            {currentNoteItem && (
+                <MessageItemButton item={currentNoteItem} canEdit={false} tabContextType="note" />
+            )}
+
+            {/* Current message items */}
+            {displayedMessageItems.map((item) => (
+                <MessageItemButton
+                    key={item.key}
+                    item={item}
+                    onRemove={(item) => {
+                        removeItemFromMessage(item);
+                    }}
+                    onRemoveAll={handleRemoveAll}
+                />
+            ))}
+
+            {overflowPopup && (
+                <ChipWithListPopup content={overflowPopup}>
+                    <button
+                        type="button"
+                        className="variant-outline source-button"
+                        style={{ height: '22px' }}
+                        title={`${overflowCount} more attachment${overflowCount === 1 ? '' : 's'}`}
+                    >
+                        +{overflowCount}
+                    </button>
+                </ChipWithListPopup>
+            )}
+
+            {/* External files */}
+            {currentMessageExternalFiles.map((file) => (
+                <ExternalFileButton
+                    key={file.extKey}
+                    extKey={file.extKey}
+                    filename={file.filename}
+                    contentKind={file.contentKind}
+                    storedPath={file.storedPath}
+                    onRemove={removeExternalFileFromMessage}
+                    onRemoveAll={handleRemoveAll}
+                />
+            ))}
+
+            {/* Current text selection */}
+            {readerTextSelection && (
+                <TextSelectionButton selection={readerTextSelection} onRemoveAll={handleRemoveAll} />
+            )}
+            
+        </div>
+    )
+}
+
+export default MessageAttachmentDisplay;

@@ -1,0 +1,355 @@
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useAtomValue, useSetAtom } from 'jotai';
+import { LOCAL_USER_ID, userAtom } from '../atoms/auth';
+import { isThreadListViewAtom, isLibraryTabAtom, selectedZoteroTabIdAtom, hasPopupMessagesAtom, threadListFilterAtom, ThreadItemFilter } from '../atoms/ui';
+import { ThreadData, loadThreadAtom } from '../atoms/threads';
+import { currentThreadIdAtom } from '@beaver/agent-core/run-state/atoms';
+import { searchableLibraryIdsAtom } from '../atoms/profile';
+import { threadService, isThreadAgentMismatch } from '@beaver/agent-core/transport/threadService';
+import { localRecentThreads, localThreadsForItem } from '../atoms/loadLocalThreads';
+import { isLocalBrain } from '../../src/services/llm/agentConfig';
+import { convertUTCToLocal } from '../utils/dateUtils';
+import { deduplicateByThread, threadModelToThreadData, isThreadInstanceMismatch } from '../utils/threadMatches';
+import { currentZoteroInstanceRef } from '../../src/utils/zoteroUtils';
+import { libraryRefForLibraryID } from '../../src/utils/libraryIdentity';
+import { getReaderOrNoteContextItem } from '../utils/zoteroTabContext';
+import { buildThreadItemFilter } from '../utils/threadItemFilter';
+import { buildRecentChatsCacheKey, buildRecentChatsItemLookup } from '../utils/recentChatsLookup';
+import Spinner from '@beaver/agent-ui/icons/Spinner';
+import { logger } from '@beaver/agent-core/platform/logger';
+import Button from '@beaver/agent-ui/primitives/Button';
+
+const MAX_RECENT = 3;
+const CACHE_TTL = 60_000; // 1 minute
+
+type ContextType = 'recent' | 'file' | 'note';
+
+interface CacheEntry {
+    threads: ThreadData[];
+    contextType: ContextType;
+    timestamp: number;
+}
+
+// Module-level cache persists across mount/unmount cycles
+const recentCache = new Map<string, CacheEntry>();
+
+/**
+ * Clear cache and optionally remove a specific thread from mounted RecentChats.
+ * When `deletedThreadId` is provided each mounted instance filters it out
+ * immediately so the user sees the change without waiting for a re-fetch.
+ */
+const recentChatsRemovers = new Set<(id: string) => void>();
+export function registerRecentChatsRemover(fn: (id: string) => void) {
+    recentChatsRemovers.add(fn);
+    return () => {
+        recentChatsRemovers.delete(fn);
+    };
+}
+
+export function clearRecentChatsCache(deletedThreadId?: string) {
+    if (deletedThreadId) {
+        for (const [cacheKey, entry] of recentCache.entries()) {
+            recentCache.set(cacheKey, {
+                ...entry,
+                threads: entry.threads.filter(thread => thread.id !== deletedThreadId),
+            });
+        }
+        for (const removeThread of recentChatsRemovers) {
+            try { 
+                removeThread(deletedThreadId); 
+            } catch (e) { 
+                logger(`RecentChats: error removing thread from local state: ${e}`, 1);
+            }
+        }
+    } else {
+        recentCache.clear();
+    }
+}
+
+/**
+ * Compact relative time: "now", "3m", "2h", "1d", "2w", "3mo"
+ */
+function formatCompactTime(utcDateString: string): string {
+    const localDate = convertUTCToLocal(utcDateString);
+    const diffMs = Date.now() - localDate.getTime();
+    const diffMin = Math.floor(diffMs / 60_000);
+    const diffHours = Math.floor(diffMs / 3_600_000);
+    const diffDays = Math.floor(diffMs / 86_400_000);
+    const diffWeeks = Math.floor(diffDays / 7);
+
+    if (diffMin < 1) return 'now';
+    if (diffMin < 60) return `${diffMin}m`;
+    if (diffHours < 24) return `${diffHours}h`;
+    if (diffDays < 7) return `${diffDays}d`;
+    if (diffWeeks < 5) return `${diffWeeks}w`;
+    return `${Math.floor(diffDays / 30)}mo`;
+}
+
+const RecentChats: React.FC = () => {
+    const user = useAtomValue(userAtom);
+    const isLibraryTab = useAtomValue(isLibraryTabAtom);
+    const selectedTabId = useAtomValue(selectedZoteroTabIdAtom);
+    const setIsThreadListView = useSetAtom(isThreadListViewAtom);
+    const loadThread = useSetAtom(loadThreadAtom);
+    const setFilter = useSetAtom(threadListFilterAtom);
+    const currentThreadId = useAtomValue(currentThreadIdAtom);
+    const hasPopupMessages = useAtomValue(hasPopupMessagesAtom);
+    const searchableLibraryIds = useAtomValue(searchableLibraryIdsAtom);
+
+    const [threads, setThreads] = useState<ThreadData[]>([]);
+    const [contextType, setContextType] = useState<ContextType>('recent');
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [isFetching, setIsFetching] = useState(false);
+
+    // Clear cache on mount so returning to home always shows fresh data
+    const hasMountedRef = useRef(false);
+
+    const fetchRecentChats = useCallback(async (isCancelled: () => boolean) => {
+        // Ran only for a signed-in account, so with the model running locally the
+        // recent list stayed empty however many conversations were on disk.
+        const ownerId = user?.id ?? LOCAL_USER_ID;
+
+        // Read reader/note info synchronously from Zotero APIs
+        // instead of waiting for the async zoteroContextAtom update chain
+        let attachmentKey: string | null = null;
+        let noteKey: string | null = null;
+        let libraryId: number | undefined;
+
+        const itemKeys: string[] = [];
+
+        if (!isLibraryTab && selectedTabId) {
+            const ctx = getReaderOrNoteContextItem(selectedTabId);
+            if (ctx) {
+                libraryId = ctx.libraryId;
+                itemKeys.push(...ctx.keys);
+                if (ctx.source === 'reader') {
+                    attachmentKey = ctx.item.key;
+                } else {
+                    noteKey = ctx.item.key;
+                }
+            }
+        }
+
+        // Cache key: differentiate library vs reader-per-attachment vs note
+        let contextCacheKey: string;
+        if (!isLibraryTab && attachmentKey) {
+            contextCacheKey = `${ownerId}:reader:${attachmentKey}`;
+        } else if (!isLibraryTab && noteKey) {
+            contextCacheKey = `${ownerId}:note:${noteKey}`;
+        } else {
+            contextCacheKey = `${ownerId}:library`;
+        }
+        const cacheKey = buildRecentChatsCacheKey(
+            contextCacheKey,
+            searchableLibraryIds,
+        );
+
+        // On first mount, clear cache for fresh data; subsequent renders use TTL
+        if (!hasMountedRef.current) {
+            recentCache.delete(cacheKey);
+            hasMountedRef.current = true;
+        }
+
+        // Check cache
+        const cached = recentCache.get(cacheKey);
+        if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+            if (isCancelled()) return;
+            setThreads(cached.threads);
+            setContextType(cached.contextType);
+            setIsLoaded(true);
+            return;
+        }
+
+        setIsFetching(true);
+        try {
+            let resultThreads: ThreadData[] = [];
+            let resultContextType: ContextType = 'recent';
+
+            const itemLookup = !isLibraryTab
+                ? buildRecentChatsItemLookup(libraryId, itemKeys, searchableLibraryIds)
+                : null;
+
+            // Silently scope to the current Zotero instance — RecentChats has
+            // no "Show all" affordance (the full ThreadListView does).
+            const instanceScope = currentZoteroInstanceRef() ?? undefined;
+
+            // Reader/note context: try item-specific threads first. Excluded
+            // libraries produce no lookup payload (privacy boundary), so neither
+            // their stable identity nor item keys reach the backend.
+            if (itemLookup) {
+                try {
+                    // Locally-run threads live in this install's database; the
+                    // REST list would come back empty (and unauthenticated).
+                    if (isLocalBrain()) {
+                        const local = await localThreadsForItem(
+                            itemLookup.libraryId,
+                            itemLookup.zoteroKeys,
+                            MAX_RECENT,
+                        );
+                        if (isCancelled()) return;
+                        if (local.length > 0) {
+                            resultThreads = local;
+                            resultContextType = noteKey ? 'note' : 'file';
+                        }
+                    } else {
+                    const matches = await threadService.findThreadsByItem(
+                        {
+                            libraryId: itemLookup.libraryId,
+                            libraryRef: libraryRefForLibraryID(itemLookup.libraryId),
+                        },
+                        itemLookup.zoteroKeys,
+                        'both'
+                    );
+                    if (isCancelled()) return;
+                    // By-item results are scoped client-side from the agent and
+                    // identity columns (bounded set; no server-side by-item
+                    // scoping).
+                    const ownAgent = matches.filter(m => !isThreadAgentMismatch(m));
+                    const deduped = deduplicateByThread(ownAgent).filter(t =>
+                        !isThreadInstanceMismatch(instanceScope ?? null, {
+                            zoteroUserId: t.zoteroUserId, zoteroLocalId: t.zoteroLocalId,
+                        })
+                    );
+                    if (deduped.length > 0) {
+                        resultThreads = deduped.slice(0, MAX_RECENT);
+                        resultContextType = noteKey ? 'note' : 'file';
+                    }
+                    }
+                } catch (err) {
+                    if (isCancelled()) return;
+                    console.error('RecentChats: error fetching item threads:', err);
+                }
+            }
+
+            // Fallback: general recent chats
+            if (resultThreads.length === 0) {
+                resultThreads = isLocalBrain()
+                    ? await localRecentThreads(MAX_RECENT)
+                    : (await threadService.getPaginatedThreads(MAX_RECENT, null, instanceScope)).data
+                          .map(threadModelToThreadData);
+                if (isCancelled()) return;
+                resultContextType = 'recent';
+            }
+
+            if (isCancelled()) return;
+            setThreads(resultThreads);
+            setContextType(resultContextType);
+
+            recentCache.set(cacheKey, {
+                threads: resultThreads,
+                contextType: resultContextType,
+                timestamp: Date.now(),
+            });
+        } catch (error) {
+            if (isCancelled()) return;
+            console.error('RecentChats: error fetching threads:', error);
+        } finally {
+            if (!isCancelled()) {
+                setIsLoaded(true);
+                setIsFetching(false);
+            }
+        }
+    }, [user, isLibraryTab, selectedTabId, searchableLibraryIds]);
+
+    // Fetch on mount and when context changes (e.g. library ↔ reader tab switch)
+    useEffect(() => {
+        let cancelled = false;
+        const isCancelled = () => cancelled || !!Zotero.__alphainzShuttingDown;
+        fetchRecentChats(isCancelled);
+        return () => { cancelled = true; };
+    }, [fetchRecentChats]);
+
+    // Register callback so external callers (ThreadListView, ThreadsMenu) can
+    // remove a deleted thread from our local state without a full re-fetch.
+    useEffect(() => {
+        const unregister = registerRecentChatsRemover((id: string) => {
+            setThreads(prev => prev.filter(t => t.id !== id));
+        });
+        return unregister;
+    }, []);
+
+    const handleSelectThread = async (thread: ThreadData) => {
+        // Gated on an account, so with the model running locally the rows
+        // rendered and clicking one did nothing at all.
+        if (thread.id === currentThreadId) return;
+        try {
+            await loadThread({
+                user_id: user?.id ?? LOCAL_USER_ID,
+                threadId: thread.id,
+                threadName: thread.name,
+                threadIdentity: {
+                    zoteroUserId: thread.zoteroUserId ?? null,
+                    zoteroLocalId: thread.zoteroLocalId ?? null,
+                },
+            });
+        } catch (error) {
+            console.error('RecentChats: error loading thread:', error);
+        }
+    };
+
+    const handleViewAll = async () => {
+        let filter: ThreadItemFilter | null = null;
+        if (contextType === 'file' || contextType === 'note') {
+            const ctx = getReaderOrNoteContextItem(selectedTabId);
+            // buildThreadItemFilter returns null for excluded/invalid items
+            if (ctx) filter = await buildThreadItemFilter(ctx.item, searchableLibraryIds);
+        }
+        // Explicit null for the generic "Recent" case opens the view unfiltered
+        setFilter(filter);
+        setIsThreadListView(true);
+    };
+
+    // No data yet — render nothing until first load completes
+    if (!isLoaded && threads.length === 0) return null;
+    // Loaded but no threads exist
+    if (isLoaded && threads.length === 0 && !isFetching) return null;
+
+    const headerLabel = contextType === 'file' ? 'Related to this file'
+        : contextType === 'note' ? 'Related to this note'
+        : 'Recent';
+
+    return (
+        <div className={`pt-2 recent-chats${hasPopupMessages ? ' recent-chats-faded' : ''}`}>
+            <div className="recent-chats-header">
+                <span className="recent-chats-label">
+                    {headerLabel}
+                    {isFetching && threads.length > 0 && (
+                        <Spinner size={11} />
+                    )}
+                </span>
+                <Button
+                    variant="ghost-secondary"
+                    onClick={handleViewAll}
+                    style={{ padding: '0px' }}
+                >
+                    View All
+                </Button>
+            </div>
+            {threads.map(thread => (
+                <div
+                    key={thread.id}
+                    className="recent-chats-item"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`${thread.name || 'Unnamed conversation'}, ${formatCompactTime(thread.updatedAt)}`}
+                    onClick={() => handleSelectThread(thread)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleSelectThread(thread);
+                        }
+                    }}
+                >
+                    <span className="recent-chats-item-name truncate">
+                        {thread.name || 'Unnamed conversation'}
+                    </span>
+                    <span className="recent-chats-item-time">
+                        {formatCompactTime(thread.updatedAt)}
+                    </span>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+export default RecentChats;

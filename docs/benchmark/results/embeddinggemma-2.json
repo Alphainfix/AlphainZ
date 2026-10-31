@@ -1,0 +1,614 @@
+[
+ {
+  "id": "bee-odometer-text1",
+  "paper": "bee-odometer",
+  "kind": "text",
+  "lang": "en",
+  "query": "For each extra hundred metres a forager covers, how many milliseconds does its dance message grow?",
+  "page": 1,
+  "rank": 1,
+  "passage_page": 2,
+  "snippet": "## 4 Tunnels\n\nForagers that crossed only 8 m of the checkerboard tunnel danced as if they had travelled about 210 m. Shorter tun‐ nels gave ",
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "bee-odometer-text2",
+  "paper": "bee-odometer",
+  "kind": "text",
+  "lang": "en",
+  "query": "What distance did bees signal after a short trip through the patterned corridor?",
+  "page": 2,
+  "rank": 1,
+  "passage_page": 2,
+  "snippet": "## 4 Tunnels\n\nForagers that crossed only 8 m of the checkerboard tunnel danced as if they had travelled about 210 m. Shorter tun‐ nels gave ",
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "bee-odometer-text3",
+  "paper": "bee-odometer",
+  "kind": "text",
+  "lang": "zh",
+  "query": "蜜蜂判断飞了多远，靠的是体力消耗还是眼睛看到的景物移动？",
+  "page": 2,
+  "rank": 1,
+  "passage_page": 1,
+  "snippet": "ncer moves straight ahead while vibrating her abdomen, and the angle of that run relative to vertical encodes the bearing of the food relati",
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "bee-odometer-keyword4",
+  "paper": "bee-odometer",
+  "kind": "keyword",
+  "lang": "en",
+  "query": "axial stripes",
+  "page": 2,
+  "rank": 1,
+  "passage_page": 2,
+  "snippet": "## 4 Tunnels\n\nForagers that crossed only 8 m of the checkerboard tunnel danced as if they had travelled about 210 m. Shorter tun‐ nels gave ",
+  "keyword_found": true,
+  "keyword_results": 1
+ },
+ {
+  "id": "bee-odometer-figure5",
+  "paper": "bee-odometer",
+  "kind": "figure",
+  "lang": "en",
+  "query": "two rising lines on a plot, one much steeper than the other, with a shaded strip around the gentler one",
+  "page": 1,
+  "rank": 7,
+  "top3": [
+   [
+    "city-heat",
+    2
+   ],
+   [
+    "filter-bubbles",
+    2
+   ],
+   [
+    "bee-odometer",
+    2
+   ]
+  ],
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "bee-odometer-figure6",
+  "paper": "bee-odometer",
+  "kind": "figure",
+  "lang": "zh",
+  "query": "一个圆形的玫瑰图，扇形集中指向右上方的同一个方向",
+  "page": 2,
+  "rank": 1,
+  "top3": [
+   [
+    "bee-odometer",
+    2
+   ],
+   [
+    "filter-bubbles",
+    2
+   ],
+   [
+    "sourdough-rise",
+    2
+   ]
+  ],
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "city-heat-text1",
+  "paper": "city-heat",
+  "kind": "text",
+  "lang": "en",
+  "query": "When exactly was the overhead heat scan done, and how dry had the weather been beforehand?",
+  "page": 1,
+  "rank": 1,
+  "passage_page": 1,
+  "snippet": "central district of Larkhaven, a midsized inland city with warm, dry summers. Its street plan is a regular grid, and we used 96 blocks of ro",
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "city-heat-text2",
+  "paper": "city-heat",
+  "kind": "text",
+  "lang": "en",
+  "query": "How much lower were temperatures right beside the big green space than local foliage would predict, and did that hold for neighbours a step removed?",
+  "page": 2,
+  "rank": 1,
+  "passage_page": 2,
+  "snippet": "## 4 Canopy and surface temperature\n\nAcross the 90 built blocks, surface temperature fell steadily as canopy rose (Figure 2). An ordinary le",
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "city-heat-text3",
+  "paper": "city-heat",
+  "kind": "text",
+  "lang": "zh",
+  "query": "新种下的行道树大概要长多少年，树冠才能真正给人行道遮阴？",
+  "page": 2,
+  "rank": 1,
+  "passage_page": 2,
+  "snippet": "and shrink at night, when the slow release of heat stored in masonry matters more than shade, so a night flight could rank the blocks differ",
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "city-heat-keyword1",
+  "paper": "city-heat",
+  "kind": "keyword",
+  "lang": "en",
+  "query": "bitumen roofs depot",
+  "page": 1,
+  "rank": 1,
+  "passage_page": 1,
+  "snippet": "## Shade by the Block: Street-Tree Canopy and Afternoon Surface Heat in a Mid-Sized City\n\nMarisol Achterberg and Idris Pemberton-Lowe\n\nDemon",
+  "keyword_found": true,
+  "keyword_results": 1
+ },
+ {
+  "id": "city-heat-figure1",
+  "paper": "city-heat",
+  "kind": "figure",
+  "lang": "en",
+  "query": "a grid of small squares coloured from pale yellow to dark red, darker towards the lower right, with a green rectangle full of dark dots just left of the middle",
+  "page": 1,
+  "rank": 2,
+  "top3": [
+   [
+    "filter-bubbles",
+    2
+   ],
+   [
+    "city-heat",
+    1
+   ],
+   [
+    "sleep-memory",
+    2
+   ]
+  ],
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "city-heat-figure2",
+  "paper": "city-heat",
+  "kind": "figure",
+  "lang": "zh",
+  "query": "一张散点图，点的颜色从浅黄到深红，整体往右下方走；中间一条深蓝色的下降直线，外面裹着一条浅蓝色的带子，有几个点带绿色的圈",
+  "page": 2,
+  "rank": 10,
+  "top3": [
+   [
+    "filter-bubbles",
+    2
+   ],
+   [
+    "delta-sediment",
+    1
+   ],
+   [
+    "bee-odometer",
+    2
+   ]
+  ],
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "delta-sediment-text1",
+  "paper": "delta-sediment",
+  "kind": "text",
+  "lang": "en",
+  "query": "According to depth soundings, how much of what the river carries gets caught behind the lower barrier?",
+  "page": 1,
+  "rank": 1,
+  "passage_page": 1,
+  "snippet": "the Kessel reservoir imply a trap efficiency near 85 percent. Nearly all of the sand is now held behind the dams, so the load that still rea",
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "delta-sediment-text2",
+  "paper": "delta-sediment",
+  "kind": "text",
+  "lang": "en",
+  "query": "How much fresh material would the low-lying land need annually just to hold its height against the sea?",
+  "page": 2,
+  "rank": 1,
+  "passage_page": 2,
+  "snippet": "stest where old lobes protruded furthest, because those parts are the most exposed to waves and the least supplied.\n\nnumber of transects\n\n20",
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "delta-sediment-text3",
+  "paper": "delta-sediment",
+  "kind": "text",
+  "lang": "zh",
+  "query": "海岸线还在向外长的那几段，都集中在哪里？",
+  "page": 2,
+  "rank": 1,
+  "passage_page": 2,
+  "snippet": "stest where old lobes protruded furthest, because those parts are the most exposed to waves and the least supplied.\n\nnumber of transects\n\n20",
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "delta-sediment-keyword1",
+  "paper": "delta-sediment",
+  "kind": "keyword",
+  "lang": "en",
+  "query": "flood-control sill Salt Creek",
+  "page": 2,
+  "rank": 1,
+  "passage_page": 2,
+  "snippet": "for three decades, and a flood-control sill at the head of Salt Creek admits water only during large floods.\n\nLosing the sand matters more t",
+  "keyword_found": true,
+  "keyword_results": 1
+ },
+ {
+  "id": "delta-sediment-figure1",
+  "paper": "delta-sediment",
+  "kind": "figure",
+  "lang": "en",
+  "query": "a hand-drawn style plan of a river fanning into three outlets at the sea, with fat arrows of unequal width and a shore traced partly in two colours",
+  "page": 1,
+  "rank": 1,
+  "top3": [
+   [
+    "delta-sediment",
+    1
+   ],
+   [
+    "delta-sediment",
+    2
+   ],
+   [
+    "filter-bubbles",
+    2
+   ]
+  ],
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "delta-sediment-figure2",
+  "paper": "delta-sediment",
+  "kind": "figure",
+  "lang": "zh",
+  "query": "一张柱状直方图，左边大多是红色的柱子，右边只有少数几根绿色的柱子，中间有一条竖着的虚线",
+  "page": 2,
+  "rank": 9,
+  "top3": [
+   [
+    "sleep-memory",
+    2
+   ],
+   [
+    "sourdough-rise",
+    2
+   ],
+   [
+    "filter-bubbles",
+    2
+   ]
+  ],
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "filter-bubbles-text1",
+  "paper": "filter-bubbles",
+  "kind": "text",
+  "lang": "en",
+  "query": "By how much did the variety of subjects in a typical person's reading shrink over the three months?",
+  "page": 1,
+  "rank": 1,
+  "passage_page": 1,
+  "snippet": "reading graph of a random sample of 72 users. Colours mark the three clusters found by community detection; grey lines join users who opened",
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "filter-bubbles-text2",
+  "paper": "filter-bubbles",
+  "kind": "text",
+  "lang": "en",
+  "query": "What share of links in the network bridged separate groups of readers?",
+  "page": 2,
+  "rank": 1,
+  "passage_page": 2,
+  "snippet": "## 4 Clusters and a remedy\n\nReaders fell into three large groups, centred on politics, sport and technology (Figure 1). Only 3 percent of co",
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "filter-bubbles-text3",
+  "paper": "filter-bubbles",
+  "kind": "text",
+  "lang": "zh",
+  "query": "有没有什么简单办法能让推荐重新变得多样一些？",
+  "page": 2,
+  "rank": 1,
+  "passage_page": 1,
+  "snippet": "## How Narrow Is the Feed? News Diversity Under an Engagement-\n\n## Trained Recommender\n\nAiko Brandvold and Rafael Oduya Demonstration docume",
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "filter-bubbles-keyword4",
+  "paper": "filter-bubbles",
+  "kind": "keyword",
+  "lang": "en",
+  "query": "dwell time",
+  "page": 1,
+  "rank": 6,
+  "passage_page": 1,
+  "snippet": "## How Narrow Is the Feed? News Diversity Under an Engagement-\n\n## Trained Recommender\n\nAiko Brandvold and Rafael Oduya Demonstration docume",
+  "keyword_found": true,
+  "keyword_results": 1
+ },
+ {
+  "id": "filter-bubbles-figure5",
+  "paper": "filter-bubbles",
+  "kind": "figure",
+  "lang": "en",
+  "query": "dots joined by thin lines, falling into three coloured clumps with only a few links between them",
+  "page": 1,
+  "rank": 1,
+  "top3": [
+   [
+    "filter-bubbles",
+    1
+   ],
+   [
+    "filter-bubbles",
+    2
+   ],
+   [
+    "sleep-memory",
+    2
+   ]
+  ],
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "filter-bubbles-figure6",
+  "paper": "filter-bubbles",
+  "kind": "figure",
+  "lang": "zh",
+  "query": "一个方格矩阵，颜色从浅到深，对角线上最深，右边有一个颜色刻度条",
+  "page": 2,
+  "rank": 1,
+  "top3": [
+   [
+    "filter-bubbles",
+    2
+   ],
+   [
+    "city-heat",
+    2
+   ],
+   [
+    "bee-odometer",
+    2
+   ]
+  ],
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "sleep-memory-text1",
+  "paper": "sleep-memory",
+  "kind": "text",
+  "lang": "en",
+  "query": "For those who got the least rest, what fraction of the learned material survived until breakfast?",
+  "page": 1,
+  "rank": 1,
+  "passage_page": 1,
+  "snippet": "## Spindles and Second Chances: Overnight Memory in First-Year Students\n\nAdaeze Lindqvist and Jonas Ferreira-Holm Demonstration document for",
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "sleep-memory-text2",
+  "paper": "sleep-memory",
+  "kind": "text",
+  "lang": "en",
+  "query": "How strongly were the short bursts of fast brain rhythm tied to how much was remembered the next day?",
+  "page": 2,
+  "rank": 1,
+  "passage_page": 1,
+  "snippet": "the effect: they learn a great deal, and their sleep is often short and irregular. We asked how much a short night costs, and whether spindl",
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "sleep-memory-text3",
+  "paper": "sleep-memory",
+  "kind": "text",
+  "lang": "zh",
+  "query": "入睡要花多长时间，会影响第二天还记得多少吗？",
+  "page": 2,
+  "rank": 1,
+  "passage_page": 1,
+  "snippet": "the effect: they learn a great deal, and their sleep is often short and irregular. We asked how much a short night costs, and whether spindl",
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "sleep-memory-keyword4",
+  "paper": "sleep-memory",
+  "kind": "keyword",
+  "lang": "en",
+  "query": "two-channel EEG headband",
+  "page": 1,
+  "rank": 1,
+  "passage_page": 2,
+  "snippet": "M. Sørbø and K. Abiodun. Spindles and memory transfer. Journal\n\nof Sleep Physiology 21, 140–158 (2017).\n\n[2] L. Carvalheira. Sleep timing in",
+  "keyword_found": true,
+  "keyword_results": 1
+ },
+ {
+  "id": "sleep-memory-figure5",
+  "paper": "sleep-memory",
+  "kind": "figure",
+  "lang": "en",
+  "query": "three bars of increasing height with small whiskers on top",
+  "page": 1,
+  "rank": 9,
+  "top3": [
+   [
+    "sourdough-rise",
+    2
+   ],
+   [
+    "bee-odometer",
+    2
+   ],
+   [
+    "bee-odometer",
+    1
+   ]
+  ],
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "sleep-memory-figure6",
+  "paper": "sleep-memory",
+  "kind": "figure",
+  "lang": "zh",
+  "query": "像楼梯一样上上下下的阶梯折线图，横轴是一整夜的时间",
+  "page": 2,
+  "rank": 3,
+  "top3": [
+   [
+    "sourdough-rise",
+    2
+   ],
+   [
+    "bee-odometer",
+    2
+   ],
+   [
+    "sleep-memory",
+    2
+   ]
+  ],
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "sourdough-rise-text1",
+  "paper": "sourdough-rise",
+  "kind": "text",
+  "lang": "en",
+  "query": "How much quicker did the hottest batch reach twice its starting size than the coolest one?",
+  "page": 1,
+  "rank": 1,
+  "passage_page": 1,
+  "snippet": "## Warm Doughs Rise Faster but Taste Flatter: Fermentation Temperature in a Home Sourdough\n\nPernille Aasgaard and Diego Montalbán-Ruiz\n\nDemo",
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "sourdough-rise-text2",
+  "paper": "sourdough-rise",
+  "kind": "text",
+  "lang": "en",
+  "query": "How did the panel's flavour impressions differ between the batches?",
+  "page": 2,
+  "rank": 1,
+  "passage_page": 1,
+  "snippet": "ids that give it flavour. The two groups respond differently to tem‐ perature, so a baker who changes the temperature to save time also chan",
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "sourdough-rise-text3",
+  "paper": "sourdough-rise",
+  "kind": "text",
+  "lang": "zh",
+  "query": "为什么面包靠近顶部的地方会有很大的不规则气孔？",
+  "page": 2,
+  "rank": 1,
+  "passage_page": 1,
+  "snippet": "s scored each bread blind.\n\nFigure 1. Cross-section of a loaf fermented at 18 °C, traced from a photograph: gas cells of many sizes, with th",
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "sourdough-rise-keyword4",
+  "paper": "sourdough-rise",
+  "kind": "keyword",
+  "lang": "en",
+  "query": "rye starter hydration",
+  "page": 1,
+  "rank": 1,
+  "passage_page": 1,
+  "snippet": "ids that give it flavour. The two groups respond differently to tem‐ perature, so a baker who changes the temperature to save time also chan",
+  "keyword_found": true,
+  "keyword_results": 1
+ },
+ {
+  "id": "sourdough-rise-figure5",
+  "paper": "sourdough-rise",
+  "kind": "figure",
+  "lang": "en",
+  "query": "a cut loaf seen from the side, full of round holes of many sizes, with bigger ones near the top",
+  "page": 1,
+  "rank": 2,
+  "top3": [
+   [
+    "sourdough-rise",
+    2
+   ],
+   [
+    "sourdough-rise",
+    1
+   ],
+   [
+    "filter-bubbles",
+    2
+   ]
+  ],
+  "keyword_found": false,
+  "keyword_results": 0
+ },
+ {
+  "id": "sourdough-rise-figure6",
+  "paper": "sourdough-rise",
+  "kind": "figure",
+  "lang": "zh",
+  "query": "一条线往上升、另一条线往下降的双纵轴折线图",
+  "page": 2,
+  "rank": 1,
+  "top3": [
+   [
+    "sourdough-rise",
+    2
+   ],
+   [
+    "bee-odometer",
+    2
+   ],
+   [
+    "sleep-memory",
+    1
+   ]
+  ],
+  "keyword_found": false,
+  "keyword_results": 0
+ }
+]

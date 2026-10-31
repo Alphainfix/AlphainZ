@@ -1,0 +1,53 @@
+{
+  "paper": "city-heat",
+  "queries": [
+    {
+      "id": "city-heat-text1",
+      "kind": "text",
+      "lang": "en",
+      "query": "When exactly was the overhead heat scan done, and how dry had the weather been beforehand?",
+      "page": 1,
+      "target_quote": "The survey flight took place on a cloudless afternoon in late July, between 14:40 and 15:25 local time, after four days without rain."
+    },
+    {
+      "id": "city-heat-text2",
+      "kind": "text",
+      "lang": "en",
+      "query": "How much lower were temperatures right beside the big green space than local foliage would predict, and did that hold for neighbours a step removed?",
+      "page": 2,
+      "target_quote": "Blocks sharing an edge with Millrace Park sat on average 2.0 degrees below the fitted line, whereas blocks one street further out showed no departure at all."
+    },
+    {
+      "id": "city-heat-text3",
+      "kind": "text",
+      "lang": "zh",
+      "query": "新种下的行道树大概要长多少年，树冠才能真正给人行道遮阴？",
+      "page": 2,
+      "target_quote": "A young street tree needs fifteen to twenty years before its crown shades a meaningful part of the pavement, so the planting choices made now will only show up in the surveys of the 2040s."
+    },
+    {
+      "id": "city-heat-keyword1",
+      "kind": "keyword",
+      "lang": "en",
+      "query": "bitumen roofs depot",
+      "page": 1,
+      "target_quote": "The hottest blocks, next to the rail yard and the bus depot, combined flat bitumen roofs with almost no tree cover."
+    },
+    {
+      "id": "city-heat-figure1",
+      "kind": "figure",
+      "lang": "en",
+      "query": "a grid of small squares coloured from pale yellow to dark red, darker towards the lower right, with a green rectangle full of dark dots just left of the middle",
+      "page": 1,
+      "figure": 1
+    },
+    {
+      "id": "city-heat-figure2",
+      "kind": "figure",
+      "lang": "zh",
+      "query": "一张散点图，点的颜色从浅黄到深红，整体往右下方走；中间一条深蓝色的下降直线，外面裹着一条浅蓝色的带子，有几个点带绿色的圈",
+      "page": 2,
+      "figure": 2
+    }
+  ]
+}

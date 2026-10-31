@@ -1,0 +1,53 @@
+{
+ "paper": "sleep-memory",
+ "queries": [
+  {
+   "id": "sleep-memory-text1",
+   "kind": "text",
+   "lang": "en",
+   "query": "For those who got the least rest, what fraction of the learned material survived until breakfast?",
+   "target_quote": "Students who slept less than six hours kept only 71 percent of the pairs they had recalled the evening before.",
+   "page": 1
+  },
+  {
+   "id": "sleep-memory-text2",
+   "kind": "text",
+   "lang": "en",
+   "query": "How strongly were the short bursts of fast brain rhythm tied to how much was remembered the next day?",
+   "target_quote": "Each additional spindle per minute of N2 sleep predicted a gain of 4.2 points in morning recall, and spindle density explained more of the differences between students than total sleep time did.",
+   "page": 2
+  },
+  {
+   "id": "sleep-memory-text3",
+   "kind": "text",
+   "lang": "zh",
+   "query": "入睡要花多长时间，会影响第二天还记得多少吗？",
+   "target_quote": "Retention did not depend on how long it took the students to fall asleep.",
+   "page": 2
+  },
+  {
+   "id": "sleep-memory-keyword4",
+   "kind": "keyword",
+   "lang": "en",
+   "query": "two-channel EEG headband",
+   "target_quote": "Sleep was recorded at home with a two-channel EEG headband that the students applied themselves.",
+   "page": 1
+  },
+  {
+   "id": "sleep-memory-figure5",
+   "kind": "figure",
+   "lang": "en",
+   "query": "three bars of increasing height with small whiskers on top",
+   "figure": 1,
+   "page": 1
+  },
+  {
+   "id": "sleep-memory-figure6",
+   "kind": "figure",
+   "lang": "zh",
+   "query": "像楼梯一样上上下下的阶梯折线图，横轴是一整夜的时间",
+   "figure": 2,
+   "page": 2
+  }
+ ]
+}

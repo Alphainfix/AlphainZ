@@ -1,0 +1,1401 @@
+import { getDisplayNameFromItem } from "../../react/utils/sourceUtils";
+import { ZoteroItemReference } from "@beaver/agent-core/types/zotero";
+import type { CreatorJSON } from "@beaver/agent-core/types/agentActions/base";
+import { logger } from "@beaver/agent-core/platform/logger";
+import { libraryRefForLibraryID, UNRESOLVED_LIBRARY_ID } from "./libraryIdentity";
+import { safeAttachmentFilename } from "./attachmentFiles";
+import type { ZoteroInstanceRef } from "@beaver/agent-core/transport/threadService";
+import { getSelectedLibraryId, getSelectedCollection } from "./zoteroSelection";
+
+function makeZoteroItemReference(libraryID: number, zoteroKey: string): ZoteroItemReference {
+    return {
+        library_id: libraryID,
+        zotero_key: zoteroKey,
+        library_ref: libraryRefForLibraryID(libraryID) ?? undefined,
+    };
+}
+
+/**
+ * Context for determining where to create or insert a new Zotero item
+ */
+export interface ZoteroTargetContext {
+    targetLibraryId: number | undefined;
+    parentReference: ZoteroItemReference | null;
+    collectionToAddTo: Zotero.Collection | null;
+}
+
+/**
+ * Determines the target location for creating a new item based on current Zotero context.
+ * Handles both reader view (uses current document's library/parent) and library view (uses selected item or collection).
+ * @returns Target library ID, parent reference, and optional collection
+ */
+export async function getZoteroTargetContext(): Promise<ZoteroTargetContext> {
+    const win = Zotero.getMainWindow();
+    const zp = Zotero.getActiveZoteroPane();
+    
+    let targetLibraryId: number | undefined = undefined;
+    let parentReference: ZoteroItemReference | null = null;
+    let collectionToAddTo: Zotero.Collection | null = null;
+
+    // Reader view - check if we're in a reader tab
+    const selectedTabType = win.Zotero_Tabs?.selectedType;
+    if (selectedTabType === 'reader') {
+        const reader = Zotero.Reader.getByTabID(win.Zotero_Tabs.selectedID);
+        if (reader?.itemID) {
+            const readerItem = await Zotero.Items.getAsync(reader.itemID);
+            if (readerItem) {
+                targetLibraryId = readerItem.libraryID;
+                parentReference = readerItem.parentKey
+                    ? makeZoteroItemReference(readerItem.libraryID, readerItem.parentKey)
+                    : null;
+                return { targetLibraryId, parentReference, collectionToAddTo };
+            }
+        }
+    }
+
+    // Library view
+    const selectedItems = zp.getSelectedItems();
+    
+    // If items are selected, use the first one
+    if (selectedItems.length >= 1) {
+        const firstItem = selectedItems[0];
+        const item = firstItem.isAnnotation() && firstItem.parentItem ? firstItem.parentItem : firstItem;
+        targetLibraryId = item.libraryID;
+        
+        if (item.isRegularItem()) {
+            parentReference = makeZoteroItemReference(item.libraryID, item.key);
+        } else if (item.isNote() || item.isAttachment()) {
+            // Add to parent (sibling)
+            parentReference = item.parentKey
+                ? makeZoteroItemReference(item.libraryID, item.parentKey)
+                : null;
+        }
+    // No selection - add to current library/collection
+    } else {
+        targetLibraryId = getSelectedLibraryId(zp) ?? undefined;
+        const collection = getSelectedCollection(zp);
+        if (collection) {
+            collectionToAddTo = collection;
+        }
+        parentReference = null;
+    }
+
+    return { targetLibraryId, parentReference, collectionToAddTo };
+}
+
+/**
+ * Synchronous version of getZoteroTargetContext for UI state determination.
+ * Uses sync Zotero.Items.get() which works because items are loaded when open in reader.
+ * @returns Target library ID, parent reference, and optional collection
+ */
+export function getZoteroTargetContextSync(): ZoteroTargetContext {
+    const win = Zotero.getMainWindow();
+    const zp = Zotero.getActiveZoteroPane();
+    
+    let targetLibraryId: number | undefined = undefined;
+    let parentReference: ZoteroItemReference | null = null;
+    let collectionToAddTo: Zotero.Collection | null = null;
+
+    // Reader view - check if we're in a reader tab
+    const selectedTabType = win.Zotero_Tabs?.selectedType;
+    if (selectedTabType === 'reader') {
+        const reader = Zotero.Reader.getByTabID(win.Zotero_Tabs.selectedID);
+        if (reader?.itemID) {
+            const readerItem = Zotero.Items.get(reader.itemID);
+            if (readerItem) {
+                targetLibraryId = readerItem.libraryID;
+                parentReference = readerItem.parentKey
+                    ? makeZoteroItemReference(readerItem.libraryID, readerItem.parentKey)
+                    : null;
+                return { targetLibraryId, parentReference, collectionToAddTo };
+            }
+        }
+    }
+
+    // Library view
+    const selectedItems = zp.getSelectedItems();
+    
+    // If items are selected, use the first one
+    if (selectedItems.length >= 1) {
+        const firstItem = selectedItems[0];
+        const item = firstItem.isAnnotation() && firstItem.parentItem ? firstItem.parentItem : firstItem;
+        targetLibraryId = item.libraryID;
+        
+        if (item.isRegularItem()) {
+            parentReference = makeZoteroItemReference(item.libraryID, item.key);
+        } else if (item.isNote() || item.isAttachment()) {
+            // Add to parent (sibling)
+            parentReference = item.parentKey
+                ? makeZoteroItemReference(item.libraryID, item.parentKey)
+                : null;
+        }
+    // No selection - add to current library/collection
+    } else {
+        targetLibraryId = getSelectedLibraryId(zp) ?? undefined;
+        const collection = getSelectedCollection(zp);
+        if (collection) {
+            collectionToAddTo = collection;
+        }
+        parentReference = null;
+    }
+
+    return { targetLibraryId, parentReference, collectionToAddTo };
+}
+
+
+/**
+ * Get the BibTeX cite-key for a Zotero.Item, if available.
+ * Tries Better BibTeX, then Zotero beta field citationKey, then Extra.
+ *
+ * @param {Zotero.Item} item
+ * @return {string|null}
+ */
+export async function getCitationKeyFromItem(item: Zotero.Item): Promise<string | null> {
+    // 1. Ensure we actually have an item
+    if (!item) return null;
+
+    // 2. If Better BibTeX is present, use its KeyManager API
+    if (typeof Zotero !== 'undefined'
+        && Zotero.BetterBibTeX
+        && Zotero.BetterBibTeX.KeyManager
+        && typeof Zotero.BetterBibTeX.KeyManager.get === 'function'
+    ) {
+        try {
+            const keydata = Zotero.BetterBibTeX.KeyManager.get(item.id);
+            
+            // Handle retry case (when KeyManager isn't ready)
+            if (keydata && keydata.retry) {
+                // KeyManager not ready, fall through to other methods
+            } else if (keydata && keydata.citationKey) {
+                return keydata.citationKey;
+            }
+        }
+        catch (e) {
+            // Something went wrong in BBT; fall back
+            logger('getCitationKeyFromItem: BetterBibTeX KeyManager failed');
+        }
+    }
+
+    // 3. Use citationKey field (Zotero beta)
+    try {
+        const citationKey = item.getField('citationKey');
+        if (citationKey) return citationKey;
+    } catch (e) {
+        // citationKey field might not exist in older Zotero versions
+    }
+
+    // 4. Fallback: look for a pinned key in Extra field
+    try {
+        const extra = item.getField('extra') || '';
+        const m = extra.match(/^\s*Citation Key:\s*([^\s]+)/m);
+        return m ? m[1] : null;
+    } catch (e) {
+        logger('getCitationKeyFromItem: Failed to get extra field');
+        return null;
+    }
+}
+
+/**
+ * Get the clientDateModified for an item
+ * @param item Zotero item or item ID
+ * @returns clientDateModified as string
+ */
+export async function getClientDateModified(item: Zotero.Item | number): Promise<string> {
+    const itemId = typeof item === 'number' ? item : item.id;
+    const sql = "SELECT clientDateModified FROM items WHERE itemID = ?";
+    return await Zotero.DB.valueQueryAsync(sql, [itemId]) as string;
+}
+
+/**
+ * Get the clientDateModified for an item as ISO string
+ * @param item Zotero item or item ID
+ * @returns clientDateModified as ISO string
+ */
+export async function getClientDateModifiedAsISOString(item: Zotero.Item | number): Promise<string> {
+    const clientDateModified = await getClientDateModified(item);
+    return Zotero.Date.sqlToISO8601(clientDateModified);
+}
+
+/**
+ * Get the clientDateModified for a collection
+ * @param collection Zotero collection or collection ID
+ * @returns clientDateModified as string
+ */
+export async function getCollectionClientDateModified(collection: Zotero.Collection | number): Promise<string> {
+    const collectionId = typeof collection === 'number' ? collection : collection.id;
+    const sql = "SELECT clientDateModified FROM collections WHERE collectionID = ?";
+    return await Zotero.DB.valueQueryAsync(sql, [collectionId]) as string;
+}
+
+/**
+ * Get the clientDateModified for a collection as ISO string
+ * @param collection Zotero collection or collection ID
+ * @returns clientDateModified as ISO string
+ */
+export async function getCollectionClientDateModifiedAsISOString(collection: Zotero.Collection | number): Promise<string> {
+    const clientDateModified = await getCollectionClientDateModified(collection);
+    return Zotero.Date.sqlToISO8601(clientDateModified);
+}
+
+/**
+ * Get the clientDateModified for multiple items in a batch operation.
+ * @param items Array of Zotero items or item IDs
+ * @returns Map of itemID to clientDateModified string in ISO format
+ */
+export async function getClientDateModifiedBatch(
+    items: (Zotero.Item | number)[],
+    chunkSize: number = 500
+): Promise<Map<number, string>> {
+    const itemIds = items.map(item => typeof item === 'number' ? item : item.id);
+    if (itemIds.length === 0) return new Map();
+
+    const result = new Map<number, string>();
+    
+    // Process in chunks to avoid SQLite parameter limits
+    for (let i = 0; i < itemIds.length; i += chunkSize) {
+        const chunk = itemIds.slice(i, i + chunkSize);
+        const placeholders = chunk.map(() => '?').join(', ');
+        const sql = `SELECT itemID, clientDateModified FROM items WHERE itemID IN (${placeholders})`;
+        
+        try {
+            // Use onRow callback to avoid Proxy issues with Zotero.DB.queryAsync
+            await Zotero.DB.queryAsync(sql, chunk, {
+                onRow: (row: any) => {
+                    const itemID = row.getResultByIndex(0);
+                    const clientDateModified = row.getResultByIndex(1);
+                    if (clientDateModified) {
+                        try {
+                            result.set(
+                                itemID,
+                                Zotero.Date.sqlToISO8601(clientDateModified),
+                            );
+                        } catch (e) {
+                            logger(`getClientDateModifiedBatch: Could not parse clientDateModified '${clientDateModified}' for item ${itemID}. This item will not be included in date-based batching.`, 2);
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            logger(`getClientDateModifiedBatch: Error processing chunk ${i}-${i + chunk.length}: ${(error as Error).message}`, 1);
+            throw error;
+        }
+    }
+
+    return result;
+}
+
+/**
+ * Get recently added or modified items in a library
+ * @param {Integer} libraryID - The library to get items from
+*
+ * @param {Object} [options]
+ * @param {String} [options.sortBy='dateModified'] - Field to sort by: 'dateAdded' or 'dateModified'
+ * @param {Integer} [options.limit=10] - Maximum number of items to return
+ * @param {Boolean} [options.includeTrashed=false] - Whether to include items in the trash
+ * @param {Boolean} [options.asIDs=false] - If true, return only item IDs instead of item objects
+ * @return {Promise<Array<Zotero.Item|Integer>>}
+ */
+export const getRecentAsync = async function (
+    libraryID: number,
+    options: {
+        sortBy?: string,
+        limit?: number,
+        includeTrashed?: boolean,
+        asIDs?: boolean
+    } = {}
+): Promise<Zotero.Item[] | number[]> {
+    const { 
+        sortBy = 'dateModified', 
+        limit = 10, 
+        includeTrashed = false,
+        asIDs = false
+    } = options;
+    
+    if (!['dateAdded', 'dateModified'].includes(sortBy)) {
+        throw new Error("sortBy must be 'dateAdded' or 'dateModified'");
+    }
+    
+    let sql = 'SELECT itemID FROM items';
+    
+    if (!includeTrashed) {
+        sql += ' WHERE itemID NOT IN (SELECT itemID FROM deletedItems)';
+    } else {
+        sql += ' WHERE 1=1';
+    }
+    
+    // Only return items from the requested library
+    sql += ' AND libraryID=?';
+    
+    // Order by the requested date field
+    sql += ` ORDER BY ${sortBy} DESC LIMIT ?`;
+    
+    const params = [libraryID, limit];
+    const ids = await Zotero.DB.columnQueryAsync(sql, params) as number[];
+    
+    if (asIDs) {
+        return ids;
+    }
+    
+    return Zotero.Items.getAsync(ids);
+};
+
+
+/**
+ * Identifies a specific Zotero install for a Beaver user. `localUserKey` is always
+ * present and unique per install — the stable discriminator when one Beaver account
+ * has several installs running at once (e.g. work + home). The remaining fields are
+ * best-effort context/labels: `userID`/`accountName` are null when Zotero sync is
+ * off; `deviceName` provides a user-recognizable "work vs home" label. All extra
+ * fields are resolved defensively so a failure never blocks auth.
+ */
+export interface ZoteroInstanceIdentity {
+    /** Zotero account user ID; undefined if sync is off. Groups installs by account. */
+    userID: string | undefined;
+    /** Per-install key; always present. The unique discriminator between installs. */
+    localUserKey: string;
+    /** Zotero account login name; undefined if sync is off. */
+    accountName: string | undefined;
+    /** OS hostname (e.g. "XX-MacBook-Pro") — the recognizable "work vs home" label. */
+    deviceName: string | undefined;
+}
+
+export function getZoteroUserIdentifier(): ZoteroInstanceIdentity {
+    // First try to get the Zotero account user ID (only exists if user has Zotero sync enabled)
+    const userID = Zotero.Users.getCurrentUserID();
+
+    // Get local user key - this always exists
+    const localUserKey = Zotero.Users.getLocalUserKey();
+
+    // Account login name — only meaningful when synced; treat any failure as absent.
+    let accountName: string | undefined;
+    try {
+        accountName = userID ? (Zotero.Users.getCurrentUsername() || undefined) : undefined;
+    } catch (e) {
+        accountName = undefined;
+    }
+
+    // OS hostname via the DNS service. NB: Services.sysinfo host/hostname props throw,
+    // so the DNS service is the reliable source.
+    let deviceName: string | undefined;
+    try {
+        const dns = Cc["@mozilla.org/network/dns-service;1"].getService(Ci.nsIDNSService);
+        deviceName = dns.myHostName || undefined;
+    } catch (e) {
+        deviceName = undefined;
+    }
+
+    return {
+        userID: userID ? `${userID}` : undefined,
+        localUserKey: `${localUserKey}`,
+        accountName,
+        deviceName,
+    }
+}
+
+/**
+ * The current install's identity as a `ZoteroInstanceRef` — the single mapping
+ * point from Zotero's `{userID, localUserKey}` to the client-agnostic shape
+ * used for thread scoping and mismatch checks. Returns `null` when the Zotero
+ * user API is unavailable (callers then skip scoping entirely).
+ */
+export function currentZoteroInstanceRef(): ZoteroInstanceRef | null {
+    try {
+        const { userID, localUserKey } = getZoteroUserIdentifier();
+        return { zoteroUserId: userID ?? null, zoteroLocalId: localUserKey };
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Search-index scope ref — the compact spelling of Zotero's object-URI scheme
+ * the backend search index keys rows on:
+ *
+ *   group    → `g${groupID}`      (global, server-assigned group id)
+ *   personal → `l${localUserKey}` (always — even when Zotero sync is on)
+ *
+ * This is NOT an agent-facing / model-facing identifier — it is a wire value
+ * scoped to the search index alone.
+ *
+ * NOT the same as the agent-facing `library_ref` (`"u"` | `"g<groupID>"`, see
+ * `libraryIdentity.ts`): index rows live in a namespace where two physically
+ * distinct personal libraries must not collide, so the personal ref is scoped by
+ * account/device. Output of this function will NOT satisfy `LIBRARY_REF_PATTERN`
+ * and must never be passed to `parseLibraryRef` / `resolveLibraryRef`.
+ *
+ * Returns null for feed libraries (never indexed) or an unknown libraryID. The
+ * local `libraryID` (sequential per Zotero DB) is deliberately NEVER used on the
+ * wire — it is not portable across installs.
+ */
+export function getIndexScopeRef(libraryID: number): string | null {
+    const library = Zotero.Libraries.get(libraryID);
+    if (!library) return null;
+    if (library.libraryType === 'group') {
+        const groupID = Zotero.Groups.getGroupIDFromLibraryID(libraryID);
+        return groupID ? `g${groupID}` : null;
+    }
+    if (library.libraryType === 'user') {
+        const { localUserKey } = getZoteroUserIdentifier();
+        return `l${localUserKey}`;
+    }
+    // Feed (or any other) library type — not part of the indexable scope.
+    return null;
+}
+
+/**
+ * Searchable index scope of the running Zotero install: the personal library's
+ * index scope ref plus one `g<groupID>` per group library that is not excluded
+ * in AlphainZ Settings. Sent in the auth handshake so the backend can scope
+ * search-index queries over the shared per-user namespace to exactly the
+ * libraries this install may search. Feed libraries are excluded, the list is
+ * de-duplicated, and any failure is swallowed (returns []) so scope computation
+ * never blocks auth.
+ */
+export function getInstanceIndexScopeRefs(searchableLibraryIds: number[]): string[] {
+    try {
+        const refs = new Set<string>();
+        for (const libraryID of searchableLibraryIds) {
+            const library = Zotero.Libraries.get(libraryID);
+            if (!library) {
+                continue;
+            }
+            if (library.libraryType !== 'user' && library.libraryType !== 'group') {
+                continue;
+            }
+            const ref = getIndexScopeRef(libraryID);
+            if (ref) refs.add(ref);
+        }
+        return Array.from(refs);
+    } catch (e) {
+        Zotero.logError(e as Error);
+        return [];
+    }
+}
+
+/**
+ * Build a zotero://select URI that opens Zotero and selects the given item.
+ * Works without loading the full item — only needs libraryID and key.
+ *
+ * User libraries:  zotero://select/library/items/{key}
+ * Group libraries: zotero://select/groups/{groupID}/items/{key}
+ */
+export function getZoteroSelectURI(libraryId: number, key: string): string | null {
+    const lib = Zotero.Libraries.get(libraryId);
+    if (!lib) return null;
+    if (lib.libraryType === 'group') {
+        // @ts-ignore Zotero.Library.groupID is defined for group libraries
+        return `zotero://select/groups/${lib.groupID}/items/${key}`;
+    }
+    return `zotero://select/library/items/${key}`;
+}
+
+export function isLibraryEditable(libraryId: number): boolean {
+    const library = Zotero.Libraries.get(libraryId);
+    if (!library) {
+        return false;
+    }
+    // Library must be editable AND files must be editable to create annotations
+    return library.editable && library.filesEditable;
+}
+
+export function isLibrarySynced(libraryID: number): boolean {
+    try {
+        // Check if sync is enabled globally first
+        if (!Zotero.Sync.Runner.enabled) {
+            return false;
+        }
+        
+        // Get the library object
+        const library = Zotero.Libraries.get(libraryID);
+        if (!library) {
+            return false;
+        }
+        
+        // Check if library type supports syncing (excludes feed libraries)
+        if (!library.syncable) {
+            return false;
+        }
+        
+        // Check if this specific library is skipped from sync
+        if (isLibrarySkipped(library)) {
+            return false;
+        }
+        
+        // Check if library has actually been synced before
+        // This indicates it's connected to Zotero sync infrastructure
+        if (!library.lastSync) {
+            return false;
+        }
+        
+        // Check if library has a version (indicates modern sync setup)
+        if (!library.libraryVersion || library.libraryVersion === 0) {
+            return false;
+        }
+        
+        return true;
+
+    } catch (e) {
+        Zotero.logError(e as Error);
+        return false;
+    }
+}
+
+export function isLibrarySkipped(library: _ZoteroTypes.Library.LibraryLike): boolean {;
+    try {
+        const pref = 'sync.librariesToSkip';
+        const librariesToSkip = (Zotero.Prefs.get(pref) || []) as string[];
+        
+        // Check based on library type
+        if (library.libraryType === 'group') {
+            // @ts-ignore Zotero.Library.groupID is defined
+            return librariesToSkip.includes("G" + library.groupID);
+        } else {
+            return librariesToSkip.includes("L" + library.libraryID);
+        }
+    } catch (e) {
+        Zotero.logError(e as Error);
+        return false;
+    }
+}
+
+/**
+ * Determines the MIME type for a Zotero attachment
+ * Falls back to file detection if stored type is missing/generic
+ * @param attachment Zotero attachment item
+ * @param filePath Optional file path (will be fetched if not provided)
+ * @returns Promise<string> MIME type string
+ */
+export async function getMimeType(attachment: Zotero.Item, filePath?: string): Promise<string> {
+    if (!attachment.isAttachment()) return '';
+    
+    let mimeType = attachment.attachmentContentType;
+
+    // Validate/correct MIME type by checking actual file if needed
+    if (!mimeType || mimeType === 'application/octet-stream' || mimeType === '') {
+        try {
+            if (!filePath) filePath = await attachment.getFilePathAsync() || undefined;
+            if (!filePath) {
+                logger(`getMimeType: No file path available for ${attachment.key}`, 2);
+                return mimeType || 'application/octet-stream';
+            }
+            
+            const detectedMimeType = await Zotero.MIME.getMIMETypeFromFile(filePath);
+            if (detectedMimeType) mimeType = detectedMimeType;
+        } catch (error) {
+            logger(`getMimeType: Failed to detect MIME type for ${attachment.key}, using stored type`, 2);
+            // Fall back to stored type or default
+            return mimeType || 'application/octet-stream';
+        }
+    }
+
+    return mimeType;
+}
+
+
+/**
+ * Detects the MIME type from in-memory file data.
+ * This replicates the logic of Zotero.MIME.getMIMETypeFromFile without needing a file on disk.
+ *
+ * @param {Zotero.Item} attachment - The attachment item, used for the filename extension hint.
+ * @param {Uint8Array|ArrayBuffer} fileData - The binary content of the file.
+ * @returns {string} The detected MIME type, or the stored MIME type if detection fails.
+ */
+export function getMimeTypeFromData(attachment: Zotero.Item, fileData: Uint8Array | ArrayBuffer): string {
+    if (!attachment.isAttachment()) return '';
+
+    const mimeType = attachment.attachmentContentType;
+
+
+    // Validate/correct MIME type by checking actual file if needed
+    if (!mimeType || mimeType === 'application/octet-stream' || mimeType === '') {
+        // File data check
+        if (!fileData) return mimeType;
+
+        // Ensure we have a Uint8Array to work with
+        const data = (fileData instanceof Uint8Array) ? fileData : new Uint8Array(fileData);
+
+        // Take a sample from the beginning of the file for sniffing.
+        const sampleSize = 512;
+        const sampleBytes = data.slice(0, sampleSize);
+
+        // Convert the binary sample to a string
+        let sampleString = '';
+        for (let i = 0; i < sampleBytes.length; i++) {
+            sampleString += String.fromCharCode(sampleBytes[i]);
+        }
+
+        // Get the file extension from the attachment's filename as a hint.
+        const extension = ((safeAttachmentFilename(attachment) ?? '').split('.').pop() || '').toLowerCase();
+
+        // Use Zotero's internal data-based MIME type detection
+        return Zotero.MIME.getMIMETypeFromData(sampleString, extension);
+    }
+
+    return mimeType;
+}
+
+
+
+export async function shortItemTitle(item: Zotero.Item): Promise<string> {
+    const parentItem = item.isTopLevelItem() ? item : item.parentItem;
+
+    if (parentItem && parentItem.isRegularItem()) {
+        return getDisplayNameFromItem(parentItem);
+    }
+
+    if (parentItem && parentItem.isAttachment()) {
+        return parentItem.getField('title', false, true) || '';
+    }
+
+    return '';
+}
+
+/**
+ * Loads full item data for a list of Zotero items.
+ * @param items - The Zotero items to load data for.
+ * @param options - The options for loading the data.
+ * @returns A promise that resolves when the data is loaded.
+ */
+export async function loadFullItemData(
+    items: Zotero.Item[],
+    options: {
+        includeParents: boolean,
+        includeChildren: boolean,
+        dataTypes: string[]
+    } = {
+        includeParents: true,
+        includeChildren: true,
+        dataTypes: ["primaryData", "creators", "itemData", "childItems"]
+    }
+) {
+    const { includeParents, includeChildren, dataTypes } = options;
+
+    if (items.length === 0) return;
+    
+    // 1. Load main items
+    await Zotero.Items.loadDataTypes(items, dataTypes);
+
+    // 2. Collect parent and child IDs
+    const parentIDs = includeParents
+        ? items
+            .map(item => item.parentID)
+            .filter((id): id is number => Boolean(id))
+        : [];
+
+    const childIDs = includeChildren
+        ? items
+            .filter((item) => item.isRegularItem())
+            .flatMap(item => item.getAttachments())
+            .filter((id): id is number => Boolean(id))
+        : [];
+
+    // 3. Load parent and child items into memory
+    const parentItems = parentIDs.length > 0 ? await Zotero.Items.getAsync(parentIDs) : [];
+    const childItems = childIDs.length > 0 ? await Zotero.Items.getAsync(childIDs) : []; 
+    
+    // 4. Load child and parent items
+    if (parentItems.length > 0 || childItems.length > 0) {
+        const itemsToLoad = [...parentItems, ...childItems]
+            .filter((item, index, self) => item && index === self.findIndex((i) => i.id === item.id));
+        
+        // Load all default data types (itemData, creators, etc.) for display
+        await Zotero.Items.loadDataTypes(itemsToLoad, dataTypes);
+    }
+}
+
+export async function loadFullItemDataWithAllTypes(items: Zotero.Item[] = []) {
+    await loadFullItemData(items, {
+        includeParents: true,
+        includeChildren: true,
+        dataTypes: ["primaryData", "creators", "itemData", "childItems", "tags", "collections", "relations", "note"]
+    });
+}
+
+
+/**
+ * Load all parent data for items
+ */
+export async function loadParentData(items: Zotero.Item[]): Promise<void> {
+    const parentIdsToLoad = new Set<number>();
+
+    // Collect all unique parent IDs
+    for (const item of items) {
+        let current = item;
+        while (current?.parentID) {
+            parentIdsToLoad.add(current.parentID);
+            const parent = await Zotero.Items.getAsync(current.parentID);
+            if (!parent) break;
+            current = parent;
+        }
+    }
+
+    // Load all unique parents in parallel
+    if (parentIdsToLoad.size > 0) {
+        const parentLoadPromises = Array.from(parentIdsToLoad).map(
+            parentId => Zotero.Items.getAsync(parentId).then(p => p?.loadAllData())
+        );
+        await Promise.all(parentLoadPromises);
+    }
+}
+
+export async function getParentLoadPromises(item: Zotero.Item) {
+    const promises = [];
+    const seen = new Set();
+
+    // Include item
+    promises.push(item.loadAllData());
+    seen.add(item.id);
+
+    // Parents
+    let current = item;
+    while (current?.parentID) {
+        const parent = await Zotero.Items.getAsync(current.parentID);
+        if (!parent) break;
+
+        const pid = parent.id;
+        if (seen.has(pid)) break;
+        seen.add(pid);
+
+        promises.push(parent.loadAllData());
+        current = parent;
+    }
+
+    return promises;
+}
+
+
+/**
+ * Get the active Zotero library ID
+ * @returns The active Zotero library ID, or null if no library is selected
+ */
+export function getActiveZoteroLibraryId(): number | null {
+    const zoteroPane = Zotero.getActiveZoteroPane?.() as any;
+    if (!zoteroPane) return null;
+
+    const libraryID = getSelectedLibraryId(zoteroPane);
+    if (typeof libraryID === 'number') {
+        return libraryID;
+    }
+
+    const collection = getSelectedCollection(zoteroPane);
+    if (collection && typeof collection.libraryID === 'number') {
+        return collection.libraryID;
+    }
+
+    const selectedItems = zoteroPane.getSelectedItems?.();
+    if (Array.isArray(selectedItems) && selectedItems.length > 0) {
+        const itemLibraryId = selectedItems[0]?.libraryID;
+        if (typeof itemLibraryId === 'number') {
+            return itemLibraryId;
+        }
+    }
+
+    const collectionsView = zoteroPane.collectionsView as any;
+    const selectedTreeRow = collectionsView?._selectedTreeRow || collectionsView?._view?.selectedTreeRow;
+    const treeLibraryId = selectedTreeRow?.ref?.libraryID ?? selectedTreeRow?.libraryID;
+    if (typeof treeLibraryId === 'number') {
+        return treeLibraryId;
+    }
+
+    return null;
+};
+
+/**
+ * Get the current library in the library view, or the library of the currently open file
+ * when in Zotero reader.
+ *
+ * @returns The current library object, or null if no library is available
+ */
+export function getCurrentLibrary(): _ZoteroTypes.Library.LibraryLike | null {
+	const win = Zotero.getMainWindow();
+	if (!win) {
+		return null;
+	}
+	
+	// Check if we're in a reader tab
+	if (win.Zotero_Tabs && win.Zotero_Tabs.selectedType === 'reader') {
+		const reader = Zotero.Reader.getByTabID(win.Zotero_Tabs.selectedID);
+		if (reader && reader.itemID) {
+			const item = Zotero.Items.get(reader.itemID);
+			if (item && item.libraryID) {
+				return Zotero.Libraries.get(item.libraryID) || null;
+			}
+		}
+		return null;
+	}
+	
+	// Otherwise, get library from library view
+	const zp = win.ZoteroPane;
+	if (zp && zp.collectionsView) {
+		const libraryID = getSelectedLibraryId(zp);
+		if (libraryID) {
+			return Zotero.Libraries.get(libraryID) || null;
+		}
+	}
+	
+	return null;
+}
+
+/**
+ * Creates a citation HTML string for a Zotero item
+ * @param {Zotero.Item|Number|String} itemOrID - Zotero item object or item ID
+ * @param {String} [page] - Optional page number or locator (e.g., "123", "123-145")
+ * @returns {String} HTML string with citation markup
+ */
+export function createCitationHTML(itemOrID: Zotero.Item | number | string, page?: string): string {
+    // Get the item if an ID was passed
+    const item = typeof itemOrID === 'object' ? itemOrID : Zotero.Items.get(itemOrID);
+    
+    if (!item) {
+        throw new Error('Item not found');
+    }
+    
+    // Handle attachments: cite the parent item if it exists
+    let itemToCite = item;
+    if (item.isAttachment()) {
+        if (item.parentID) {
+            itemToCite = Zotero.Items.get(item.parentID);
+            if (!itemToCite || !itemToCite.isRegularItem()) {
+                throw new Error('Attachment parent is not a regular item');
+            }
+        } else {
+            throw new Error('Cannot cite standalone attachments - they must have a parent item');
+        }
+    }
+    
+    if (!itemToCite.isRegularItem()) {
+        throw new Error('Item is not a regular item and cannot be cited');
+    }
+    
+    // Convert item to CSL JSON format
+    const itemData = Zotero.Utilities.Item.itemToCSLJSON(itemToCite);
+    
+    // Get the item URI
+    const uri = Zotero.URI.getItemURI(itemToCite);
+    
+    // Create citation item with optional page locator
+    const citationItem: any = {
+        uris: [uri],
+        itemData: itemData
+    };
+    
+    // Add page locator if provided
+    if (page) {
+        citationItem.locator = page;
+        citationItem.label = "page";
+    }
+    
+    // Create citation object
+    const citation = {
+        citationItems: [citationItem],
+        properties: {}
+    };
+    
+    // Format the citation text (e.g., "(Author, Year)" or "(Author, Year, p. 123)")
+    const formatted = Zotero.EditorInstanceUtilities.formatCitation(citation);
+    
+    // Create the HTML span element
+    const citationHTML = `<span class="citation" data-citation="${encodeURIComponent(JSON.stringify(citation))}">${formatted}</span>`;
+    
+    return citationHTML;
+}
+
+// Citation without page
+// const citation1 = createCitationHTML(item);
+
+// Citation with page number
+// const citation2 = createCitationHTML(item, "123");
+
+// Citation with page range
+// const citation3 = createCitationHTML(item, "123-145");
+
+// These helpers live in React-free modules so they are usable from the
+// esbuild-side bundle.
+export { safeIsInTrash, getItemDetailsForLogging } from "./zoteroItemUtils";
+export { safeFileExists, isLinkedUrlAttachment } from "./attachmentFiles";
+
+/**
+ * The fields duplicate detection compares, extracted and normalized once per item.
+ * Field access and diacritic stripping dominate the cost of an all-pairs comparison,
+ * so callers that compare many items should build these up front.
+ */
+interface ItemDuplicateSignature {
+    id: number;
+    itemTypeID: number;
+    /**
+     * Whether the raw field was set. Two items that both carry an identifier are
+     * decided by it alone, even if one of them fails to parse.
+     */
+    hasDoi: boolean;
+    hasIsbn: boolean;
+    /** Normalized DOI; empty when absent or blank. */
+    doi: string;
+    /** Cleaned ISBN; empty when absent or unparseable. */
+    isbn: string;
+    /** Normalized title; empty when the item has no title. */
+    title: string;
+    /** Leading year of the raw date field, or NaN. */
+    year: number;
+    /** "<lastname>|<first initial>" per creator, diacritic-free and lowercased. */
+    creators: string[];
+}
+
+function normalizeDuplicateTitle(title: string): string {
+    return Zotero.Utilities.removeDiacritics(title)
+        .replace(/[ !-/:-@[-`{-~]+/g, ' ')
+        .trim()
+        .toLowerCase();
+}
+
+function buildItemDuplicateSignature(item: Zotero.Item): ItemDuplicateSignature {
+    const doi = (item.getField('DOI') as string) || '';
+    const isbnRaw = (item.getField('ISBN') as string) || '';
+    const titleRaw = (item.getField('title', false, true) as string) || '';
+
+    return {
+        id: item.id,
+        itemTypeID: item.itemTypeID,
+        hasDoi: !!doi,
+        hasIsbn: !!isbnRaw,
+        doi: doi.trim().toUpperCase(),
+        isbn: (isbnRaw && Zotero.Utilities.cleanISBN(isbnRaw)) || '',
+        title: titleRaw ? normalizeDuplicateTitle(titleRaw) : '',
+        year: parseInt(item.getField('date', false, true) as string),
+        creators: item.getCreators().map((c) => {
+            const lastName = Zotero.Utilities.removeDiacritics(c.lastName || '').toLowerCase();
+            const firstInitial = c.firstName
+                ? Zotero.Utilities.removeDiacritics(c.firstName[0]).toLowerCase()
+                : '';
+            return `${lastName}|${firstInitial}`;
+        }),
+    };
+}
+
+/**
+ * Compare two precomputed signatures. See areItemsDuplicates for the rules.
+ */
+function areSignaturesDuplicates(a: ItemDuplicateSignature, b: ItemDuplicateSignature): boolean {
+    // Same item
+    if (a.id === b.id) return true;
+
+    // Different item types are not duplicates
+    if (a.itemTypeID !== b.itemTypeID) return false;
+
+    // An identifier decides the match on its own when both items set the field and at
+    // least one value survives normalization: equal values are a duplicate, differing
+    // values are not. DOIs are compared as written (case-insensitively); ISBNs are
+    // cleaned first, so unparseable text counts as differing. When neither value
+    // survives there is nothing to compare, so the fallback below applies.
+    if (a.hasDoi && b.hasDoi && (a.doi || b.doi)) return a.doi === b.doi;
+    if (a.hasIsbn && b.hasIsbn && (a.isbn || b.isbn)) return a.isbn === b.isbn;
+
+    // Fall back to title plus a corroborating year or creator
+    if (!a.title || a.title !== b.title) return false;
+
+    // Year match (within 1 year)
+    if (!isNaN(a.year) && !isNaN(b.year) && Math.abs(a.year - b.year) <= 1) {
+        return true;
+    }
+
+    // Creator match (at least one last name + first initial)
+    return a.creators.some((c) => b.creators.includes(c));
+}
+
+/**
+ * Check if two Zotero items are duplicates based on metadata similarity.
+ * Uses logic similar to Zotero's built-in duplicate detection:
+ * 1. Same ID = duplicate
+ * 2. Different item types = not duplicate
+ * 3. Matching DOI (case-insensitive) = duplicate
+ * 4. Matching ISBN (cleaned) = duplicate
+ * 5. Matching normalized title + (year within 1 OR matching creator) = duplicate
+ *
+ * @param item1 First Zotero item to compare
+ * @param item2 Second Zotero item to compare
+ * @returns true if items are considered duplicates
+ */
+export function areItemsDuplicates(item1: Zotero.Item, item2: Zotero.Item): boolean {
+    return areSignaturesDuplicates(
+        buildItemDuplicateSignature(item1),
+        buildItemDuplicateSignature(item2)
+    );
+}
+
+/**
+ * Deduplicate an array of Zotero items, prioritizing items from a preferred library.
+ * When duplicates are found, keeps the item from the preferred library (default: 1).
+ * 
+ * @param items Array of Zotero items to deduplicate
+ * @param preferredLibraryId Library ID to prioritize when choosing between duplicates (default: 1)
+ * @returns Deduplicated array of items
+ */
+/**
+ * Position of the first entry greater than `value` in an ascending array.
+ * Returns `sorted.length` when there is none.
+ */
+function firstIndexAbove(sorted: number[], value: number): number {
+    let low = 0;
+    let high = sorted.length;
+    while (low < high) {
+        const mid = (low + high) >>> 1;
+        if (sorted[mid] > value) high = mid;
+        else low = mid + 1;
+    }
+    return low;
+}
+
+export function deduplicateItems(
+    items: Zotero.Item[],
+    preferredLibraryId: number = 1
+): Zotero.Item[] {
+    if (items.length <= 1) return items;
+
+    // Extract each item's fields once instead of on every comparison.
+    const signatures = items.map(buildItemDuplicateSignature);
+
+    // Every rule in areSignaturesDuplicates needs an exact match on the id, the
+    // DOI, the ISBN or the normalized title, so only items sharing one of those
+    // can possibly pair. Bucketing on them replaces the all-pairs scan with a
+    // scan of the few real candidates — without it a broad search across
+    // several libraries compares tens of millions of pairs on Zotero's main
+    // thread. The predicate itself is unchanged and still decides every pair,
+    // so the result is identical to comparing all of them.
+    const buckets = new Map<string, number[]>();
+    const addToBucket = (key: string, index: number): void => {
+        const bucket = buckets.get(key);
+        if (bucket) bucket.push(index);
+        else buckets.set(key, [index]);
+    };
+
+    // The title bucket is split by how each item's DOI participates in the rule
+    // that outranks the title one, because a shared title is by far the easiest
+    // key for many items to collide on — thousands of "Editorial" rows are
+    // ordinary in a large library, and comparing all of them pairwise is the
+    // cost bucketing is supposed to remove.
+    //
+    // For a pair that both carry a DOI field and where at least one value
+    // survives normalization, the DOI decides the match outright. Equal DOIs
+    // are already paired by the `d` bucket, so those pairs need never be drawn
+    // from the title bucket at all — which is what makes a bucket of
+    // same-titled, separately-identified items cost nothing.
+    const DOI_LIVE = 0;    // carries a DOI that survived normalization
+    const DOI_BLANK = 1;   // carries a DOI field that normalized away
+    const DOI_ABSENT = 2;  // carries no DOI field
+    const doiClass = (signature: ItemDuplicateSignature): number => {
+        if (!signature.hasDoi) return DOI_ABSENT;
+        return signature.doi ? DOI_LIVE : DOI_BLANK;
+    };
+    const TITLE_PREFIX = ['tL', 'tZ', 'tN'];
+
+    signatures.forEach((signature, index) => {
+        // Empty values are never a match (the predicate requires a surviving
+        // value on both sides), so they must not become a shared bucket key.
+        addToBucket(`#${signature.id}`, index);
+        if (signature.doi) addToBucket(`d${signature.doi}`, index);
+        if (signature.isbn) addToBucket(`i${signature.isbn}`, index);
+        if (signature.title) {
+            addToBucket(`${TITLE_PREFIX[doiClass(signature)]}${signature.title}`, index);
+        }
+    });
+
+    /**
+     * Title-bucket keys holding items whose match with `signature` is *not*
+     * already settled by the DOI rule, and so still has to be examined.
+     */
+    const titleKeysFor = (signature: ItemDuplicateSignature): string[] => {
+        if (!signature.title) return [];
+        switch (doiClass(signature)) {
+            // A live DOI settles the pair against anything else carrying the
+            // field, so only items with no DOI at all remain.
+            case DOI_LIVE:
+                return [`tN${signature.title}`];
+            // A blank DOI settles nothing against another blank or an absent
+            // one, but is settled by any live DOI.
+            case DOI_BLANK:
+                return [`tZ${signature.title}`, `tN${signature.title}`];
+            // No DOI field, so the DOI rule never applies: everything remains.
+            default:
+                return [`tL${signature.title}`, `tZ${signature.title}`, `tN${signature.title}`];
+        }
+    };
+
+    const result: Zotero.Item[] = [];
+    const processedIndices = new Set<number>();
+
+    for (let i = 0; i < items.length; i++) {
+        if (processedIndices.has(i)) continue;
+
+        let bestItem = items[i];
+
+        // Merge i's buckets rather than collecting and sorting them. Each
+        // bucket is already ascending, so a k-way merge over at most four of
+        // them yields each candidate once, in ascending index order, without
+        // allocating or sorting per item — a bucket whose members mostly do not
+        // pair (same title, differing DOIs) is otherwise re-sorted on every
+        // pass, which costs more than the all-pairs scan this replaces.
+        // Ascending order is what keeps the surviving copy the same one the
+        // all-pairs scan would have kept.
+        const lists: number[][] = [];
+        const cursors: number[] = [];
+        for (const key of [
+            `#${signatures[i].id}`,
+            signatures[i].doi && `d${signatures[i].doi}`,
+            signatures[i].isbn && `i${signatures[i].isbn}`,
+            ...titleKeysFor(signatures[i]),
+        ]) {
+            if (!key) continue;
+            const bucket = buckets.get(key);
+            if (!bucket) continue;
+            const start = firstIndexAbove(bucket, i);
+            if (start < bucket.length) {
+                lists.push(bucket);
+                cursors.push(start);
+            }
+        }
+
+        for (;;) {
+            let j = -1;
+            for (let b = 0; b < lists.length; b++) {
+                if (cursors[b] >= lists[b].length) continue;
+                const value = lists[b][cursors[b]];
+                if (j === -1 || value < j) j = value;
+            }
+            if (j === -1) break;
+            // Advance every cursor sitting on it, so a candidate held by
+            // several of i's buckets is still examined only once.
+            for (let b = 0; b < lists.length; b++) {
+                if (cursors[b] < lists[b].length && lists[b][cursors[b]] === j) cursors[b]++;
+            }
+
+            if (processedIndices.has(j)) continue;
+
+            const otherItem = items[j];
+            if (areSignaturesDuplicates(signatures[i], signatures[j])) {
+                processedIndices.add(j);
+
+                // Prefer item from preferred library
+                if (otherItem.libraryID === preferredLibraryId && bestItem.libraryID !== preferredLibraryId) {
+                    bestItem = otherItem;
+                }
+            }
+        }
+
+        result.push(bestItem);
+    }
+
+    return result;
+}
+
+
+/**
+ * Sanitize creator objects for Zotero's setCreators().
+ * Zotero rejects creators that have both 'name' and 'firstName'/'lastName'
+ * properties, even if one side is null. LLM output often includes name: null
+ * on person creators.
+ */
+export function sanitizeCreators(creators: CreatorJSON[]): CreatorJSON[] {
+    return creators.map(c => {
+        const hasPersonFields = (c.firstName != null && c.firstName !== '') ||
+                                (c.lastName != null && c.lastName !== '');
+        if (hasPersonFields) {
+            const { name, ...rest } = c as any;
+            return rest as CreatorJSON;
+        }
+        if (c.name != null && c.name !== '') {
+            const { firstName, lastName, ...rest } = c as any;
+            return rest as CreatorJSON;
+        }
+        return c;
+    });
+}
+
+/**
+ * Primary fields that CAN be set via item.setField().
+ * These are system fields that Zotero allows modification of directly.
+ */
+export const SETTABLE_PRIMARY_FIELDS = [
+    'itemTypeID',
+    'dateAdded', 
+    'dateModified',
+    'version',
+    'synced',
+    'createdByUserID',
+    'lastModifiedByUserID'
+] as const;
+
+/**
+ * Checks if a field can technically be edited/set via item.setField() for a given item.
+ * Returns true only for fields that can actually be modified through setField().
+ */
+export function canSetField(item: Zotero.Item, field: string): boolean {
+    // 1. Check if it's a settable primary field
+    if ((SETTABLE_PRIMARY_FIELDS as readonly string[]).includes(field)) {
+        return true;
+    }
+    
+    // 2. Reject all other primary fields (they're read-only or have special setters)
+    if (field === 'id' || Zotero.Items.isPrimaryField(field)) {
+        return false;
+    }
+
+    const itemTypeID = item.itemTypeID;
+    
+    // 3. Resolve the field ID (handles name -> ID conversion)
+    let fieldID = Zotero.ItemFields.getID(field);
+    if (!fieldID) return false;
+
+    // 4. Special handling for notes
+    if (item.isNote()) {
+        const fieldName = Zotero.ItemFields.getName(fieldID);
+        return fieldName === 'title';
+    }
+
+    // 5. Resolve base field mappings
+    fieldID = Zotero.ItemFields.getFieldIDFromTypeAndBase(itemTypeID, fieldID) || fieldID;
+
+    // 6. Check the schema for validity
+    return Zotero.ItemFields.isValidForType(fieldID, itemTypeID);
+}
+
+/**
+ * Find the base field ID for a field, independent of item type.
+ *
+ * `Zotero.ItemFields.getBaseIDFromTypeAndField()` is type-scoped — it only
+ * resolves a label that is already valid for the supplied item type. To find
+ * the base field for a label that may belong to a different type, probe every
+ * item type until one owns the label. Returns false for fields that are not
+ * base-mapped (e.g. ISBN, DOI).
+ */
+function findBaseFieldID(fieldID: number): number | false {
+    // A base field is its own base.
+    if (Zotero.ItemFields.isBaseField(fieldID)) {
+        return fieldID;
+    }
+    // Fields that are never base-mapped have no base field — skip the scan.
+    if (!Zotero.ItemFields.getBaseMappedFields().includes(fieldID)) {
+        return false;
+    }
+    for (const itemType of Zotero.ItemTypes.getAll()) {
+        try {
+            const baseID = Zotero.ItemFields.getBaseIDFromTypeAndField(itemType.id, fieldID);
+            if (baseID) return baseID;
+        } catch {
+            // Field is invalid for this type — keep probing.
+        }
+    }
+    return false;
+}
+
+/**
+ * Resolve a field name to the variant valid for a specific item type, using
+ * Zotero's base-field mappings.
+ *
+ * Zotero exposes several display labels over one shared base field — e.g.
+ * `bookTitle`, `websiteTitle`, and `proceedingsTitle` all map to the base
+ * field `publicationTitle`. An agent may supply a label belonging to the
+ * wrong item type (e.g. `bookTitle` on a `journalArticle`); this resolves
+ * such a label to the equivalent field for the target type.
+ *
+ * Returns:
+ *   - `field` unchanged when it is already valid for the item type
+ *   - the type-specific equivalent when `field` shares a base field that the
+ *     type also exposes (e.g. `bookTitle` -> `publicationTitle`)
+ *   - `null` when there is no equivalent for this type — a genuine mismatch
+ *     (e.g. `pages` on `webpage`, or `publicationTitle` on `document`)
+ */
+export function resolveFieldForItemType(itemTypeID: number, field: string): string | null {
+    const fieldID = Zotero.ItemFields.getID(field);
+    if (!fieldID) return null;
+
+    // Already valid for this type — no remap needed.
+    if (Zotero.ItemFields.isValidForType(fieldID, itemTypeID)) {
+        return field;
+    }
+
+    // Discover the base field shared by the supplied label.
+    const baseID = findBaseFieldID(fieldID);
+    if (!baseID) return null;
+
+    // Resolve the base field to this type's equivalent.
+    const equivID = Zotero.ItemFields.getFieldIDFromTypeAndBase(itemTypeID, baseID);
+    if (!equivID || !Zotero.ItemFields.isValidForType(equivID, itemTypeID)) {
+        return null;
+    }
+
+    return Zotero.ItemFields.getName(equivID);
+}
+
+/** The creator vocabulary Zotero's schema defines for one item type. */
+export interface CreatorTypeInfo {
+    /** Every creator type valid for the item type, in Zotero's schema order. */
+    valid: string[];
+    /**
+     * The item type's primary creator type — the one that fills the `author`
+     * role for that type. `null` when the schema defines no primary.
+     */
+    primary: string | null;
+}
+
+/**
+ * Resolve the creator types Zotero's schema allows for an item type.
+ *
+ * Creator vocabularies are per item type, and `author` is *not* universal: a
+ * patent takes `inventor`, a film `director`, a presentation `presenter`, a
+ * map `cartographer`, and so on. `item.toJSON()` exposes an item's current
+ * creators but never the set of types its schema permits, so any consumer
+ * that has to choose a creator type needs this.
+ *
+ * Returns `null` for item types that take no creators at all (attachment,
+ * note, annotation).
+ */
+export function getCreatorTypeInfo(itemTypeID: number): CreatorTypeInfo | null {
+    let types: { id: number; name: string }[];
+    try {
+        types = Zotero.CreatorTypes.getTypesForItemType(itemTypeID);
+    } catch {
+        return null;
+    }
+    if (!types || types.length === 0) return null;
+
+    let primary: string | null = null;
+    try {
+        // getPrimaryIDForType() returns false when the type has no primary.
+        const primaryID = Zotero.CreatorTypes.getPrimaryIDForType(itemTypeID);
+        primary = primaryID ? Zotero.CreatorTypes.getName(primaryID) : null;
+    } catch {
+        // A missing primary is not fatal — the valid list still stands alone.
+    }
+
+    return { valid: types.map(t => t.name), primary };
+}
+
+/**
+ * Get the `language` field for a Zotero item by library ID + key.
+ *
+ * Falls back to the parent item if the target is not a regular item
+ * (attachment, note, annotation). Returns null if no language is set
+ * or the item cannot be resolved.
+ *
+ * The returned value is the raw, unnormalized field text — callers that
+ * need an ISO 639-1 code should pass it through
+ * `normalizeLanguageCode` from `src/beaver-extract/SentencexSplitter.ts`.
+ */
+export async function getItemLanguage(
+    libraryID: number,
+    key: string
+): Promise<string | null> {
+    if (libraryID === UNRESOLVED_LIBRARY_ID) return null;
+    const item = await Zotero.Items.getByLibraryAndKeyAsync(libraryID, key);
+    if (!item) return null;
+
+    // Attachments / notes / annotations don't carry a language field —
+    // walk up to the parent regular item if there is one.
+    const target = item.isRegularItem()
+        ? item
+        : (item.parentItemID ? await Zotero.Items.getAsync(item.parentItemID) : null);
+    if (!target || !target.isRegularItem()) return null;
+
+    await target.loadDataType('itemData');
+    const value = (target.getField('language') as string | undefined)?.trim();
+    return value ? value : null;
+}

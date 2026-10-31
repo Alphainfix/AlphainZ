@@ -1,0 +1,53 @@
+{
+ "paper": "delta-sediment",
+ "queries": [
+  {
+   "id": "delta-sediment-text1",
+   "kind": "text",
+   "lang": "en",
+   "page": 1,
+   "query": "According to depth soundings, how much of what the river carries gets caught behind the lower barrier?",
+   "target_quote": "Bathymetric surveys of the Kessel reservoir imply a trap efficiency near 85 percent."
+  },
+  {
+   "id": "delta-sediment-text2",
+   "kind": "text",
+   "lang": "en",
+   "page": 2,
+   "query": "How much fresh material would the low-lying land need annually just to hold its height against the sea?",
+   "target_quote": "Over 1,450 square kilometres, and with a dry bulk density of 1.4 tonnes per cubic metre, keeping pace would require about 14 million tonnes of new deposit each year, more than the river now delivers in total."
+  },
+  {
+   "id": "delta-sediment-text3",
+   "kind": "text",
+   "lang": "zh",
+   "page": 2,
+   "query": "海岸线还在向外长的那几段，都集中在哪里？",
+   "target_quote": "The few transects that advanced all lie within five kilometres of the Main Pass mouth, where most of the remaining load now enters the sea."
+  },
+  {
+   "id": "delta-sediment-keyword1",
+   "kind": "keyword",
+   "lang": "en",
+   "page": 2,
+   "query": "flood-control sill Salt Creek",
+   "target_quote": "The Heron Pass has been shoaling for three decades, and a flood-control sill at the head of Salt Creek admits water only during large floods."
+  },
+  {
+   "id": "delta-sediment-figure1",
+   "kind": "figure",
+   "lang": "en",
+   "page": 1,
+   "figure": 1,
+   "query": "a hand-drawn style plan of a river fanning into three outlets at the sea, with fat arrows of unequal width and a shore traced partly in two colours"
+  },
+  {
+   "id": "delta-sediment-figure2",
+   "kind": "figure",
+   "lang": "zh",
+   "page": 2,
+   "figure": 2,
+   "query": "一张柱状直方图，左边大多是红色的柱子，右边只有少数几根绿色的柱子，中间有一条竖着的虚线"
+  }
+ ]
+}

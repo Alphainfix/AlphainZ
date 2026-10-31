@@ -1,153 +1,193 @@
-# ![](/addon/content/icons/beaver_nomargin.png) Beaver
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/header-en-dark.svg">
+    <img alt="AlphainZ: your literature research partner. Find new papers, highlight key points, sync across devices, ask about any passage, semantic search of text and figures." src="docs/images/header-en-light.svg" width="643">
+  </picture>
+</p>
 
-[![Create Beaver Account](https://img.shields.io/badge/Beaver_%F0%9F%A6%AB-Create_Account-red)](https://www.beaverapp.ai)
-[![Beaver Documentation](https://img.shields.io/badge/Documentation-blue)](https://www.beaverapp.ai/docs)
+<p align="center">
+  <a href="https://github.com/Alphainfix/AlphainZ/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/Alphainfix/AlphainZ?style=flat-square&color=8c3517"></a>
+  <a href="https://www.zotero.org"><img alt="Zotero 7 or later" src="https://img.shields.io/badge/Zotero-7%2B-555?style=flat-square"></a>
+  <a href="LICENSE"><img alt="License: AGPL-3.0" src="https://img.shields.io/badge/license-AGPL--3.0-blue?style=flat-square"></a>
+</p>
 
-[![zotero target version](https://img.shields.io/badge/Zotero-7+-green?style=flat-square&logo=zotero&logoColor=CC2936)](https://www.zotero.org)
-[![Using Zotero Plugin Template](https://img.shields.io/badge/Using-Zotero%20Plugin%20Template-blue?style=flat-square&logo=github)](https://github.com/windingwind/zotero-plugin-template)
+<p align="center">
+  <a href="https://alphain.app/z/">Website</a> ·
+  <a href="https://github.com/Alphainfix/AlphainZ">GitHub</a> ·
+  <a href="https://github.com/Alphainfix/AlphainZ/releases/latest">Download</a> ·
+  <a href="https://github.com/Alphainfix">Author: Alphainfix</a>
+</p>
 
-**Beaver is an AI agent that lives inside Zotero.** It reasons over your library, the paper you're reading, and the wider literature to answer research questions with sentence‑level citations. It can annotate your PDFs, organize your library, and write notes, and much more, all without leaving Zotero.
+<p align="center"><b>English</b> · <a href="README.zh-CN.md">简体中文</a></p>
 
-Beaver combines two parts:
+**Free and open source. Customize it your way.** AlphainZ is a research assistant inside Zotero. You chat
+with it using your own models and API keys, and there is no account to sign up for. Part of its front end
+is forked from [Beaver](https://github.com/jlegewie/beaver-zotero) by Joscha Legewie; its back end lets you
+talk to the model providers directly, with no one else's server in between: simple, safe and [affordable](#cost).
 
-1. **An advanced research agent.** An agentic system for literature retrieval and synthesis over *your* library. It composes strategies (metadata queries, semantic search, full‑text analysis, and web search) and iteratively refines its approach, reasoning over your query, the paper you're reading, and your broader library to produce grounded answers.
+<p align="center">
+  <img alt="Left: the AlphainZ pane in Zotero's PDF reader. A highlighted sentence was sent to AlphainZ, which answers 'Why the underestimate?' citing the paper and offers to save the answer to the highlight. Right: semantic search accuracy on a demo library with Gemini Embedding 2 (semantic search: the best match for 18 of 18 questions, against 0 for Zotero's own search; describing a figure: in the top 3 matches 11 times out of 12), and how AlphainZ connects your Zotero library directly to the model you choose." src="docs/images/overview-en.png">
+</p>
 
-2. **Native Zotero integration.** Beaver runs *inside* Zotero, using your curated library and reading context. When you're in a PDF, Beaver knows which page you're on, can highlight passages and add notes directly to the document, and relates what you're reading to the rest of your library — without disrupting your workflow.
+## What it does
 
-Beaver is available for free with your own API key or you can subscribe to use Beaver without an API key.
+### Ask your whole library
 
----
+AlphainZ decides how to look, and combines:
 
-## Key Features
+- **A vector index of your full texts.** Every PDF is split into passages and embedded, either by a cloud
+  model (Gemini Embedding 2, OpenAI) or by one on your own computer (EmbeddingGemma 2 in Ollama). Search
+  matches by meaning: a question finds the passages that mean the same thing even when they share no
+  words, or are in another language. Indexing runs in the background and can be switched off.
+- **Semantic figure search.** With an embedding model that also reads images, every page is indexed as a
+  picture as well: describe a figure and it matches the page.
+- **Text recognition down to the sentence.** The text of each PDF is read with the position of every
+  sentence, so answers cite the sentence they rest on, and a click opens the PDF there with it
+  highlighted. Scanned pages and figures are read from the page image by models that see images.
+- Metadata (authors, years, journals), keyword search, and browsing by collection or tag.
 
-### Chat with your entire library
+### Ask about what you are reading
 
-Ask questions about your research and get answers drawn from your whole library. Beaver searches across metadata, topics, and the full content of your PDFs. It combines precise keyword matching with semantic search that understands meaning to give grounded answers. [Learn more](https://www.beaverapp.ai/docs/searching)
+Select a passage, a figure or a table and ask from the popup, or ask about the whole paper in the side
+pane.
 
-### Sentence‑level citations
+### Keep the answer with the highlight
 
-<img src="https://www.beaverapp.ai/_next/image?url=%2Fassets%2Fcitation-sentence.png&w=640&q=75" align="right" width="320" alt="AI-powered PDF annotations" />
+A question asked from a selection is anchored to a highlight. When the answer is in, a card at the bottom
+of the side pane (in the screenshot above) saves the question and the answer into the highlight's comment:
+they stay in the PDF, sync with Zotero, and reopen the conversation when you click the highlight.
 
-Beaver cites its sources **sentence by sentence**, not just by page, so you can trace any claim back to exactly where it came from. Hover to preview the source text, or click to open the PDF with the supporting sentences highlighted.
+### And more
 
-The citation system is tuned with dedicated evaluations focused on open‑ended research questions, optimizing for the right paper, the exact passage, and evidence that genuinely supports the claim.
+- **Write into Zotero.** Add highlights and comments to the PDF, write notes, tag items and file them into
+  collections; AlphainZ asks before each change.
+- **Look beyond your library.** Search the literature through OpenAlex and add what you find to a
+  collection.
+- **Keep long chats affordable.** Older exchanges are summarized as a chat grows, and every question has
+  limits on output and steps.
+- **Use multiple computers.** Conversations and settings can sync through Zotero or a folder you choose
+  (iCloud Drive, OneDrive, ...). API keys never leave the computer you entered them on.
+- **Serve other agents.** Turn on Settings → Advanced → MCP Server, and AlphainZ writes a small bridge,
+  `alphainz-mcp-stdio.mjs`, into your Zotero data folder. Add it to a client such as Claude Desktop as a
+  stdio server run with `node`, and the client can search your library while Zotero is open.
 
-### Reading assistant
+## Accuracy of semantic image and text search
 
-<!-- <img src="https://www.beaverapp.ai/_next/image?url=%2Fassets%2Freading-assistant.png&w=640&q=75" align="right" width="320" alt="Reading assistant features" /> -->
+**A demonstration library.** Six synthetic papers ([`docs/benchmark`](docs/benchmark)) and 36 questions,
+run through AlphainZ's search with no language model involved. The semantic questions avoid each paper's
+own words, so only a match by meaning can find them:
 
-Beaver is integrated directly inside your PDF reader, so you can work without ever leaving the page:
+| Question | AlphainZ with<br>EmbeddingGemma&nbsp;2<br>(local, free) | AlphainZ with<br>Gemini&nbsp;Embedding&nbsp;2<br>(your own API key) | Zotero's<br>built&#8209;in&nbsp;search |
+|---|:-:|:-:|:-:|
+| Semantic search,<br>English questions (12) | 12 of 12 best matches | 12 of 12 best matches | 0 of 12 matched |
+| Semantic search, Chinese<br>questions on English papers (6) | 6 of 6 best matches | 6 of 6 best matches | 0 of 6 matched |
+| Describing a figure (12) | 5 best matches,<br>8 top-3 matches | 6 best matches,<br>11 top-3 matches | not possible |
+| Exact keywords (6) | 5 of 6 best matches¹ | 5 of 6 best matches¹ | 6 of 6 matched |
 
-- **Ask about this paper.** Answers grounded in the open PDF, with sentence‑level citations.
-- **Understand text, figures & tables.** Select a passage, or attach a figure with an area annotation, for an instant explanation.
-- **Annotate the PDF.** Ask Beaver to highlight key findings or anything relevant to your work.
-- **Connect it to your library.** Ask whether the rest of your library confirms, contradicts, or extends this paper's claims.
+¹ Semantic search alone. AlphainZ also searches by keyword, which matches the sixth.
 
-[Learn more](https://www.beaverapp.ai/docs/zotero-reader)
+**A real library.** On a working research library of 249 PDFs (18,986 passages), with 15 semantic
+questions (8 in English, 7 in Chinese), the paper holding the answer was the best match 12 times with
+EmbeddingGemma 2 and 11 times with Gemini Embedding 2 (mean reciprocal rank 0.875 and 0.856, where 1 means
+the right answer always comes first; OpenAI's text-embedding-3-large 0.813). With EmbeddingGemma 2, the
+best match for each of the 7 Chinese questions was its English passage. Indexing that library cost
+nothing on a MacBook Air (about 16 passages a second) and about $1 with Gemini.
 
-### AI‑powered PDF annotations
+## Compared with similar tools
 
-<img src="https://www.beaverapp.ai/assets/highlight-annotations.png" align="right" width="320" alt="AI-powered PDF annotations" />
+| | AlphainZ | Beaver | Zotero GPT | PapersGPT |
+|---|:-:|:-:|:-:|:-:|
+| Works inside Zotero, on your own library | ✅ | ✅ | ✅ | ✅ |
+| Searches the full text of the whole library | ✅ | ✅¹ | ❌² | ✅ |
+| Matches a figure from a description | ✅ | ❌ | ❌ | ❌ |
+| Cites the sentence and opens the PDF there | ✅ | ✅ | ❌ | 🟡 paper only |
+| Writes highlights and notes into Zotero | ✅ | ✅ | 🟡 Pro only | 🟡 notes only |
+| Your own API key, any OpenAI-compatible endpoint | ✅ | ✅ | ✅ | ✅ |
+| Local models through Ollama | ✅ | ❌³ | – | ✅ |
+| No account, no subscription | ✅ | ❌ | – | – |
+| Open source | ✅ AGPL | ✅ AGPL | 🟡 core only⁴ | ✅ AGPL |
 
-Just ask Beaver to *"highlight the key findings"* or *"mark everything relevant to my project,"* and it adds highlights and notes to the PDF for you. Annotations support color and comments, and you can have Beaver organize them by color or tag:
+✅ offered · 🟡 partly · ❌ not offered, according to the product's own pages · – not stated. Checked in late October 2026 from each project's README and Zotero forum thread; corrections are welcome.<br>
+¹ Semantic search of full texts on paid plans; the free plan searches titles and abstracts semantically.<br>
+² Asks about the open PDF or the items you select.<br>
+³ Requests run through Beaver's servers.<br>
+⁴ The core is AGPL; Pro features are closed.
 
-> *"Highlight the methods in blue, the results in yellow, and the conclusions in green."*
+General chat-with-PDF services such as NotebookLM or ChatPDF work on files uploaded to their cloud,
+outside Zotero.
 
-Because Beaver is a Zotero plugin, everything it creates is a **real Zotero annotation**. It lives in your reader, syncs with your library, and stays fully editable. All changes require your approval by default. [Learn more](https://www.beaverapp.ai/docs/annotations)
+## Models
 
-### Annotation search
+Built in: DeepSeek, OpenRouter, Zhipu (BigModel), Google Gemini, OpenAI, and Ollama on your own computer.
+Anything else that speaks the OpenAI API, such as a proxy, an institutional gateway or a local server, can
+be added by hand, on Chat Completions or on the Responses API.
 
-Beaver can search annotations across your **entire library**, not just the document you're reading:
+Each model can be told which thinking levels it takes (the Thinking menu then offers exactly those), how
+large its context window is (a long chat is summarized before it fills 70% of it), and the most output one
+answer may use.
 
-> *"Summarize all blue annotations from the last week."*
-> *"List all annotations in my Dissertation collection tagged 'social-capital'."*
+## Cost
 
-Search by highlighted text, comment, tag, color, annotation type (highlight, underline, note), author, attachment, collection, and creation/modification date.
+AlphainZ itself is free; what you pay is the model provider's token price. Averaged over 62 real
+questions (about 80,000 tokens read per question, 83% of them from the provider's cache, and about 3,000
+written), at the providers' list prices:
 
-### Read, write & edit notes
+| Model | Per question | 100 questions a day |
+|---|:-:|:-:|
+| DeepSeek V4.1 Flash | about $0.004<br>($0.008 at peak hours) | about $0.40 |
+| OpenAI gpt-6-luna | about $0.004 | about $0.40 |
 
-Beaver can create Zotero notes, read your existing ones, and edit them with full support for citations and math. Every edit requires your approval and can be undone. [Learn more](https://www.beaverapp.ai/docs/notes)
+So even a heavy day of 100 questions costs about 40 cents. A local model in Ollama costs nothing.
+Indexing your library is separate: free with EmbeddingGemma 2 on your own computer, and about $1 per 250
+papers with Gemini Embedding 2.
 
-### Organize & edit your library
+List prices as of late October 2026. DeepSeek charges double on weekdays during Beijing business hours
+(01:00–04:00 and 06:00–10:00 UTC).
 
-Beaver can help you manage collections, add tags, fix metadata, and keep your library organized. All changes require your approval. [Learn more](https://www.beaverapp.ai/docs/library-management)
+## Install
 
-### Discover new research
+1. Download the `.xpi` file from the [latest release](https://github.com/Alphainfix/AlphainZ/releases/latest).
+2. In Zotero 7 or later: Tools → Plugins → the gear icon → Install Plugin From File…, and choose the file.
+3. Open AlphainZ from its toolbar button, then Settings → Model → Add provider: paste a key and pick a
+   model.
 
-Search over **240 million scholarly works** outside your Zotero library. Understand citation patterns and find papers to expand your collection. Beaver always prioritizes your library and only reaches for external sources when your library has limited information or when you ask. [Learn more](https://www.beaverapp.ai/docs/web-search)
+Zotero checks this repository for new versions by itself.
 
-### MCP server
+## Privacy
 
-Beaver ships an [MCP server](https://www.beaverapp.ai/docs/mcp-server) that exposes your library to MCP‑compatible clients (e.g. Claude Desktop). It includes read tools for searching and reading your library and notes, plus `create_note` an additive write tool that creates new notes without modifying existing data.
-
-### Your library, your control
-
-- **Your library as a knowledge base:** Beaver prioritizes your curated Zotero library and sources you trust, not generic web results.
-- **Privacy:** Your data stays yours. We don't train models on your data without explicit opt‑in, and we're building local storage options.
-- **Free version:** A fully‑featured free tier supports local file processing with metadata and semantic search over titles and abstracts. [Learn more](https://www.beaverapp.ai/pricing)
-
----
-
-## Accuracy and Reliability through Evaluations
-
-We continuously evaluate Beaver's accuracy and performance on tasks that matter most for researchers including factual correctness (whether claims are accurate based on research findings), citation support (whether claims are supported by the correct citation down to the exact passage in the source document), retrieval (finding the right information) and more. As Beaver evolves, we will share more benchmarks and evaluation results.
-
-As an example, here is one early test based on a modified version of the LitQA2 benchmark with 197 multiple‑choice questions from Future House's [LAB‑Bench](https://github.com/Future-House/LAB-Bench). This benchmark emphasizes literature retrieval: answers are located in the main text of a single paper rather than abstracts or general knowledge.
-
-![Figure: Performance comparison for Beaver Preview](/docs/litqa2-accuracy-preview.png)
-
-On this task, Beaver's retrieval from a pre‑defined document set performed strongly. For context, we also compared against large models with general internet search tools. These are _not directly comparable_, but the contrast gives a sense of how retrieval on a pre‑defined library (such as your Zotero library) performs compared to general internet search.
-
-This is only one dimension of evaluation (and not the hardest). We will share more benchmarks and evaluation results over time.
-
-## Getting started
-
-1. Create an account and download Beaver [here](https://www.beaverapp.ai/join).
-2. In Zotero, go to **Tools → Add‑ons → Install Add‑on From File**.
-3. Select the downloaded `.xpi` file.
-4. Open Beaver using the magic wand icon in the top‑right corner, or press **Cmd (macOS) / Ctrl (Windows) + J**.
-
-More details are in the [documentation](https://www.beaverapp.ai/docs/getting-started).
-
-## Connection problems (corporate networks, VPNs, IT administrators)
-
-If you see **"Connection Failed — Could not connect to the server"**, the most common cause is a corporate proxy, firewall, or TLS-inspection appliance blocking Beaver's WebSocket traffic. In short, Beaver needs outbound HTTPS **and** WebSocket Secure (`wss://`) on TCP 443 to the Beaver API host, plus HTTPS to `*.supabase.co` for sign-in.
-
-The full guide — including the quick self-diagnosis steps, what each error code means, and the exact allowlist/TLS-bypass details for your IT team — is here:
-
-**[Connection troubleshooting](https://www.beaverapp.ai/docs/connection-troubleshooting)**
+- Your questions, and the parts of papers they need, go from your computer straight to the model provider
+  you chose. There is no AlphainZ server.
+- API keys are stored in Zotero's `prefs.js` on the computer you entered them on, in plain text, like other
+  Zotero preferences.
+- The search index, conversations and caches stay in `alphainz.sqlite` in your Zotero data folder.
+- Literature search sends only the search terms (and your OpenAlex key, if you added one) to OpenAlex.
 
 ## Building from source
 
 ```bash
-git clone https://github.com/jlegewie/beaver-zotero.git
-cd beaver-zotero
+git clone https://github.com/Alphainfix/AlphainZ.git
+cd AlphainZ/plugin
 npm install
-npm run build
+cp .env.production.example .env.production
+npm run build        # writes .scaffold/build/alphain-z.xpi
+npm test
 ```
 
-The build requires environment variables for the Supabase URL, anon key, and API endpoints. Create a `.env.production` file or set them in your environment:
+The values in `.env.production` are inert placeholders: a component inherited from Beaver still
+constructs a client it never uses, and fails to load without them.
 
-```
-SUPABASE_URL=<supabase-url>
-SUPABASE_ANON_KEY=<supabase-anon-key>
-API_BASE_URL=<api-url>
-WEBAPP_BASE_URL=<webapp-url>
-```
+## License
 
-The built XPI will be in `.scaffold/build/`.
+AlphainZ is free software under the [GNU Affero General Public License v3.0 or later](LICENSE), as is
+Beaver, on which it is based. The screenshots and the benchmark use synthetic papers written for this
+repository.
 
-**Source maps:** To generate source maps for the production React bundle, change `devtool` in `webpack.config.js` from `false` to `'source-map'` and rebuild:
+- [Beaver](https://github.com/jlegewie/beaver-zotero), by Joscha Legewie: the original plugin.
+- [MuPDF](https://mupdf.com), by Artifex: PDF text and rendering (AGPL-3.0).
+- [sentencex](https://github.com/wikimedia/sentencex), by Santhosh Thottingal: sentence segmentation (MIT).
+- [Zotero Plugin Template](https://github.com/windingwind/zotero-plugin-template): the build scaffold.
 
-```js
-// webpack.config.js, line 37
-devtool: mode === 'development' ? 'inline-source-map' : 'source-map',
-```
-
-This produces a `reactBundle.js.map` that maps back to the original TypeScript source. The esbuild bundle (`content/scripts/beaver.js`) is not minified and is readable as‑is.
-
-## System Requirements
-
-- Zotero 7.0 or later
-- Internet connection for cloud features
-- Modern web browser for account management
+Comparison sources: [Beaver](https://github.com/jlegewie/beaver-zotero) and its
+[forum thread](https://forums.zotero.org/discussion/126573/),
+[Zotero GPT](https://github.com/MuiseDestiny/zotero-gpt),
+[PapersGPT](https://github.com/papersgpt/papersgpt-for-zotero).

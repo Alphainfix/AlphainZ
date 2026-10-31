@@ -1,0 +1,1168 @@
+/*
+ * Appearance: themes, and the typography controls that go with them.
+ *
+ * The shared sheets are built entirely on tokens the *host* supplies —
+ * `--fill-primary` … `--fill-senary`, `--material-sidepane`, `--accent-blue`,
+ * `--color-border50`. That is what lets the plugin follow Zotero's own light
+ * and dark themes for free, and it is also the seam: redefining those same
+ * names inside the plugin's own root recolours every component at once,
+ * without a single component knowing a theme exists.
+ *
+ * So a theme here is a block of custom properties on `.alphainz-root`, nothing
+ * more; every pane carries one (Fresh unless another is chosen). The unthemed
+ * look underneath is Beaver's own and is no longer offered.
+ *
+ * Two rules for anyone adding to this file:
+ *
+ *   1. Override the *tokens*, not the components, wherever a token exists.
+ *      A rule that hard-codes a colour is a rule that will be wrong in the
+ *      other palette, and wrong again in dark.
+ *   2. Every override below was checked against a real pane, not guessed.
+ *      The class names in the shared sheets are not the ones you would
+ *      predict — the composer is `.user-message-display`, a citation is
+ *      `.markdown span.zotero-citation`, a chip is `.variant-outline`. If you
+ *      add a rule for a selector that does not exist, nothing complains; it
+ *      just quietly does nothing. Dump the pane and check.
+ *
+ * Typography is separate from colour on purpose: someone may want the warm
+ * palette at Zotero's own size, or bigger text in Fresh. Size and
+ * leading arrive as inline custom properties set from the preferences, so they
+ * are a slider rather than a list of classes.
+ */
+
+/* ==========================================================================
+ * Typography — applies in every theme.
+ * ========================================================================== */
+
+.alphainz-root {
+    /* Set inline by `applyAppearance`; these are the fallbacks. */
+    font-size: var(--alphainz-font-size, 13px);
+    line-height: var(--alphainz-line-height, 1.55);
+}
+
+/*
+ * The composer and the chat container each hard-code a family, and the
+ * composer also hard-codes 13px. Both predate this file and both would
+ * otherwise sit in the old font at the old size while everything around them
+ * moved — the one place where that is most obvious, since it is where you
+ * type. Handing them `inherit` costs nothing at the defaults, which resolve to
+ * exactly what they had.
+ *
+ * Its `line-height: 1.25` is left alone deliberately: the auto-grow height is
+ * `calc(1.25em + 3px)`, so leading and box height are the same number there.
+ */
+.alphainz-root .chat-input,
+.alphainz-root .alphainz-composer-backdrop {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+.alphainz-root .chat-container {
+    font-family: inherit;
+}
+
+/*
+ * The font stacks.
+ *
+ * Each ends in a generic family so an absent face degrades to something
+ * reasonable rather than to the browser default, and each carries a CJK face
+ * — the interface is read in Chinese as often as in English, and a Latin-only
+ * stack leaves the Chinese to a fallback that does not match.
+ */
+.alphainz-root.alphainz-font-serif,
+.alphainz-root.alphainz-font-serif input,
+.alphainz-root.alphainz-font-serif textarea,
+.alphainz-root.alphainz-font-serif button,
+.alphainz-root.alphainz-font-serif select {
+    font-family: "Iowan Old Style", "Palatino", "Source Han Serif SC",
+                 "Songti SC", "Noto Serif CJK SC", Georgia, serif;
+}
+
+.alphainz-root.alphainz-font-sans,
+.alphainz-root.alphainz-font-sans input,
+.alphainz-root.alphainz-font-sans textarea,
+.alphainz-root.alphainz-font-sans button,
+.alphainz-root.alphainz-font-sans select {
+    font-family: "Inter", "SF Pro Text", -apple-system, "PingFang SC",
+                 "Microsoft YaHei", "Segoe UI", sans-serif;
+}
+
+/* Code and formulae keep a monospace face whatever the interface font is. */
+.alphainz-root code,
+.alphainz-root pre,
+.alphainz-root .mono {
+    font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+/* ==========================================================================
+ * The palettes.
+ *
+ * Each theme declares its light values under the real token names and its dark
+ * values under a parallel `--d-` name. Nothing here selects on light or dark —
+ * the two blocks after the palettes do that, once, for every theme at a time.
+ *
+ * That split is what makes the switch instant. Following the system used to be
+ * JavaScript: read `matchMedia`, stamp an attribute, restyle. Nothing was
+ * listening for the system to change, so the panes stayed in yesterday's
+ * palette until something else happened to call `applyAppearance` — while
+ * Zotero, one window across, had already flipped. Now "follow Zotero" is a
+ * media query and costs no JavaScript at all; only an explicit Light or Dark
+ * choice stamps anything, and it stamps it in order to beat the query.
+ * ========================================================================== */
+
+/* --------------------------------------------------------------------------
+ * Fresh — 小清新: celadon on rice paper.
+ *
+ * The other two are borrowed, and both are somebody's brand. This one is the
+ * reading light of a paper library rather than a product: the ground is a
+ * rice-paper white with the faintest green in it, the ink is a soft charcoal
+ * that never reaches black, and the single accent is a celadon that sits
+ * quietly behind text instead of competing with it. Everything is a shade
+ * lighter than it would need to be to "work" — that lightness is the point.
+ * ------------------------------------------------------------------------ */
+.alphainz-root.alphainz-theme-fresh {
+    /* Light. */
+    --alphainz-ink: #2b3330;
+    --alphainz-paper: #f7f9f6;
+    --alphainz-accent: #5d9b86;
+    --fill-primary: #2b3330;
+    --fill-secondary: #55605b;
+    --fill-tertiary: #7d8781;
+    --fill-quarternary: #a7b0aa;
+    --fill-quinary: #cfd7d1;
+    --fill-senary: #e8ede9;
+    --material-sidepane: #f7f9f6;
+    --material-background: #f7f9f6;
+    --material-mix-quarternary: #eef2ee;
+    --material-menu: #ffffff;
+    --material-button: #ffffff;
+    --material-toolbar: #f2f6f2;
+    --color-background: #ffffff;
+    --accent-blue: #5d9b86;
+    --accent-blue10: rgba(93, 155, 134, 0.10);
+    --accent-blue50: rgba(93, 155, 134, 0.45);
+    --accent-azure: #6fae99;
+    --accent-green: #5d9b86;
+    --accent-red: #c2695e;
+    --accent-yellow: #c9a24e;
+    --accent-white: #ffffff;
+    --color-border: rgba(43, 51, 48, 0.10);
+    --color-border50: #dfe6e0;
+    --color-panedivider: #e5ebe6;
+    --color-scrollbar: #cfd7d1;
+    --color-scrollbar-background: transparent;
+    --tag-blue: #5a8ba3;
+    --tag-blue-primary: #5a8ba3;
+    --tag-blue-secondary: #7ba6ba;
+    --tag-blue-tertiary: #a6c4d2;
+    --tag-blue-quarternary: #cfdfe7;
+    --tag-blue-quinary: #eaf2f6;
+    --tag-green: #5d9b86;
+    --tag-green-primary: #5d9b86;
+    --tag-green-secondary: #7db3a0;
+    --tag-green-tertiary: #a7cdbe;
+    --tag-green-quarternary: #cee4da;
+    --tag-green-quinary: #e9f4ef;
+    --tag-red: #c2695e;
+    --tag-red-primary: #c2695e;
+    --tag-red-secondary: #d28c83;
+    --tag-red-tertiary: #e2b3ad;
+    --tag-red-quarternary: #f0d5d1;
+    --tag-red-quinary: #faecea;
+    --tag-orange: #c99155;
+    --tag-orange-primary: #c99155;
+    --tag-orange-secondary: #d8ab7c;
+    --tag-orange-tertiary: #e7c8a7;
+    --tag-orange-quarternary: #f2e0cb;
+    --tag-orange-quinary: #fbf2e8;
+    --tag-purple: #8c86ab;
+    --tag-purple-primary: #8c86ab;
+    --tag-purple-secondary: #a7a2c0;
+    --tag-purple-tertiary: #c4c0d5;
+    --tag-purple-quarternary: #dedbe8;
+    --tag-purple-quinary: #f0eff5;
+    --tag-yellow: #c9a24e;
+    --tag-yellow-senary: #f7f0dd;
+
+    /* Dark, in parallel names until the block below picks them up. */
+    --d-alphainz-ink: #e9efea;
+    --d-alphainz-paper: #1f2622;
+    --d-alphainz-accent: #7fbfa8;
+    --d-fill-primary: #e9efea;
+    --d-fill-secondary: #c2cbc5;
+    --d-fill-tertiary: #98a29c;
+    --d-fill-quarternary: #6f7973;
+    --d-fill-quinary: #454e49;
+    --d-fill-senary: #333b36;
+    --d-material-sidepane: #1f2622;
+    --d-material-background: #1f2622;
+    --d-material-mix-quarternary: #2a322d;
+    --d-material-menu: #262e29;
+    --d-material-button: #2a322d;
+    --d-material-toolbar: #232b27;
+    --d-color-background: #1a201d;
+    --d-accent-blue: #7fbfa8;
+    --d-accent-blue10: rgba(127, 191, 168, 0.14);
+    --d-accent-blue50: rgba(127, 191, 168, 0.45);
+    --d-accent-azure: #96cfba;
+    --d-accent-green: #7fbfa8;
+    --d-accent-red: #dd8b81;
+    --d-accent-yellow: #d5b46f;
+    --d-accent-white: #12241d;
+    --d-color-border: rgba(233, 239, 234, 0.12);
+    --d-color-border50: #3a433d;
+    --d-color-panedivider: #333b36;
+    --d-color-scrollbar: #4a534d;
+    --d-tag-blue: #8fb6c8;
+    --d-tag-blue-primary: #8fb6c8;
+    --d-tag-blue-secondary: #789cad;
+    --d-tag-blue-tertiary: #5b7887;
+    --d-tag-blue-quarternary: #405560;
+    --d-tag-blue-quinary: #2b383f;
+    --d-tag-green: #8fcfb8;
+    --d-tag-green-primary: #8fcfb8;
+    --d-tag-green-secondary: #75b19c;
+    --d-tag-green-tertiary: #578573;
+    --d-tag-green-quarternary: #3d5e51;
+    --d-tag-green-quinary: #2a3d35;
+    --d-tag-red: #e0968c;
+    --d-tag-red-primary: #e0968c;
+    --d-tag-red-secondary: #c67e75;
+    --d-tag-red-tertiary: #9a605a;
+    --d-tag-red-quarternary: #6d443f;
+    --d-tag-red-quinary: #432c29;
+    --d-tag-orange: #dfae7d;
+    --d-tag-orange-primary: #dfae7d;
+    --d-tag-orange-secondary: #c3946a;
+    --d-tag-orange-tertiary: #967151;
+    --d-tag-orange-quarternary: #6a5039;
+    --d-tag-orange-quinary: #3f3125;
+    --d-tag-purple: #b0aac9;
+    --d-tag-purple-primary: #b0aac9;
+    --d-tag-purple-secondary: #9691ad;
+    --d-tag-purple-tertiary: #746f89;
+    --d-tag-purple-quarternary: #514e60;
+    --d-tag-purple-quinary: #35333e;
+    --d-tag-yellow: #d5b46f;
+    --d-tag-yellow-senary: #3d3626;
+}
+
+/* --------------------------------------------------------------------------
+ * Warm — the palette from Claude's own interface.
+ *
+ * #DA7756 on #F5F4EE over #141413 in light; #CC7D5E on #2D2D2B over #F9F9F7
+ * in dark. Everything else is derived from those three so the set stays
+ * coherent: the greys carry a little of the paper's warmth rather than being
+ * neutral, and the one saturated hue is the accent.
+ * ------------------------------------------------------------------------ */
+.alphainz-root.alphainz-theme-warm {
+    /* Light. */
+    --alphainz-ink: #141413;
+    --alphainz-paper: #f5f4ee;
+    --alphainz-accent: #da7756;
+    --fill-primary: #141413;
+    --fill-secondary: #45443f;
+    --fill-tertiary: #6b6961;
+    --fill-quarternary: #9a978d;
+    --fill-quinary: #c8c5ba;
+    --fill-senary: #e4e1d6;
+    --material-sidepane: #f5f4ee;
+    --material-background: #f5f4ee;
+    --material-mix-quarternary: #ebe9e0;
+    --material-menu: #fffefb;
+    --material-button: #fffefb;
+    --material-toolbar: #f0eee6;
+    --color-background: #fffdf8;
+    --accent-blue: #da7756;
+    --accent-blue10: rgba(218, 119, 86, 0.10);
+    --accent-blue50: rgba(218, 119, 86, 0.50);
+    --accent-azure: #c96a4b;
+    --accent-green: #4a7c59;
+    --accent-red: #b4463c;
+    --accent-yellow: #c08a2e;
+    --accent-white: #ffffff;
+    --color-border: rgba(20, 20, 19, 0.12);
+    --color-border50: #ddd9cc;
+    --color-panedivider: #e2dfd3;
+    --color-scrollbar: #c8c5ba;
+    --color-scrollbar-background: transparent;
+    --tag-blue: #4a6d8c;
+    --tag-blue-primary: #4a6d8c;
+    --tag-blue-secondary: #6a8aa5;
+    --tag-blue-tertiary: #9db2c4;
+    --tag-blue-quarternary: #c6d3de;
+    --tag-blue-quinary: #e4ebf1;
+    --tag-green: #4a7c59;
+    --tag-green-primary: #4a7c59;
+    --tag-green-secondary: #6b9878;
+    --tag-green-tertiary: #9cbca6;
+    --tag-green-quarternary: #c8dccf;
+    --tag-green-quinary: #e6efe9;
+    --tag-red: #b4463c;
+    --tag-red-primary: #b4463c;
+    --tag-red-secondary: #c86e64;
+    --tag-red-tertiary: #dda49d;
+    --tag-red-quarternary: #eecdc9;
+    --tag-red-quinary: #f8e8e6;
+    --tag-orange: #c07040;
+    --tag-orange-primary: #c07040;
+    --tag-orange-secondary: #d08f66;
+    --tag-orange-tertiary: #e2b697;
+    --tag-orange-quarternary: #f0d7c4;
+    --tag-orange-quinary: #faeee5;
+    --tag-purple: #7a5a86;
+    --tag-purple-primary: #7a5a86;
+    --tag-purple-secondary: #9a7fa4;
+    --tag-purple-tertiary: #bda9c4;
+    --tag-purple-quarternary: #dcd0e0;
+    --tag-purple-quinary: #f0eaf3;
+    --tag-yellow: #c08a2e;
+    --tag-yellow-senary: #f7efdc;
+
+    /* Dark, in parallel names until the block below picks them up. */
+    --d-alphainz-ink: #f9f9f7;
+    --d-alphainz-paper: #2d2d2b;
+    --d-alphainz-accent: #cc7d5e;
+    --d-fill-primary: #f9f9f7;
+    --d-fill-secondary: #cfcec9;
+    --d-fill-tertiary: #a3a19a;
+    --d-fill-quarternary: #77756e;
+    --d-fill-quinary: #4d4c48;
+    --d-fill-senary: #3a3937;
+    --d-material-sidepane: #2d2d2b;
+    --d-material-background: #2d2d2b;
+    --d-material-mix-quarternary: #383836;
+    --d-material-menu: #343432;
+    --d-material-button: #383836;
+    --d-material-toolbar: #333331;
+    --d-color-background: #262625;
+    --d-accent-blue: #cc7d5e;
+    --d-accent-blue10: rgba(204, 125, 94, 0.14);
+    --d-accent-blue50: rgba(204, 125, 94, 0.50);
+    --d-accent-azure: #dd9273;
+    --d-accent-green: #6f9c7c;
+    --d-accent-red: #d5716a;
+    --d-accent-yellow: #d3a860;
+    --d-accent-white: #f9f9f7;
+    --d-color-border: rgba(249, 249, 247, 0.14);
+    --d-color-border50: #45443f;
+    --d-color-panedivider: #3d3c3a;
+    --d-color-scrollbar: #55534d;
+    --d-tag-blue: #8fb0cc;
+    --d-tag-blue-primary: #8fb0cc;
+    --d-tag-blue-secondary: #7697b3;
+    --d-tag-blue-tertiary: #5a7590;
+    --d-tag-blue-quarternary: #40566b;
+    --d-tag-blue-quinary: #2f3d4a;
+    --d-tag-green: #85b592;
+    --d-tag-green-primary: #85b592;
+    --d-tag-green-secondary: #6f9c7c;
+    --d-tag-green-tertiary: #55785f;
+    --d-tag-green-quarternary: #3d5645;
+    --d-tag-green-quinary: #2d3b31;
+    --d-tag-red: #e08a82;
+    --d-tag-red-primary: #e08a82;
+    --d-tag-red-secondary: #c8746c;
+    --d-tag-red-tertiary: #9d5952;
+    --d-tag-red-quarternary: #6f3f3a;
+    --d-tag-red-quinary: #452a27;
+    --d-tag-orange: #dd9b6e;
+    --d-tag-orange-primary: #dd9b6e;
+    --d-tag-orange-secondary: #c4855b;
+    --d-tag-orange-tertiary: #98663f;
+    --d-tag-orange-quarternary: #6b482c;
+    --d-tag-orange-quinary: #432e1e;
+    --d-tag-purple: #b79cc0;
+    --d-tag-purple-primary: #b79cc0;
+    --d-tag-purple-secondary: #9c82a6;
+    --d-tag-purple-tertiary: #7a6482;
+    --d-tag-purple-quarternary: #55465b;
+    --d-tag-purple-quinary: #382f3c;
+    --d-tag-yellow: #d3a860;
+    --d-tag-yellow-senary: #443a26;
+}
+
+/* --------------------------------------------------------------------------
+ * Quiet — the blue-grey the reports are set in. The same ink and rules as the
+ * PDFs, so an answer on screen and the same answer on paper look related.
+ * ------------------------------------------------------------------------ */
+.alphainz-root.alphainz-theme-quiet {
+    /* Light. */
+    --alphainz-ink: #1b1a18;
+    --alphainz-paper: #faf8f3;
+    --alphainz-accent: #2f5d7c;
+    --fill-primary: #1b1a18;
+    --fill-secondary: #4a4740;
+    --fill-tertiary: #66625a;
+    --fill-quarternary: #96918a;
+    --fill-quinary: #c6c1b5;
+    --fill-senary: #e6e2d8;
+    --material-sidepane: #faf8f3;
+    --material-background: #faf8f3;
+    --material-mix-quarternary: #f1ede3;
+    --material-menu: #fffefc;
+    --material-button: #fffefc;
+    --material-toolbar: #f4f1e9;
+    --color-background: #ffffff;
+    --accent-blue: #2f5d7c;
+    --accent-blue10: rgba(47, 93, 124, 0.10);
+    --accent-blue50: rgba(47, 93, 124, 0.50);
+    --accent-azure: #45789a;
+    --accent-green: #2c6a4c;
+    --accent-red: #a8362f;
+    --accent-yellow: #b5872b;
+    --accent-white: #ffffff;
+    --color-border: rgba(27, 26, 24, 0.12);
+    --color-border50: #dedad0;
+    --color-panedivider: #e3dfd4;
+    --color-scrollbar: #c6c1b5;
+    --color-scrollbar-background: transparent;
+    --tag-blue: #2f5d7c;
+    --tag-blue-primary: #2f5d7c;
+    --tag-blue-secondary: #557f9c;
+    --tag-blue-tertiary: #8aa8bd;
+    --tag-blue-quarternary: #bfd0dc;
+    --tag-blue-quinary: #e2eaf0;
+    --tag-green: #2c6a4c;
+    --tag-green-primary: #2c6a4c;
+    --tag-green-secondary: #54896e;
+    --tag-green-tertiary: #8bae9b;
+    --tag-green-quarternary: #c1d6c9;
+    --tag-green-quinary: #e3eee8;
+    --tag-red: #a8362f;
+    --tag-red-primary: #a8362f;
+    --tag-red-secondary: #bf6159;
+    --tag-red-tertiary: #d69a94;
+    --tag-red-quarternary: #eac9c5;
+    --tag-red-quinary: #f7e6e4;
+    --tag-orange: #a96b33;
+    --tag-orange-primary: #a96b33;
+    --tag-orange-secondary: #c08b5b;
+    --tag-orange-tertiary: #d7b391;
+    --tag-orange-quarternary: #ecd6c0;
+    --tag-orange-quinary: #f8ede2;
+    --tag-purple: #5f4f7c;
+    --tag-purple-primary: #5f4f7c;
+    --tag-purple-secondary: #82749b;
+    --tag-purple-tertiary: #aaa0bd;
+    --tag-purple-quarternary: #d0c9dd;
+    --tag-purple-quinary: #ece8f2;
+    --tag-yellow: #b5872b;
+    --tag-yellow-senary: #f5eeda;
+
+    /* Dark, in parallel names until the block below picks them up. */
+    --d-alphainz-ink: #f2efe8;
+    --d-alphainz-paper: #22252a;
+    --d-alphainz-accent: #7fb0d4;
+    --d-fill-primary: #f2efe8;
+    --d-fill-secondary: #cbc8c1;
+    --d-fill-tertiary: #9d9a94;
+    --d-fill-quarternary: #72706b;
+    --d-fill-quinary: #494c52;
+    --d-fill-senary: #32353b;
+    --d-material-sidepane: #22252a;
+    --d-material-background: #22252a;
+    --d-material-mix-quarternary: #2c3037;
+    --d-material-menu: #282c32;
+    --d-material-button: #2c3037;
+    --d-material-toolbar: #262a30;
+    --d-color-background: #1d2025;
+    --d-accent-blue: #7fb0d4;
+    --d-accent-blue10: rgba(127, 176, 212, 0.14);
+    --d-accent-blue50: rgba(127, 176, 212, 0.50);
+    --d-accent-azure: #98c1de;
+    --d-accent-green: #6f9c7c;
+    --d-accent-red: #d5716a;
+    --d-accent-yellow: #d3a860;
+    --d-accent-white: #f2efe8;
+    --d-color-border: rgba(242, 239, 232, 0.14);
+    --d-color-border50: #3a3e45;
+    --d-color-panedivider: #33373d;
+    --d-color-scrollbar: #4b4f56;
+    --d-tag-blue: #7fb0d4;
+    --d-tag-blue-primary: #7fb0d4;
+    --d-tag-blue-secondary: #6a95b5;
+    --d-tag-blue-tertiary: #517189;
+    --d-tag-blue-quarternary: #3a4f60;
+    --d-tag-blue-quinary: #2a3540;
+    --d-tag-green: #85b592;
+    --d-tag-green-primary: #85b592;
+    --d-tag-green-secondary: #6f9c7c;
+    --d-tag-green-tertiary: #55785f;
+    --d-tag-green-quarternary: #3d5645;
+    --d-tag-green-quinary: #2b3630;
+    --d-tag-red: #e08a82;
+    --d-tag-red-primary: #e08a82;
+    --d-tag-red-secondary: #c8746c;
+    --d-tag-red-tertiary: #9d5952;
+    --d-tag-red-quarternary: #6f3f3a;
+    --d-tag-red-quinary: #402a28;
+    --d-tag-orange: #dd9b6e;
+    --d-tag-orange-primary: #dd9b6e;
+    --d-tag-orange-secondary: #c4855b;
+    --d-tag-orange-tertiary: #98663f;
+    --d-tag-orange-quarternary: #6b482c;
+    --d-tag-orange-quinary: #3e2e21;
+    --d-tag-purple: #b0a2c8;
+    --d-tag-purple-primary: #b0a2c8;
+    --d-tag-purple-secondary: #968aad;
+    --d-tag-purple-tertiary: #746a89;
+    --d-tag-purple-quarternary: #514a60;
+    --d-tag-purple-quinary: #35313e;
+    --d-tag-yellow: #d3a860;
+    --d-tag-yellow-senary: #3f3826;
+}
+
+
+/* --------------------------------------------------------------------------
+ * Sky — 清透蓝: pale blue paper, white cards, a cool blue accent.
+ *
+ * The palette the DeepSeek Harness web client wears (dsh-theme-claude, the
+ * "清透蓝" scheme), carried over step for step so the two look like one
+ * family across a desk: the same neutral ramp (blue-black ink, ramp 60 for
+ * the page, white for cards, ramp 100 for chips and bubbles), the same accent
+ * — #4478bc for fills, a step darker for text so it reads at AA on the page,
+ * and a paler #78a9eb in the dark where the fill carries dark text. Where
+ * that client separates a card from the page by fill rather than border, so
+ * does this: cards are white on a page that is not quite.
+ * ------------------------------------------------------------------------ */
+.alphainz-root.alphainz-theme-sky {
+    /* Light. */
+    --alphainz-ink: #0e1115;
+    --alphainz-paper: #f2f6fd;
+    --alphainz-accent: #4478bc;
+    --fill-primary: #0e1115;
+    --fill-secondary: #42454a;
+    --fill-tertiary: #62666b;
+    --fill-quarternary: #999da3;
+    --fill-quinary: #ced3d9;
+    --fill-senary: #e1e5ec;
+    --material-sidepane: #f2f6fd;
+    --material-background: #f2f6fd;
+    --material-mix-quarternary: #e9eef5;
+    --material-menu: #ffffff;
+    --material-button: #f7fafe;
+    --material-toolbar: #eff3fa;
+    --color-background: #ffffff;
+    --accent-blue: #4478bc;
+    --accent-blue10: rgba(68, 120, 188, 0.10);
+    --accent-blue50: rgba(68, 120, 188, 0.50);
+    --accent-azure: #376aad;
+    --accent-green: #2f7a5a;
+    --accent-red: #b4453f;
+    --accent-yellow: #b7892c;
+    --accent-white: #ffffff;
+    --color-border: rgba(14, 17, 21, 0.12);
+    --color-border50: #e1e5ec;
+    --color-panedivider: #e1e5ec;
+    --color-scrollbar: #ced3d9;
+    --color-scrollbar-background: transparent;
+    --tag-blue: #4478bc;
+    --tag-blue-primary: #4478bc;
+    --tag-blue-secondary: #6b95cc;
+    --tag-blue-tertiary: #9bb7dd;
+    --tag-blue-quarternary: #c8d8ec;
+    --tag-blue-quinary: #e6eef8;
+    --tag-green: #2f7a5a;
+    --tag-green-primary: #2f7a5a;
+    --tag-green-secondary: #5a977b;
+    --tag-green-tertiary: #8fb8a3;
+    --tag-green-quarternary: #c3dbcd;
+    --tag-green-quinary: #e4f0e9;
+    --tag-red: #b4453f;
+    --tag-red-primary: #b4453f;
+    --tag-red-secondary: #c86d68;
+    --tag-red-tertiary: #dca19d;
+    --tag-red-quarternary: #eccbc9;
+    --tag-red-quinary: #f7e7e6;
+    --tag-orange: #b3703a;
+    --tag-orange-primary: #b3703a;
+    --tag-orange-secondary: #c78f62;
+    --tag-orange-tertiary: #dbb596;
+    --tag-orange-quarternary: #edd7c3;
+    --tag-orange-quinary: #f8eee4;
+    --tag-purple: #6a5fa8;
+    --tag-purple-primary: #6a5fa8;
+    --tag-purple-secondary: #8b82bd;
+    --tag-purple-tertiary: #b1abd3;
+    --tag-purple-quarternary: #d4d0e8;
+    --tag-purple-quinary: #edebf6;
+    --tag-yellow: #b7892c;
+    --tag-yellow-senary: #f5efdc;
+
+    /* Dark, in parallel names until the block below picks them up. */
+    --d-alphainz-ink: #f7fafe;
+    --d-alphainz-paper: #12151a;
+    --d-alphainz-accent: #78a9eb;
+    --d-fill-primary: #f7fafe;
+    --d-fill-secondary: #ced3d9;
+    --d-fill-tertiary: #999da3;
+    --d-fill-quarternary: #81858b;
+    --d-fill-quinary: #42454a;
+    --d-fill-senary: #292d31;
+    --d-material-sidepane: #12151a;
+    --d-material-background: #12151a;
+    --d-material-mix-quarternary: #202328;
+    --d-material-menu: #292d31;
+    --d-material-button: #202328;
+    --d-material-toolbar: #181b20;
+    --d-color-background: #181b20;
+    --d-accent-blue: #78a9eb;
+    --d-accent-blue10: rgba(120, 169, 235, 0.14);
+    --d-accent-blue50: rgba(120, 169, 235, 0.50);
+    --d-accent-azure: #87afe5;
+    --d-accent-green: #7fb597;
+    --d-accent-red: #e08a82;
+    --d-accent-yellow: #d3a860;
+    --d-accent-white: #f7fafe;
+    --d-color-border: rgba(247, 250, 254, 0.14);
+    --d-color-border50: #33363b;
+    --d-color-panedivider: #292d31;
+    --d-color-scrollbar: #42454a;
+    --d-tag-blue: #78a9eb;
+    --d-tag-blue-primary: #78a9eb;
+    --d-tag-blue-secondary: #6494d2;
+    --d-tag-blue-tertiary: #4f76a8;
+    --d-tag-blue-quarternary: #3a5578;
+    --d-tag-blue-quinary: #26374d;
+    --d-tag-green: #7fb597;
+    --d-tag-green-primary: #7fb597;
+    --d-tag-green-secondary: #6a9b80;
+    --d-tag-green-tertiary: #527862;
+    --d-tag-green-quarternary: #3b5647;
+    --d-tag-green-quinary: #293831;
+    --d-tag-red: #e08a82;
+    --d-tag-red-primary: #e08a82;
+    --d-tag-red-secondary: #c8746c;
+    --d-tag-red-tertiary: #9d5952;
+    --d-tag-red-quarternary: #6f3f3a;
+    --d-tag-red-quinary: #402a28;
+    --d-tag-orange: #dd9b6e;
+    --d-tag-orange-primary: #dd9b6e;
+    --d-tag-orange-secondary: #c4855b;
+    --d-tag-orange-tertiary: #98663f;
+    --d-tag-orange-quarternary: #6b482c;
+    --d-tag-orange-quinary: #3e2e21;
+    --d-tag-purple: #b3a9dd;
+    --d-tag-purple-primary: #b3a9dd;
+    --d-tag-purple-secondary: #978dc2;
+    --d-tag-purple-tertiary: #746b99;
+    --d-tag-purple-quarternary: #504a6b;
+    --d-tag-purple-quinary: #343144;
+    --d-tag-yellow: #d3a860;
+    --d-tag-yellow-senary: #3f3826;
+}
+
+
+/* ==========================================================================
+ * Light or dark, for every theme at once.
+ *
+ * Three states, as on the web: no attribute means follow the system — which
+ * inside Zotero means follow Zotero, since it drives `prefers-color-scheme`
+ * from its own Appearance setting; `false` pins light even on a dark system;
+ * `true` pins dark even on a light one. The mapping is identical for every
+ * palette, which is the whole reason the palettes hold their dark values in
+ * `--d-` names rather than selecting on the state themselves.
+ *
+ * A token a theme has no dark value for simply keeps its light one: `var()`
+ * with no fallback resolves to the guaranteed-invalid value, and the
+ * declaration is dropped, leaving the light declaration standing.
+ * ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+    .alphainz-root.alphainz-styled:not([data-alphainz-dark="false"]) {
+        --alphainz-ink: var(--d-alphainz-ink);
+        --alphainz-paper: var(--d-alphainz-paper);
+        --alphainz-accent: var(--d-alphainz-accent);
+        --fill-primary: var(--d-fill-primary);
+        --fill-secondary: var(--d-fill-secondary);
+        --fill-tertiary: var(--d-fill-tertiary);
+        --fill-quarternary: var(--d-fill-quarternary);
+        --fill-quinary: var(--d-fill-quinary);
+        --fill-senary: var(--d-fill-senary);
+        --material-sidepane: var(--d-material-sidepane);
+        --material-background: var(--d-material-background);
+        --material-mix-quarternary: var(--d-material-mix-quarternary);
+        --material-menu: var(--d-material-menu);
+        --material-button: var(--d-material-button);
+        --material-toolbar: var(--d-material-toolbar);
+        --color-background: var(--d-color-background);
+        --accent-blue: var(--d-accent-blue);
+        --accent-blue10: var(--d-accent-blue10);
+        --accent-blue50: var(--d-accent-blue50);
+        --accent-azure: var(--d-accent-azure);
+        --accent-green: var(--d-accent-green);
+        --accent-red: var(--d-accent-red);
+        --accent-yellow: var(--d-accent-yellow);
+        --accent-white: var(--d-accent-white);
+        --color-border: var(--d-color-border);
+        --color-border50: var(--d-color-border50);
+        --color-panedivider: var(--d-color-panedivider);
+        --color-scrollbar: var(--d-color-scrollbar);
+        --tag-blue: var(--d-tag-blue);
+        --tag-blue-primary: var(--d-tag-blue-primary);
+        --tag-blue-secondary: var(--d-tag-blue-secondary);
+        --tag-blue-tertiary: var(--d-tag-blue-tertiary);
+        --tag-blue-quarternary: var(--d-tag-blue-quarternary);
+        --tag-blue-quinary: var(--d-tag-blue-quinary);
+        --tag-green: var(--d-tag-green);
+        --tag-green-primary: var(--d-tag-green-primary);
+        --tag-green-secondary: var(--d-tag-green-secondary);
+        --tag-green-tertiary: var(--d-tag-green-tertiary);
+        --tag-green-quarternary: var(--d-tag-green-quarternary);
+        --tag-green-quinary: var(--d-tag-green-quinary);
+        --tag-red: var(--d-tag-red);
+        --tag-red-primary: var(--d-tag-red-primary);
+        --tag-red-secondary: var(--d-tag-red-secondary);
+        --tag-red-tertiary: var(--d-tag-red-tertiary);
+        --tag-red-quarternary: var(--d-tag-red-quarternary);
+        --tag-red-quinary: var(--d-tag-red-quinary);
+        --tag-orange: var(--d-tag-orange);
+        --tag-orange-primary: var(--d-tag-orange-primary);
+        --tag-orange-secondary: var(--d-tag-orange-secondary);
+        --tag-orange-tertiary: var(--d-tag-orange-tertiary);
+        --tag-orange-quarternary: var(--d-tag-orange-quarternary);
+        --tag-orange-quinary: var(--d-tag-orange-quinary);
+        --tag-purple: var(--d-tag-purple);
+        --tag-purple-primary: var(--d-tag-purple-primary);
+        --tag-purple-secondary: var(--d-tag-purple-secondary);
+        --tag-purple-tertiary: var(--d-tag-purple-tertiary);
+        --tag-purple-quarternary: var(--d-tag-purple-quarternary);
+        --tag-purple-quinary: var(--d-tag-purple-quinary);
+        --tag-yellow: var(--d-tag-yellow);
+        --tag-yellow-senary: var(--d-tag-yellow-senary);
+    }
+}
+
+.alphainz-root.alphainz-styled[data-alphainz-dark="true"] {
+    --alphainz-ink: var(--d-alphainz-ink);
+    --alphainz-paper: var(--d-alphainz-paper);
+    --alphainz-accent: var(--d-alphainz-accent);
+    --fill-primary: var(--d-fill-primary);
+    --fill-secondary: var(--d-fill-secondary);
+    --fill-tertiary: var(--d-fill-tertiary);
+    --fill-quarternary: var(--d-fill-quarternary);
+    --fill-quinary: var(--d-fill-quinary);
+    --fill-senary: var(--d-fill-senary);
+    --material-sidepane: var(--d-material-sidepane);
+    --material-background: var(--d-material-background);
+    --material-mix-quarternary: var(--d-material-mix-quarternary);
+    --material-menu: var(--d-material-menu);
+    --material-button: var(--d-material-button);
+    --material-toolbar: var(--d-material-toolbar);
+    --color-background: var(--d-color-background);
+    --accent-blue: var(--d-accent-blue);
+    --accent-blue10: var(--d-accent-blue10);
+    --accent-blue50: var(--d-accent-blue50);
+    --accent-azure: var(--d-accent-azure);
+    --accent-green: var(--d-accent-green);
+    --accent-red: var(--d-accent-red);
+    --accent-yellow: var(--d-accent-yellow);
+    --accent-white: var(--d-accent-white);
+    --color-border: var(--d-color-border);
+    --color-border50: var(--d-color-border50);
+    --color-panedivider: var(--d-color-panedivider);
+    --color-scrollbar: var(--d-color-scrollbar);
+    --tag-blue: var(--d-tag-blue);
+    --tag-blue-primary: var(--d-tag-blue-primary);
+    --tag-blue-secondary: var(--d-tag-blue-secondary);
+    --tag-blue-tertiary: var(--d-tag-blue-tertiary);
+    --tag-blue-quarternary: var(--d-tag-blue-quarternary);
+    --tag-blue-quinary: var(--d-tag-blue-quinary);
+    --tag-green: var(--d-tag-green);
+    --tag-green-primary: var(--d-tag-green-primary);
+    --tag-green-secondary: var(--d-tag-green-secondary);
+    --tag-green-tertiary: var(--d-tag-green-tertiary);
+    --tag-green-quarternary: var(--d-tag-green-quarternary);
+    --tag-green-quinary: var(--d-tag-green-quinary);
+    --tag-red: var(--d-tag-red);
+    --tag-red-primary: var(--d-tag-red-primary);
+    --tag-red-secondary: var(--d-tag-red-secondary);
+    --tag-red-tertiary: var(--d-tag-red-tertiary);
+    --tag-red-quarternary: var(--d-tag-red-quarternary);
+    --tag-red-quinary: var(--d-tag-red-quinary);
+    --tag-orange: var(--d-tag-orange);
+    --tag-orange-primary: var(--d-tag-orange-primary);
+    --tag-orange-secondary: var(--d-tag-orange-secondary);
+    --tag-orange-tertiary: var(--d-tag-orange-tertiary);
+    --tag-orange-quarternary: var(--d-tag-orange-quarternary);
+    --tag-orange-quinary: var(--d-tag-orange-quinary);
+    --tag-purple: var(--d-tag-purple);
+    --tag-purple-primary: var(--d-tag-purple-primary);
+    --tag-purple-secondary: var(--d-tag-purple-secondary);
+    --tag-purple-tertiary: var(--d-tag-purple-tertiary);
+    --tag-purple-quarternary: var(--d-tag-purple-quarternary);
+    --tag-purple-quinary: var(--d-tag-purple-quinary);
+    --tag-yellow: var(--d-tag-yellow);
+    --tag-yellow-senary: var(--d-tag-yellow-senary);
+}
+
+/* ==========================================================================
+ * Shape — every theme.
+ *
+ * A palette swap alone still reads as the old interface in new colours. What
+ * makes the reports feel calm is not the hues but the restraint: one accent,
+ * hairline rules instead of filled boxes, and space doing the work borders
+ * were doing.
+ *
+ * All of it hangs off one class, `alphainz-styled`, which `applyAppearance`
+ * adds with every theme. Writing these rules per theme
+ * meant every selector had to be repeated once per palette, and adding a
+ * fourth theme meant editing sixty selectors and missing one.
+ *
+ * Every selector here was read off a live pane. The old sheets select as
+ * `[id^="alphainz-pane-"] .foo`, which is (0,2,0); `.alphainz-styled .foo`
+ * matches that and wins on order, because this file is registered last.
+ * ========================================================================== */
+
+.alphainz-root.alphainz-styled {
+    background: var(--material-sidepane);
+    color: var(--fill-primary);
+    /*
+     * Native controls — the text-size slider, the checkboxes in the settings —
+     * are drawn by the platform in the system accent, which is macOS blue and
+     * the one thing in the pane that stays blue in a terracotta theme. One
+     * property retints all of them.
+     */
+    accent-color: var(--accent-blue);
+}
+
+/*
+ * …except the floating popup's root, which must stay transparent.
+ *
+ * It is an always-present, positioned box that the popup renders *into*; when
+ * nothing is open it is an empty 340×672 rectangle sitting over the pane. With
+ * no background that is invisible and harmless, which is why it has never
+ * mattered. Give `.alphainz-root` a ground and it becomes a solid slab that
+ * hides part of the conversation and swallows the clicks underneath it.
+ *
+ * The lesson generalises: a rule on `.alphainz-root` reaches three very
+ * different things — the sidebar pane, the standalone window, and this — so
+ * anything that paints belongs on the panes, not on the class they share.
+ */
+#alphainz-pane-floating-popup.alphainz-styled {
+    background: transparent;
+}
+
+/*
+ * The composer. The one surface that should look like a place to write, so it
+ * is the one thing lifted off the ground — and lifted with a line and the
+ * paper colour rather than the grey fill it had, which in a narrow sidebar
+ * read as one more box in a stack of boxes.
+ */
+.alphainz-styled .user-message-display {
+    border: 1px solid var(--color-border50);
+    border-radius: 10px;
+    background-color: var(--color-background);
+    padding: 0.7rem 0.75rem;
+}
+
+.alphainz-styled .user-message-display:focus-within {
+    border-color: var(--accent-blue50);
+}
+
+/*
+ * What you already asked is not a place to write, so it does not get the card.
+ * A tint and no border is enough to group it, and it stops a scrolled-back
+ * conversation reading as a column of identical boxes — which is the single
+ * thing that made the panel look busy.
+ */
+.alphainz-styled .user-request-view {
+    border: 0;
+    background-color: var(--material-mix-quarternary);
+    border-radius: 10px;
+}
+
+/* Air between the question and the answer that follows it. */
+.alphainz-styled .user-request-view + * {
+    margin-top: 0.15rem;
+}
+
+/*
+ * The composer's control row — model, token count, Send — and the attachment
+ * strip above the input. A hairline separates what you are writing from how it
+ * will be sent; without it the model name reads as part of the message.
+ */
+.alphainz-styled .composer-controls {
+    border-top: 1px solid var(--color-border50);
+    margin-top: 0.3rem;
+}
+
+.alphainz-styled .composer-attachments {
+    border-bottom: 1px solid var(--color-border50);
+    padding-bottom: 0.45rem;
+}
+
+/* Chips — sources, mentions, the model picker. A hairline, not a filled box. */
+.alphainz-styled .variant-outline {
+    border: 1px solid var(--color-border50);
+    border-radius: 6px;
+    background-color: transparent;
+}
+
+.alphainz-styled .variant-outline:hover {
+    background-color: var(--material-mix-quarternary);
+    border-color: var(--fill-quarternary);
+}
+
+/*
+ * Rows in the history breathe, and separate with space instead of a rule.
+ * Zotero's own lists are dense because they hold hundreds of items; a chat
+ * history holds tens, and reads better with air.
+ */
+.alphainz-styled .thread-list-item {
+    border-radius: 7px;
+}
+
+.alphainz-styled .thread-list-item:hover,
+.alphainz-styled .thread-list-item-hovered {
+    background: var(--material-mix-quarternary);
+}
+
+/* One accent, and it is a line rather than a fill. */
+.alphainz-styled .thread-filter-chip {
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+    background: transparent;
+}
+
+/*
+ * The folded work and thinking blocks: a rule down the left edge rather than a
+ * box around them — the device the reports use for a quoted block.
+ *
+ * On the container, not the disclosure button: the button only spans the
+ * header, so the rule used to vanish the moment the block was opened — closed
+ * it was a quoted aside, open it was floating rows. The container covers both
+ * states, and the two block kinds share the treatment so a run reads as one
+ * annotated stretch rather than two competing widgets.
+ */
+.alphainz-styled .work-stream,
+.alphainz-styled .thinking-block {
+    border-left: 2px solid var(--color-border50);
+    border-radius: 0 6px 6px 0;
+    padding-left: 0.35rem;
+    background: transparent;
+}
+
+.alphainz-styled .work-stream:hover,
+.alphainz-styled .thinking-block:hover {
+    border-left-color: var(--accent-blue50);
+}
+
+/* Their unthemed chrome doubles the framing once the rule exists. */
+.alphainz-styled .work-stream.border-popup,
+.alphainz-styled .thinking-block.border-popup {
+    border-top: 0;
+    border-right: 0;
+    border-bottom: 0;
+}
+
+/* ==========================================================================
+ * The answer, set the way the reports are.
+ *
+ * This is the part that actually carries the character — not the palette. The
+ * devices are lifted one for one from the PDFs: a heading with a rule under
+ * it, a quote as a tinted panel with an accent edge, a variable as a small
+ * tinted chip, a table ruled under the head and hairlined between rows.
+ * ========================================================================== */
+
+/*
+ * Zotero's sheets zero out paragraph margins because the run container spaces
+ * its parts with a flex gap; inside one markdown block that leaves consecutive
+ * paragraphs touching.
+ */
+.alphainz-styled .markdown p + p {
+    margin-block-start: 0.72em !important;
+}
+
+.alphainz-styled .markdown > :first-child {
+    margin-block-start: 0;
+}
+
+/* A heading is a rule and a little air, not a bigger font. */
+.alphainz-styled .markdown h1,
+.alphainz-styled .markdown h2,
+.alphainz-styled .markdown h3,
+.alphainz-styled .markdown h4 {
+    margin-block-start: 1.15em;
+    margin-block-end: 0.45em;
+    font-weight: 600;
+    letter-spacing: 0.005em;
+}
+
+/* Ink under the section heading, hairline under the one below it. */
+.alphainz-styled .markdown h1,
+.alphainz-styled .markdown h2 {
+    border-bottom: 1px solid var(--fill-primary);
+    padding-bottom: 0.2em;
+}
+
+.alphainz-styled .markdown h3 {
+    border-bottom: 1px solid var(--color-border50);
+    padding-bottom: 0.15em;
+}
+
+.alphainz-styled .markdown ul,
+.alphainz-styled .markdown ol {
+    padding-inline-start: 1.4em;
+    margin-block: 0.5em;
+}
+
+.alphainz-styled .markdown li + li {
+    margin-block-start: 0.3em;
+}
+
+/*
+ * A variable, a filename, a model id. Small, tinted, and set tight — the
+ * reports' `code` rule, which is what makes a symbol inside a sentence read as
+ * a symbol without stopping the sentence.
+ */
+.alphainz-styled .markdown code {
+    background: var(--material-mix-quarternary);
+    border: 1px solid var(--color-border50);
+    border-radius: 3px;
+    padding: 0.05em 0.32em;
+    font-size: 0.88em;
+}
+
+/* A code block is a quiet panel, not a slab. */
+.alphainz-styled .markdown pre {
+    background: var(--material-mix-quarternary);
+    border: 1px solid var(--color-border50);
+    border-radius: 6px;
+    padding: 0.6em 0.75em;
+    overflow-x: auto;
+}
+
+.alphainz-styled .markdown pre code {
+    background: none;
+    border: 0;
+    padding: 0;
+    font-size: 0.9em;
+}
+
+/*
+ * A quote is the reports' panel: tinted ground, hairline, and one accent edge
+ * on the left. It is the device the manual uses for every aside, and it is why
+ * those asides read as asides rather than as more text.
+ */
+.alphainz-styled .markdown blockquote {
+    border: 1px solid var(--color-border50);
+    border-left: 2.5px solid var(--accent-blue);
+    border-radius: 0 5px 5px 0;
+    background: var(--material-mix-quarternary);
+    padding: 0.5em 0.8em;
+    margin: 0.7em 0;
+    color: var(--fill-secondary);
+}
+
+.alphainz-styled .markdown blockquote > :first-child { margin-block-start: 0; }
+.alphainz-styled .markdown blockquote > :last-child { margin-block-end: 0; }
+
+/*
+ * Tables: a rule under the head, hairlines between rows, and nothing else.
+ * The vertical rules have to be turned off explicitly — the sheet underneath
+ * sets `border` on all four sides, so setting only `border-bottom` leaves a
+ * boxed grid with one heavier edge, which reads busier than the grid did.
+ */
+.alphainz-styled .markdown table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.7em 0;
+}
+
+.alphainz-styled .markdown table th {
+    border: 0;
+    border-bottom: 1px solid var(--fill-primary);
+    background: transparent;
+    text-align: left;
+    font-weight: 600;
+    padding: 0.32em 0.5em;
+}
+
+.alphainz-styled .markdown table td {
+    border: 0;
+    border-bottom: 1px solid var(--color-border50);
+    background: transparent;
+    padding: 0.34em 0.5em;
+    vertical-align: top;
+}
+
+.alphainz-styled .markdown table tr:last-child td {
+    border-bottom: 0;
+}
+
+/* A highlight is a wash of the accent, not a yellow marker. */
+.alphainz-styled .markdown mark {
+    background: var(--accent-blue10);
+    color: inherit;
+    border-radius: 2px;
+    padding: 0.02em 0.2em;
+    box-shadow: inset 0 -0.42em 0 var(--accent-blue10);
+}
+
+/* A rule is a rule. */
+.alphainz-styled .markdown hr {
+    border: 0;
+    border-top: 1px solid var(--color-border50);
+    margin: 1em 0;
+}
+
+.alphainz-styled .markdown a {
+    color: var(--accent-blue);
+    text-decoration: none;
+}
+
+.alphainz-styled .markdown a:hover {
+    text-decoration: underline;
+}
+
+/* Citation markers: outlined in the accent rather than a grey fill. */
+.alphainz-styled .markdown span.zotero-citation,
+.alphainz-styled .source-citation {
+    background: transparent;
+    border: 1px solid var(--accent-blue50);
+    color: var(--accent-blue);
+    border-radius: 3px;
+}
+
+.alphainz-styled .markdown span.zotero-citation:hover {
+    background: var(--accent-blue);
+    color: var(--accent-white);
+    border-color: var(--accent-blue);
+}
+
+/* ==========================================================================
+ * The settings window, in a custom theme.
+ *
+ * It shares the pane's root class, so the palette already reaches it. What it
+ * needs on top is the select control: Zotero's own rule gives it two pixels of
+ * right padding, which the native chevron then sits on top of — so the last
+ * character of the longest option is covered by the arrow.
+ * ========================================================================== */
+
+.alphainz-root .preference-input {
+    font-family: inherit;
+}
+
+.alphainz-root select.preference-input {
+    padding-right: 1.6rem;
+    min-width: 8.5rem;
+    text-overflow: ellipsis;
+}
+
+.alphainz-styled .preference-input {
+    border: 1px solid var(--color-border50);
+    border-radius: 5px;
+    background-color: var(--color-background);
+}
+
+.alphainz-styled .preference-input:hover {
+    background-color: var(--material-mix-quarternary) !important;
+}
+
+.alphainz-styled .preference-input:focus {
+    border: 1px solid var(--accent-blue50);
+    border-radius: 5px;
+    background-color: var(--color-background);
+}

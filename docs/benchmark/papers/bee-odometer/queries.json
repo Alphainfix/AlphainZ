@@ -1,0 +1,53 @@
+{
+ "paper": "bee-odometer",
+ "queries": [
+  {
+   "id": "bee-odometer-text1",
+   "kind": "text",
+   "lang": "en",
+   "query": "For each extra hundred metres a forager covers, how many milliseconds does its dance message grow?",
+   "target_quote": "Over open ground, every additional 100 m of flight lengthened the waggle run by about 95 ms (Figure 1).",
+   "page": 1
+  },
+  {
+   "id": "bee-odometer-text2",
+   "kind": "text",
+   "lang": "en",
+   "query": "What distance did bees signal after a short trip through the patterned corridor?",
+   "target_quote": "Foragers that crossed only 8 m of the checkerboard tunnel danced as if they had travelled about 210 m.",
+   "page": 2
+  },
+  {
+   "id": "bee-odometer-text3",
+   "kind": "text",
+   "lang": "zh",
+   "query": "蜜蜂判断飞了多远，靠的是体力消耗还是眼睛看到的景物移动？",
+   "target_quote": "The odometer therefore integrates image motion across the eye rather than the energy spent in flight.",
+   "page": 2
+  },
+  {
+   "id": "bee-odometer-keyword4",
+   "kind": "keyword",
+   "lang": "en",
+   "query": "axial stripes",
+   "target_quote": "In the tunnel lined with axial stripes, which produce almost no image motion, dances barely changed with distance.",
+   "page": 2
+  },
+  {
+   "id": "bee-odometer-figure5",
+   "kind": "figure",
+   "lang": "en",
+   "query": "two rising lines on a plot, one much steeper than the other, with a shaded strip around the gentler one",
+   "figure": 1,
+   "page": 1
+  },
+  {
+   "id": "bee-odometer-figure6",
+   "kind": "figure",
+   "lang": "zh",
+   "query": "一个圆形的玫瑰图，扇形集中指向右上方的同一个方向",
+   "figure": 2,
+   "page": 2
+  }
+ ]
+}

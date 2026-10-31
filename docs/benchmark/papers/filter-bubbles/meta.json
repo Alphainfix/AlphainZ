@@ -1,0 +1,16 @@
+{
+ "title": "How Narrow Is the Feed? News Diversity Under an Engagement-Trained Recommender",
+ "authors": [
+  {
+   "first": "Aiko",
+   "last": "Brandvold"
+  },
+  {
+   "first": "Rafael",
+   "last": "Oduya"
+  }
+ ],
+ "year": 2024,
+ "journal": "Demonstration Studies in Computing and Society",
+ "abstract": "Recommender systems are often blamed for narrowing what people read. We followed the news feeds of 2,400 volunteers for twelve weeks on a platform whose ranking model was trained on engagement alone, and measured how many different topics each person saw. In this illustrative dataset the variety of topics fell steadily, readers sorted into a few clusters that rarely overlapped, and a simple change to the feed reversed most of the loss."
+}

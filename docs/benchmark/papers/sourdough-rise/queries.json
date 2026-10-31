@@ -1,0 +1,53 @@
+{
+ "paper": "sourdough-rise",
+ "queries": [
+  {
+   "id": "sourdough-rise-text1",
+   "kind": "text",
+   "lang": "en",
+   "query": "How much quicker did the hottest batch reach twice its starting size than the coolest one?",
+   "target_quote": "At 30 °C the dough doubled in volume in just under four hours, against nine hours at 18 °C (Figure 2).",
+   "page": 1
+  },
+  {
+   "id": "sourdough-rise-text2",
+   "kind": "text",
+   "lang": "en",
+   "query": "How did the panel's flavour impressions differ between the batches?",
+   "target_quote": "Tasters described the warm loaves as mild and slightly yeasty, while the cool ferment gave a sharper, more vinegary tang.",
+   "page": 2
+  },
+  {
+   "id": "sourdough-rise-text3",
+   "kind": "text",
+   "lang": "zh",
+   "query": "为什么面包靠近顶部的地方会有很大的不规则气孔？",
+   "target_quote": "Large irregular holes formed only under the upper crust, where gas collected late in the bake (Figure 1).",
+   "page": 2
+  },
+  {
+   "id": "sourdough-rise-keyword4",
+   "kind": "keyword",
+   "lang": "en",
+   "query": "rye starter hydration",
+   "target_quote": "The rye starter was kept at 100 percent hydration and fed twice a day for two weeks before the trials.",
+   "page": 1
+  },
+  {
+   "id": "sourdough-rise-figure5",
+   "kind": "figure",
+   "lang": "en",
+   "query": "a cut loaf seen from the side, full of round holes of many sizes, with bigger ones near the top",
+   "figure": 1,
+   "page": 1
+  },
+  {
+   "id": "sourdough-rise-figure6",
+   "kind": "figure",
+   "lang": "zh",
+   "query": "一条线往上升、另一条线往下降的双纵轴折线图",
+   "figure": 2,
+   "page": 2
+  }
+ ]
+}

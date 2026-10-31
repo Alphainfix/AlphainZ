@@ -1,0 +1,181 @@
+import React from 'react';
+import { ToolCallPart, AgentRunStatus } from '@beaver/agent-core/agents/types';
+import { TOOL_BASE_LABELS, parseArgs } from '@beaver/agent-core/run-state/toolCallRequest';
+
+/**
+ * Client-agnostic fallback for agent-action tool calls.
+ *
+ * Renders a read-only, request-side summary of an agent action (what the agent
+ * *did* / proposed) from the tool-call args alone — used when the host provides
+ * no client-specific agent-action UI (non-Zotero clients) or for an action call
+ * with no rich view (e.g. a failed call). It is deliberately minimal and makes
+ * NO host call:
+ *  - no view model (agent actions have none) and never switches to one;
+ *  - no item-name resolution (that is the tool-call LABEL layer's job, not this);
+ *  - no apply/undo controls (a client without the host slice cannot mutate Zotero).
+ *
+ * Stays free of `Zotero.*`/`getHost()` so it can live under the render-layer lint
+ * guard. The rich Zotero apply/undo UI is injected via `getHost().components`.
+ */
+
+interface GenericAgentActionViewProps {
+    /** A single action tool-call (tool-action / annotation surfaces). */
+    part?: ToolCallPart;
+    /** An edit_note group (one row per edit). */
+    editNoteParts?: ToolCallPart[];
+    runStatus?: AgentRunStatus;
+    /** Partial args while a tool call is still streaming. */
+    streamingArgs?: Record<string, unknown> | null;
+}
+
+/** Humanize an unknown tool name ("create_note" → "Create note"). */
+function humanizeToolName(toolName: string): string {
+    const spaced = toolName.replace(/[_-]+/g, ' ').trim();
+    return spaced ? spaced.charAt(0).toUpperCase() + spaced.slice(1) : 'Action';
+}
+
+function baseLabel(toolName: string): string {
+    return TOOL_BASE_LABELS[toolName] ?? humanizeToolName(toolName);
+}
+
+/**
+ * The opening of a note, as one line of plain text.
+ *
+ * Zotero notes are HTML, so the markup comes out and the entities come back;
+ * a card showing `&lt;p&gt;` would be worse than showing nothing.
+ */
+function firstLineOf(value: unknown, max = 90): string {
+    if (typeof value !== 'string' || !value.trim()) return '';
+    const text = value
+        .replace(/<br\s*\/?>/gi, ' ')
+        .replace(/<\/(?:p|div|li|h[1-6])>/gi, ' ')
+        .replace(/<[^>]*>/g, '')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/\s+/g, ' ')
+        .trim();
+    if (!text) return '';
+    return text.length > max ? `${text.slice(0, max - 1)}\u2026` : text;
+}
+
+/** Best-effort, request-side one-line detail for common agent actions. */
+export function summarizeArgs(toolName: string, args: Record<string, unknown>): string | null {
+    const countOf = (value: unknown): number | null =>
+        Array.isArray(value) ? value.length : null;
+
+    switch (toolName) {
+        case 'create_highlight_annotations':
+        case 'create_note_annotations':
+        case 'add_highlight_annotations':
+        case 'add_note_annotations': {
+            const n = countOf(args.annotations);
+            return n != null ? `${n} ${n === 1 ? 'annotation' : 'annotations'}` : null;
+        }
+        case 'edit_annotations': {
+            // Targets live inside the per-group `edits` entries.
+            const edits = Array.isArray(args.edits) ? args.edits : null;
+            if (!edits) return null;
+            const n = edits.reduce(
+                (sum: number, group: any) => sum + (countOf(group?.annotation_ids) ?? 0),
+                0,
+            );
+            return `${n} ${n === 1 ? 'annotation' : 'annotations'}`;
+        }
+        case 'delete_annotations': {
+            const n = countOf(args.annotation_ids);
+            return n != null ? `${n} ${n === 1 ? 'annotation' : 'annotations'}` : null;
+        }
+        case 'create_items':
+        case 'create_item': {
+            const n = countOf(args.items);
+            if (n != null) return `${n} ${n === 1 ? 'item' : 'items'}`;
+            const title = typeof args.title === 'string' ? args.title : null;
+            return title || null;
+        }
+        case 'create_note': {
+            /*
+             * The note's own words, not just its title.
+             *
+             * This returned `args.title` alone, and the model often supplies
+             * none — so the card asked the user to approve a note into their
+             * library while showing them nothing of what it said. A highlight
+             * card has always shown its passage; a note had no equivalent.
+             */
+            const title = typeof args.title === 'string' ? args.title.trim() : '';
+            const body = firstLineOf(args.content);
+            if (title && body) return `${title} — ${body}`;
+            return title || body || null;
+        }
+        case 'edit_note': {
+            // The batch-capable backend still calls the model-facing tool
+            // "edit_note", but request args carry an ordered edits[] array
+            // instead of flat old_string/new_string fields.
+            if (Array.isArray(args.edits)) {
+                const n = args.edits.length;
+                const first = args.edits[0] as Record<string, unknown> | undefined;
+                const firstOp = first && typeof first.operation === 'string'
+                    ? first.operation.replace(/_/g, ' ')
+                    : null;
+                const countLabel = `${n} ${n === 1 ? 'edit' : 'edits'}`;
+                return firstOp ? `${countLabel} (${firstOp})` : countLabel;
+            }
+            const op = typeof args.operation === 'string' ? args.operation : null;
+            return op ? op.replace(/_/g, ' ') : null;
+        }
+        case 'manage_tags':
+        case 'manage_collections':
+        case 'organize_items': {
+            const action = typeof args.action === 'string' ? args.action : null;
+            const name = typeof args.name === 'string' ? args.name : null;
+            return [action, name].filter(Boolean).join(': ') || null;
+        }
+        default:
+            return null;
+    }
+}
+
+const ActionRow: React.FC<{ part: ToolCallPart; streamingArgs?: Record<string, unknown> | null }> = ({
+    part,
+    streamingArgs,
+}) => {
+    const args = streamingArgs ?? parseArgs(part);
+    const detail = summarizeArgs(part.tool_name, args);
+    return (
+        <div className="display-flex flex-row gap-2 items-baseline min-w-0 px-15 py-15">
+            <div className="text-sm font-color-secondary whitespace-nowrap">
+                {baseLabel(part.tool_name)}
+            </div>
+            {detail && (
+                <div className="text-sm font-color-tertiary truncate min-w-0">
+                    {detail}
+                </div>
+            )}
+        </div>
+    );
+};
+
+export const GenericAgentActionView: React.FC<GenericAgentActionViewProps> = ({
+    part,
+    editNoteParts,
+    streamingArgs,
+}) => {
+    const parts = editNoteParts ?? (part ? [part] : []);
+    if (parts.length === 0) return null;
+
+    return (
+        <div className="display-flex flex-col min-w-0">
+            {parts.map((p, index) => (
+                <ActionRow
+                    key={`${p.tool_call_id}-${index}`}
+                    part={p}
+                    streamingArgs={editNoteParts ? undefined : streamingArgs}
+                />
+            ))}
+        </div>
+    );
+};
+
+export default GenericAgentActionView;

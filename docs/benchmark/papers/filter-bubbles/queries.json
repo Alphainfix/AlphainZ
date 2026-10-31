@@ -1,0 +1,53 @@
+{
+ "paper": "filter-bubbles",
+ "queries": [
+  {
+   "id": "filter-bubbles-text1",
+   "kind": "text",
+   "lang": "en",
+   "query": "By how much did the variety of subjects in a typical person's reading shrink over the three months?",
+   "target_quote": "After twelve weeks the median user saw articles from 4.1 sections a week, down from 6.3 at the start.",
+   "page": 1
+  },
+  {
+   "id": "filter-bubbles-text2",
+   "kind": "text",
+   "lang": "en",
+   "query": "What share of links in the network bridged separate groups of readers?",
+   "target_quote": "Only 3 percent of connections in the co-reading graph joined users from different clusters.",
+   "page": 2
+  },
+  {
+   "id": "filter-bubbles-text3",
+   "kind": "text",
+   "lang": "zh",
+   "query": "有没有什么简单办法能让推荐重新变得多样一些？",
+   "target_quote": "In a follow-up arm, adding one randomly chosen story from an unfamiliar section to every tenth slot restored most of the lost diversity, at a cost of about 2 percent of clicks.",
+   "page": 2
+  },
+  {
+   "id": "filter-bubbles-keyword4",
+   "kind": "keyword",
+   "lang": "en",
+   "query": "dwell time",
+   "target_quote": "The ranking model was trained on clicks and dwell time, with no explicit term for diversity.",
+   "page": 1
+  },
+  {
+   "id": "filter-bubbles-figure5",
+   "kind": "figure",
+   "lang": "en",
+   "query": "dots joined by thin lines, falling into three coloured clumps with only a few links between them",
+   "figure": 1,
+   "page": 1
+  },
+  {
+   "id": "filter-bubbles-figure6",
+   "kind": "figure",
+   "lang": "zh",
+   "query": "一个方格矩阵，颜色从浅到深，对角线上最深，右边有一个颜色刻度条",
+   "figure": 2,
+   "page": 2
+  }
+ ]
+}

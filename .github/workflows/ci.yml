@@ -6,6 +6,11 @@ on:
       - main
   pull_request:
 
+# The plugin lives in plugin/; the repository root holds only the README, docs and licence.
+defaults:
+  run:
+    working-directory: plugin
+
 jobs:
   checks:
     runs-on: ubuntu-latest
@@ -18,6 +23,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: plugin/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -28,19 +34,12 @@ jobs:
       - name: Typecheck CLI
         run: npm run typecheck:cli
 
-      # Both packages have landed, so neither is `--if-present` any more: that
-      # flag turns a renamed or deleted script into a green no-op, which is the
-      # one failure a gate must not have.
       - name: Typecheck agent-core
         run: npm run typecheck:core
 
-      # Same pattern for the shared React layer: standalone typecheck plus the
-      # closure gate, with neither zotero-types nor @types/office-js present.
       - name: Typecheck agent-ui
         run: npm run typecheck:ui
 
-      # eslint directly rather than lint:check — the prettier half of that
-      # script is a separate, repo-wide formatting decision.
       - name: Lint
         run: npx eslint .
 

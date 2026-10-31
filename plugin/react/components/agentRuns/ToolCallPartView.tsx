@@ -1,0 +1,515 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { useAtomValue, useSetAtom } from 'jotai';
+import { AgentRunStatus, ToolCallPart, isUnsuccessfulToolReturn } from '@beaver/agent-core/agents/types';
+import { toolResultsMapAtom, getToolCallStatus } from '@beaver/agent-core/run-state/atoms';
+import { getToolCallLabel, type ToolCallLabelEnrich } from '@beaver/agent-core/run-state/toolLabels';
+import {
+    isToolResultView,
+    getToolResultRenderableCount,
+    type ToolResultView as ToolResultViewModel,
+} from '@beaver/agent-core/run-state/toolResultViews';
+import { ToolResultView } from './ToolResultView';
+import { GenericAgentActionView } from './GenericAgentActionView';
+import { getHost } from '@beaver/agent-ui/host';
+import { getPendingApprovalForToolcallAtom, getAgentActionsByToolcallAtom } from '../../agents/agentActions';
+import {
+    Spinner,
+    AlertIcon,
+    ArrowDownIcon,
+    ArrowRightIcon,
+    SearchIcon,
+    ViewIcon,
+    Icon,
+    PuzzleIcon,
+    HelpCircleIcon,
+    FileViewIcon,
+    GlobalSearchIcon,
+    TextAlignLeftIcon,
+    DocumentValidationIcon,
+    FolderDetailIcon,
+    FolderAddIcon,
+    DatabaseIcon,
+    IdeaIcon,
+    TaskDoneIcon,
+    TaskDailyIcon,
+    TagIcon,
+    PropertyEditIcon,
+    HighlighterIcon,
+    ChattingIcon,
+    LayersIcon,
+    WrenchIcon,
+} from '../icons/icons';
+import { toolExpandedAtom, toggleToolExpandedAtom, setToolExpandedAtom } from '../../atoms/messageUIState';
+import { resolveToolCallLabelEnrich } from '../../utils/toolCallLabelEnrich';
+
+type IconComponent = React.FC<React.SVGProps<SVGSVGElement>>;
+
+/**
+ * Maps tool names to their appropriate icons
+ */
+const TOOL_ICONS: Record<string, IconComponent> = {
+    // Search tools - library search
+    item_search: SearchIcon,
+    item_search_by_topic: SearchIcon,
+    item_search_by_metadata: SearchIcon,
+    fulltext_search: SearchIcon,
+    fulltext_search_keywords: SearchIcon,
+    zotero_search: SearchIcon,
+
+    // List tools - library management
+    list_items: TextAlignLeftIcon,
+    list_collections: FolderDetailIcon,
+    list_tags: TagIcon,
+    list_libraries: DatabaseIcon,
+
+    // Metadata tools
+    get_metadata: FileViewIcon,
+    edit_metadata: PropertyEditIcon,
+    edit_item: PropertyEditIcon,
+
+    // Annotation tools
+    get_annotations: HighlighterIcon,
+    find_annotations: HighlighterIcon,
+
+    // Reading tools
+    search_in_documents: TextAlignLeftIcon,
+    search_in_attachment: SearchIcon,
+    find_in_attachments: SearchIcon,
+    read: TextAlignLeftIcon,
+    read_pages: TextAlignLeftIcon,
+    read_attachment: TextAlignLeftIcon,
+    view_page_images: ViewIcon,
+    view_pages: ViewIcon,
+    view: ViewIcon,
+
+    // Note tools
+    read_note: TextAlignLeftIcon,
+    edit_note: PropertyEditIcon,
+    create_note: DocumentValidationIcon,
+
+    // Extract tool
+    extract: TaskDailyIcon,
+
+    // External search tools
+    external_search: GlobalSearchIcon,
+    lookup_work: GlobalSearchIcon,
+
+    // Create item tool
+    create_zotero_item: DocumentValidationIcon,
+    create_items: DocumentValidationIcon,
+
+    // Create collection tool
+    create_collection: FolderAddIcon,
+
+    // Organize items tool
+    organize_items: TaskDoneIcon,
+
+    // Read tool result
+    read_file: TextAlignLeftIcon,
+    read_documentation: HelpCircleIcon,
+    load_tool_results: LayersIcon,
+    
+    // Progressive disclosure tools
+    load_capability: WrenchIcon,
+    search_tools: WrenchIcon,
+
+    // Batch operations
+    batch_start: LayersIcon,
+    batch_resolve: LayersIcon,
+    batch_digest: LayersIcon,
+
+    // User interaction
+    ask_user_question: ChattingIcon,
+};
+
+/**
+ * Progressive disclosure tools whose returns are framework-internal and shouldn't
+ * be expandable. Their result is a file or an instruction blob written for the
+ * model, so expanding one shows raw text rather than anything a reader can use.
+ */
+const NON_EXPANDABLE_TOOLS = new Set([
+    'read_file',
+    'read_documentation',
+    'load_capability',
+    'search_tools',
+    'load_tool_results',
+    'batch_resolve',
+    'batch_digest',
+]);
+
+/**
+ * Tools whose expanded body exists only as a view model. Their raw return is
+ * framework-internal state written for the model (batch_start returns the
+ * whole batch ledger), so a call that predates the view — or one whose view
+ * could not be built — stays collapsed rather than showing that state.
+ */
+const VIEW_ONLY_EXPANDABLE_TOOLS = new Set(['batch_start']);
+
+/**
+ * Actions that get the full preview-and-approve view rather than a plain row.
+ *
+ * Named by *action* rather than by tool: a proposal carries its action type,
+ * and that is what the preview dispatches on. The local tool that proposes a
+ * highlight is called `create_highlight`, the action it proposes is
+ * `create_highlight_annotations`, and matching on the former is why a proposed
+ * highlight showed an Apply button with nothing to say what it would apply.
+ */
+export const STANDARD_AGENT_ACTION_KINDS = new Set([
+    'edit_metadata',
+    'create_collection',
+    'create_highlight_annotations',
+    'create_note_annotations',
+    'edit_annotations',
+    'delete_annotations',
+    'organize_items',
+    'manage_tags',
+    'manage_collections',
+    'create_item',
+    'create_items',
+    'create_note',
+]);
+
+/** Tools that support streaming argument preview */
+const STREAMING_PREVIEW_TOOLS = new Set(['create_note']);
+
+/**
+ * Detect the type of file being read by the file-reading tools.
+ * Simplified version of detectReadFileType from toolLabels.ts
+ */
+function detectReadFileType(path: string): 'tool_result' | 'skill' | 'skill_resource' | 'documentation' | 'unknown' {
+    const pathLower = path.toLowerCase();
+    
+    if (pathLower.endsWith('.json.gz')) {
+        return 'tool_result';
+    }
+    
+    if (pathLower.includes('/skills/')) {
+        const fileName = path.split('/').pop()?.toUpperCase();
+        if (fileName === 'SKILL.MD') {
+            return 'skill';
+        }
+        
+        const parts = pathLower.split('/skills/');
+        if (parts.length > 1) {
+            const skillPath = parts[1];
+            const pathSegments = skillPath.split('/');
+            if (pathSegments.length > 1 && ['scripts', 'references', 'assets'].includes(pathSegments[1])) {
+                return 'skill_resource';
+            }
+        }
+        
+        return 'skill';
+    }
+    
+    if (pathLower.includes('/docs/')) {
+        return 'documentation';
+    }
+    
+    return 'unknown';
+}
+
+/**
+ * Get the icon for a tool based on its name and arguments
+ */
+function getToolIcon(part: ToolCallPart): IconComponent {
+    const toolName = part.tool_name;
+    
+    // Special handling for the file readers - check file type
+    if (toolName === 'read_file' || toolName === 'read_documentation') {
+        let args: Record<string, unknown> | undefined;
+        try {
+            args = typeof part.args === 'string'
+                ? JSON.parse(part.args)
+                : (part.args as Record<string, unknown>);
+        } catch {
+            // args may be incomplete while streaming
+        }
+        const path = args?.path as string | undefined;
+        
+        if (path) {
+            const fileType = detectReadFileType(path);
+            if (fileType === 'skill' || fileType === 'skill_resource') {
+                return IdeaIcon;
+            }
+        }
+    }
+    
+    return TOOL_ICONS[toolName] ?? PuzzleIcon;
+}
+
+interface ToolCallPartViewProps {
+    part: ToolCallPart;
+    /** Run ID for global UI state management */
+    runId: string;
+    /** Index of the parent response message within the run (for unique expansion keys) */
+    responseIndex: number;
+    /** Run status */
+    runStatus: AgentRunStatus;
+}
+
+/**
+ * Renders a tool call with its status and result.
+ * Uses toolResultsMapAtom to look up the result for this tool call.
+ * Visibility state is managed globally via searchToolVisibilityAtom.
+ * Shows AgentActionView for tools with agent actions (e.g., edit_metadata).
+ */
+export const ToolCallPartView: React.FC<ToolCallPartViewProps> = ({ part, runId, responseIndex, runStatus }) => {
+    const resultsMap = useAtomValue(toolResultsMapAtom);
+    const result = resultsMap.get(part.tool_call_id);
+    const hasResult = result !== undefined;
+    const status = getToolCallStatus(part.tool_call_id, resultsMap, runStatus);
+
+    // Hydrated tool-result view model — present once the call has returned.
+    const rawView = result?.part_kind === 'tool-return' ? result.metadata?.view : undefined;
+    const view: ToolResultViewModel | null = isToolResultView(rawView) ? rawView : null;
+    // Renderable count, for expansion gating only (don't expand a zero-result tool).
+    // Prefer the view; fall back to the legacy summary count so view-less returns
+    // still block expansion at zero results.
+    const renderableCount = view
+        ? getToolResultRenderableCount(view)
+        : result?.part_kind === 'tool-return'
+            ? result.metadata?.summary?.result_count ?? null
+            : null;
+
+    // Host-resolved request-side display names for the parts the view model does
+    // not cover (pending/failed item names, list_* library/collection scope names).
+    // Resolved in an effect via the itemData host slice, mirroring CitedSourcesList;
+    // degrades to the base label on clients without that capability.
+    const [labelEnrich, setLabelEnrich] = useState<ToolCallLabelEnrich | null>(null);
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            const enrich = await resolveToolCallLabelEnrich(part, view);
+            if (!cancelled) setLabelEnrich(enrich);
+        })();
+        return () => { cancelled = true; };
+    }, [part.tool_call_id, part.args, view]);
+
+    const label = getToolCallLabel(part, status, { view, enrich: labelEnrich });
+    
+    // Check for pending approval for this tool call
+    const getPendingApproval = useAtomValue(getPendingApprovalForToolcallAtom);
+    const pendingApproval = getPendingApproval(part.tool_call_id);
+    const isAwaitingApproval = pendingApproval !== null;
+
+    // Check for agent actions associated with this tool call
+    const getAgentActionsByToolcall = useAtomValue(getAgentActionsByToolcallAtom);
+    const agentActions = getAgentActionsByToolcall(part.tool_call_id);
+    const hasAgentAction = agentActions.length > 0;
+    
+    /*
+     * Which view a call gets is a question about the *action*, not the tool.
+     *
+     * This used to test the tool name against Beaver's server-side catalogue.
+     * The local tools are named for the model's benefit — `create_highlight`,
+     * `add_papers_to_library` — so neither matched, and a proposed highlight
+     * rendered as a bare "Proposing a highlight" row with an Apply button and
+     * no sign of *what* would be highlighted. The preview for it already
+     * existed and was simply never reached.
+     *
+     * The approval carries the action type, which is the thing the preview
+     * dispatches on, so ask that first and fall back to the tool name for the
+     * server-driven path.
+     */
+    /*
+     * Once the approval is answered it is gone from the pending map, and the
+     * fallback used to be the tool name — `create_highlight`, which no action
+     * kind matches. So the moment the user clicked Apply, the card was replaced
+     * by the plain tool row; and that row shares its expansion key with the
+     * card, which had set it to "open" while it awaited a decision. The result
+     * was the raw tool return unfolded in the answer, several times the height
+     * of the card it replaced. The recorded action carries its own kind, so a
+     * decided proposal stays on the card path — where it renders as one line.
+     */
+    const actionKind = pendingApproval?.actionType ?? agentActions[0]?.action_type ?? part.tool_name;
+    const isStandardAgentActionTool = STANDARD_AGENT_ACTION_KINDS.has(actionKind);
+    const isExtractConfirmApproval =
+        part.tool_name === 'extract' &&
+        pendingApproval?.actionType === 'confirm_extraction';
+    const isExternalSearchConfirmApproval =
+        part.tool_name === 'external_search' &&
+        pendingApproval?.actionType === 'confirm_external_search';
+    const isConfirmApproval = isExtractConfirmApproval || isExternalSearchConfirmApproval;
+    const isExtractionRejected =
+        part.tool_name === 'extract' &&
+        hasResult &&
+        result?.content?.status &&
+        result?.content?.status === 'REJECTED';
+    const isExternalSearchRejected =
+        part.tool_name === 'external_search' &&
+        hasResult &&
+        result?.content?.status &&
+        result?.content?.status === 'REJECTED';
+
+    // For extract/external_search, only render AgentActionView while approval is pending.
+    // After approval, fall back to normal tool-call rendering so the in-progress spinner stays visible.
+    const showAgentActionView =
+        (isStandardAgentActionTool && (isAwaitingApproval || hasAgentAction)) ||
+        isConfirmApproval;
+    const actionToolName = isExtractConfirmApproval
+        ? 'confirm_extraction'
+        : isExternalSearchConfirmApproval
+            ? 'confirm_external_search'
+            // The preview keys off this too, and `create_highlight` is not a
+            // kind it knows — `create_highlight_annotations` is.
+            : actionKind;
+
+    // Use global Jotai atom for expansion state (persists across re-renders and syncs between panes)
+    const expansionKey = `${runId}:${responseIndex}:${part.tool_call_id}`;
+    const expansionState = useAtomValue(toolExpandedAtom);
+    const toggleExpanded = useSetAtom(toggleToolExpandedAtom);
+    const setExpanded = useSetAtom(setToolExpandedAtom);
+    const isExpanded = expansionState[expansionKey] ?? false;
+    const wasConfirmApprovalRef = useRef(isConfirmApproval);
+
+    // When extract/external_search approval resolves, collapse once so the completed result
+    // doesn't auto-expand. Users can still expand manually afterward.
+    useEffect(() => {
+        const wasConfirmApproval = wasConfirmApprovalRef.current;
+        const isConfirmTool = part.tool_name === 'extract' || part.tool_name === 'external_search';
+        if (isConfirmTool && wasConfirmApproval && !isConfirmApproval) {
+            setExpanded({ key: expansionKey, expanded: false });
+        }
+        wasConfirmApprovalRef.current = isConfirmApproval;
+    }, [part.tool_name, isConfirmApproval, expansionKey, setExpanded]);
+
+    const [isHovered, setIsHovered] = useState(false);
+
+    const isInProgress = status === 'in_progress';
+    const hasError = status === 'error';
+
+    const canExpand =
+        hasResult &&
+        result?.part_kind === 'tool-return' &&
+        // A non-success return holds an explanatory message, not a result
+        // payload. Keep it collapsed so it reads as a failed call, not a result.
+        !isUnsuccessfulToolReturn(result) &&
+        // If we can compute a count (search-like tools), block expansion for 0 results.
+        (renderableCount === null || renderableCount > 0) &&
+        !NON_EXPANDABLE_TOOLS.has(part.tool_name) &&
+        (!VIEW_ONLY_EXPANDABLE_TOOLS.has(part.tool_name) || view !== null) &&
+        !isExtractionRejected &&
+        !isExternalSearchRejected &&
+        !showAgentActionView; // Don't allow expand toggle for agent action tools
+
+    const effectiveExpanded = isExpanded && canExpand;
+
+    const handleToggleExpanded = () => {
+        if (canExpand) {
+            toggleExpanded(expansionKey);
+        }
+    };
+
+    const getIcon = () => {
+        if (isInProgress && (runStatus === 'canceled' || runStatus === 'error')) return AlertIcon;
+        if (isInProgress) return Spinner;
+        if (hasError) return AlertIcon;
+        if (effectiveExpanded) return ArrowDownIcon;
+        if (isHovered && canExpand) return ArrowRightIcon;
+        
+        return getToolIcon(part);
+    };
+
+    const hasExpandedResult = effectiveExpanded && canExpand;
+    const isShimmering = isInProgress && !hasResult && runStatus === 'in_progress';
+
+    // Streaming argument preview for tools that support live preview (e.g., create_note)
+    const streamingArgs = part.streaming_args;
+    const showStreamingPreview = !!streamingArgs && runStatus === 'in_progress'
+        && STREAMING_PREVIEW_TOOLS.has(part.tool_name) && !showAgentActionView && !hasError;
+
+    // Note: a pending ask_user_question renders as the composer-takeover panel
+    // (AskUserQuestionPanel, swapped in by Sidebar) — here the call stays a
+    // normal passive row (in-progress spinner, not expandable until the tool
+    // return arrives with the answered view).
+
+    // Agent-action UI (incl. streaming preview) is host-injected; non-Zotero
+    // clients fall back to a request-side summary.
+    if (showStreamingPreview && streamingArgs) {
+        return getHost().components?.agentActionInStream({
+            kind: 'tool-action',
+            part,
+            runId,
+            responseIndex,
+            runStatus,
+            toolName: part.tool_name,
+            pendingApproval: null,
+            hasToolReturn: false,
+            streamingArgs,
+        }) ?? <GenericAgentActionView part={part} runStatus={runStatus} streamingArgs={streamingArgs} />;
+    }
+
+    // For agent action tools, show the action UI instead of the normal tool result
+    if (showAgentActionView) {
+        return getHost().components?.agentActionInStream({
+            kind: 'tool-action',
+            part,
+            runId,
+            responseIndex,
+            runStatus,
+            toolName: actionToolName,
+            pendingApproval,
+            hasToolReturn: hasResult,
+        }) ?? <GenericAgentActionView part={part} runStatus={runStatus} />;
+    }
+
+    const effectiveLabelColor = effectiveExpanded
+        ? 'font-color-primary'
+        : NON_EXPANDABLE_TOOLS.has(part.tool_name)
+            ? 'font-color-secondary'
+            : '';
+
+    return (
+        <div
+            id={`tool-${part.tool_call_id}`}
+            className={`
+                rounded-md flex flex-col min-w-0
+                ${effectiveExpanded ? 'border-popup' : 'border-transparent'}
+                ${hasExpandedResult ? 'mb-2' : ''}
+            `}
+        >
+            <div
+                className={`
+                    display-flex flex-row py-15
+                    ${effectiveExpanded ? 'border-bottom-quinary bg-senary' : ''}
+                `}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+            >
+                <button
+                    type="button"
+                    className={`variant-ghost-secondary display-flex flex-row gap-2 w-full text-left min-w-0 ${canExpand ? 'cursor-pointer' : ''}`}
+                    style={{ fontSize: '0.95rem', background: 'transparent', border: 0, padding: 0 }}
+                    aria-expanded={effectiveExpanded}
+                    aria-controls={`tool-result-${part.tool_call_id}`}
+                    onClick={handleToggleExpanded}
+                    disabled={!canExpand}
+                >
+                    <div className="display-flex flex-row px-3 gap-2 min-w-0">
+                        <div className={`flex-1 display-flex mt-010 ${effectiveLabelColor}`}>
+                            <Icon icon={getIcon()} />
+                        </div>
+
+                        {/* min-w-0 + truncate keep the label on a single line; long item
+                            names/locators get an ellipsis instead of wrapping. Must stay a
+                            block (not display-flex) — text-overflow:ellipsis is ignored on
+                            flex containers, which clips the text without the "…". */}
+                        <div className={`min-w-0 truncate ${effectiveLabelColor} ${isShimmering ? 'shimmer-text' : ''}`}>
+                            {label}
+                        </div>
+                    </div>
+                </button>
+                <div className="flex-1"/>
+            </div>
+
+            {/* Expanded result view */}
+            {hasExpandedResult && (
+                <div id={`tool-result-${part.tool_call_id}`}>
+                    <ToolResultView result={result} />
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default ToolCallPartView;

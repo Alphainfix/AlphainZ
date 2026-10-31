@@ -1,0 +1,157 @@
+import { ZoteroItemReference } from "@beaver/agent-core/types/zotero";
+import { renderToHTML, RenderContextData } from "./citationRenderers";
+import { prepareCitationRenderContext } from "./citationRenderContext";
+import { hasSchemaVersionWrapper } from "../../src/utils/noteWrapper";
+import { store } from "../store";
+import { currentThreadNameAtom } from "../atoms/threads";
+import { logger } from "@beaver/agent-core/platform/logger";
+import { libraryRefForLibraryID } from "../../src/utils/libraryIdentity";
+
+/**
+ * Schema version used by the Zotero note editor for modern notes.
+ * Version 9 is standard for notes without underline annotations.
+ */
+const NOTE_SCHEMA_VERSION = 9;
+
+/**
+ * Wrap note HTML in a `<div data-schema-version="N">` container if not already present.
+ * This ensures Beaver-created notes have the same structure as notes created by the
+ * Zotero note editor, which is required for edit_note to work correctly.
+ */
+export function wrapWithSchemaVersion(html: string): string {
+    if (hasSchemaVersionWrapper(html)) return html;
+    return `<div data-schema-version="${NOTE_SCHEMA_VERSION}">${html}</div>`;
+}
+
+export interface SaveStreamingNoteOptions {
+    markdownContent: string;
+    title: string;
+    parentReference?: ZoteroItemReference;
+    targetLibraryId?: number;
+    contextData?: RenderContextData;
+    threadId?: string;
+    runId?: string;
+}
+
+/** Escape HTML special characters in plain text */
+function escapeHtml(str: string): string {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/**
+ * Generate an HTML title heading for a saved note.
+ * For single responses: "Thread Name (Chat 2, Apr 1, 2026, 4:23 PM)"
+ * Date/time is locale-aware (e.g. 24h clock in Europe).
+ * @param responseIndex - 1-based index of the response in the thread (omit for full-thread saves)
+ */
+export function generateNoteTitle(responseIndex?: number): string {
+    const threadName = store.get(currentThreadNameAtom) || 'AlphainZ Response';
+    const now = new Date();
+    const dateStr = now.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    const indexPart = responseIndex != null ? ` - Message ${responseIndex}` : '';
+    return `<h1>${escapeHtml(threadName)}${indexPart} (${dateStr} at ${timeStr})</h1>`;
+}
+
+export function getBeaverNoteFooterHTML(threadId: string, runId?: string): string {
+    const url = runId
+        ? `zotero://alphainz/thread/${threadId}/run/${runId}`
+        : `zotero://alphainz/thread/${threadId}`;
+    const linkText = runId ? 'Open Message' : 'Open Chat';
+    return `<p><span style="color: #aaa;"><strong>Created by AlphainZ</strong> \u00b7 <a href="${url}">${linkText}</a></span></p>`;
+}
+
+export interface ProvenanceNoteOptions {
+    reason?: string;
+    threadId?: string;
+    runId?: string;
+}
+
+export interface ProvenanceNoteParent {
+    library_id: number;
+    zotero_key: string;
+    library_ref?: string;
+}
+
+/**
+ * Build the inner HTML for an item provenance note.
+ *
+ * Separate from the Extra-field stamp in `addItemActions.ts`, which was renamed
+ * on its own — so this note kept signing itself "Added by Beaver" long after
+ * the plugin stopped being called that, in a note written into the user's
+ * library. Nothing matches on this string; it is read by people.
+ */
+export function buildProvenanceNoteHTML(options: ProvenanceNoteOptions = {}): string {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    const lines = [
+        `<p><strong>Added by AlphainZ</strong> on ${dateStr} at ${timeStr}</p>`,
+    ];
+
+    if (options.reason) {
+        lines.push(`<p><strong>Reason:</strong> ${escapeHtml(options.reason)}</p>`);
+    }
+
+    if (options.threadId) {
+        lines.push(getBeaverNoteFooterHTML(options.threadId, options.runId));
+    }
+
+    return lines.join('');
+}
+
+/**
+ * Create a child note that records why Beaver added an item.
+ */
+export async function createProvenanceNote(
+    parent: ProvenanceNoteParent,
+    options: ProvenanceNoteOptions = {},
+): Promise<void> {
+    try {
+        const zoteroNote = new Zotero.Item('note');
+        zoteroNote.libraryID = parent.library_id;
+        zoteroNote.parentKey = parent.zotero_key;
+        zoteroNote.setNote(wrapWithSchemaVersion(buildProvenanceNoteHTML(options)));
+        await zoteroNote.saveTx();
+    } catch (error) {
+        logger(`createProvenanceNote: Failed to create provenance note: ${error}`, 1);
+    }
+}
+
+export interface SavedNoteReference {
+
+    zotero_key: string;
+    parent_key?: string;
+    library_id: number;
+    /** Device-portable library identity ("u" | "g<groupID>"). See `src/utils/libraryIdentity.ts`. */
+    library_ref?: string;
+}
+
+export async function saveStreamingNote(options: SaveStreamingNoteOptions): Promise<SavedNoteReference> {
+    const { markdownContent, parentReference, targetLibraryId, contextData, threadId, runId } = options;
+    const renderContextData = await prepareCitationRenderContext(markdownContent, contextData);
+    let htmlContent = renderToHTML(markdownContent.trim(), "markdown", renderContextData);
+
+    if (threadId && runId) {
+        htmlContent += getBeaverNoteFooterHTML(threadId, runId);
+    }
+
+    const zoteroNote = new Zotero.Item('note');
+
+    if (parentReference) {
+        zoteroNote.libraryID = parentReference.library_id;
+        zoteroNote.parentKey = parentReference.zotero_key;
+    } else if (typeof targetLibraryId === 'number') {
+        zoteroNote.libraryID = targetLibraryId;
+    }
+
+    zoteroNote.setNote(wrapWithSchemaVersion(htmlContent));
+    await zoteroNote.saveTx();
+
+    return {
+        library_id: zoteroNote.libraryID,
+        zotero_key: zoteroNote.key,
+        library_ref: libraryRefForLibraryID(zoteroNote.libraryID) ?? undefined,
+        ...(zoteroNote.parentKey ? { parent_key: zoteroNote.parentKey } : {})
+    };
+}
