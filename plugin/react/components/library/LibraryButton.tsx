@@ -9,6 +9,7 @@ import { useRemoveContextMenu } from '../../hooks/useRemoveContextMenu';
 import { ChipWithPopup, type ChipPopupContent } from '@beaver/agent-ui/chat/ChipPopup';
 import { ChipButton } from '../agentRuns/requestChips/ChipButton';
 import { ChipRemovableIcon } from '../agentRuns/requestChips/ChipRemovableIcon';
+import { t } from '../../../src/utils/i18n';
 
 const MAX_LIBRARYBUTTON_TEXT_LENGTH = 20;
 
@@ -40,7 +41,7 @@ export const LibraryButton: React.FC<LibraryButtonProps> = ({
         disabled,
         // Mirror the button click: select (reveal) the library.
         extraMenuItems: [{
-            label: 'Reveal Library',
+            label: t('Reveal Library'),
             icon: LibraryIcon,
             onClick: () => selectLibrary(library),
         }],
@@ -69,8 +70,8 @@ export const LibraryButton: React.FC<LibraryButtonProps> = ({
             </span>
         ),
         title: library.name,
-        subtitle: { text: 'Search filter' },
-        action: { icon: LibraryIcon, label: 'Reveal in library' },
+        subtitle: { text: t('Search filter') },
+        action: { icon: LibraryIcon, label: t('Reveal in library') },
     };
 
     return (

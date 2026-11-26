@@ -8,6 +8,7 @@ import {
     libraryExclusionKey,
     profileWithPlanAtom,
 } from './profile';
+import { t } from '../../src/utils/i18n';
 
 export const isUpdatingExcludedLibrariesAtom = atom(false);
 
@@ -39,8 +40,8 @@ export const toggleExcludedLibraryAtom = atom(
         } catch (error) {
             set(addPopupMessageAtom, {
                 type: 'error',
-                title: 'Unable to update library access',
-                text: 'That change could not be saved. Check the Zotero error console.',
+                title: t('Unable to update library access'),
+                text: t('That change could not be saved. Check the Zotero error console.'),
             });
         } finally {
             set(isUpdatingExcludedLibrariesAtom, false);

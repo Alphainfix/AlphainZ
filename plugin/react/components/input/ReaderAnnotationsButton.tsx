@@ -12,6 +12,7 @@ import { truncateText } from '@beaver/agent-ui/utils/stringUtils'
 import { ChipWithListPopup, type ChipListPopupContent } from '@beaver/agent-ui/chat/ChipPopup'
 import { ChipButton } from '../agentRuns/requestChips/ChipButton'
 import { ChipRemovableIcon } from '../agentRuns/requestChips/ChipRemovableIcon'
+import { t } from '../../../src/utils/i18n';
 
 /** Rows the hover list shows before it summarizes the rest. */
 const MAX_POPUP_ROWS = 5;
@@ -61,8 +62,8 @@ export const ReaderAnnotationsButton = forwardRef<HTMLButtonElement, {
             return {
                 key: annotation.key,
                 icon: <Icon icon={HighlighterIcon} className="scale-90 font-color-secondary" />,
-                title: truncateText(text || comment || '(no text)', MAX_POPUP_TEXT),
-                subtitle: page ? { text: `p.${page}` } : null,
+                title: truncateText(text || comment || t('(no text)'), MAX_POPUP_TEXT),
+                subtitle: page ? { text: t('p.{page}', { page }) } : null,
             };
         });
         // The attached set is capped; the count is the paper's whole set, and
@@ -70,8 +71,8 @@ export const ReaderAnnotationsButton = forwardRef<HTMLButtonElement, {
         const beyondList = annotations.length - rows.length;
         const beyondAttached = Math.max(0, total - staged.length);
         const parts: string[] = [];
-        if (beyondList > 0) parts.push(`${beyondList} more attached`);
-        if (beyondAttached > 0) parts.push(`${beyondAttached} not attached — the agent can fetch them`);
+        if (beyondList > 0) parts.push(t('{count} more attached', { count: beyondList }));
+        if (beyondAttached > 0) parts.push(t('{count} not attached — the agent can fetch them', { count: beyondAttached }));
         return { rows, footer: parts.length > 0 ? parts.join(' · ') : null };
     }, [annotations, staged, total]);
 

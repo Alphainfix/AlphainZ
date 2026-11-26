@@ -3,6 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Icon from '../icons/Icon';
 import { getWindowFromElement, getDocumentFromElement } from '../utils/windowContext';
+import { t } from '../i18n';
 
 /**
 * Menu item interface
@@ -518,7 +519,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                                             onMouseEnter={() => {
                                                 setActiveActionsIndex(index);
                                             }}
-                                            aria-label={btn.ariaLabel || 'Action'}
+                                            aria-label={btn.ariaLabel || t('Action')}
                                             title={btn.tooltip}
                                         >
                                             {btn.icon}

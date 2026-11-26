@@ -7,6 +7,7 @@ import {
     AttachmentMatchView,
 } from '@beaver/agent-core/run-state/toolResultViews';
 import { getHost } from '@beaver/agent-ui/host';
+import { t, tn } from '../../../../src/utils/i18n';
 
 /**
  * Shared renderer for the {@link AttachmentSearchView} view model
@@ -82,18 +83,15 @@ function highlightSnippet(snippet: string, terms: Set<string>): React.ReactNode 
     return nodes;
 }
 
-function pluralize(count: number, noun: string): string {
-    if (count === 1) return `${count} ${noun}`;
-    const plural = /(?:ch|sh|s|x|z)$/i.test(noun) ? `${noun}es` : `${noun}s`;
-    return `${count} ${plural}`;
-}
+const matchCount = (count: number) => tn(count, '{count} match', '{count} matches');
+const documentCount = (count: number) => tn(count, '{count} document', '{count} documents');
 
 function matchPageText(row: AttachmentSearchRowView, match: AttachmentMatchView): string {
     // Snapshots are a continuous scroll view with no page model; any page
     // number on the wire is meaningless to the reader, so never label it.
     if (row.content_kind === 'snapshot') return '';
     const page = match.page_label ?? (match.page_number != null ? String(match.page_number) : null);
-    return page ? `Page ${page}` : '';
+    return page ? t('Page {page}', { page }) : '';
 }
 
 /**
@@ -122,11 +120,11 @@ function hasMatchRows(row: AttachmentSearchRowView): boolean {
 function attachmentStatusText(row: AttachmentSearchRowView): string {
     switch (rowStatus(row)) {
         case 'error':
-            return 'search error';
+            return t('search error');
         case 'no_matches':
-            return 'no matches';
+            return t('no matches');
         default:
-            return row.match_count === 1 ? '1 match' : `${row.match_count} matches`;
+            return matchCount(row.match_count);
     }
 }
 
@@ -164,7 +162,7 @@ export const AttachmentSearchResultView: React.FC<{ view: AttachmentSearchView }
     if (attachments.length === 0) {
         return (
             <div className="p-3 text-sm font-color-secondary">
-                No matches found
+                {t('No matches found')}
             </div>
         );
     }
@@ -207,7 +205,7 @@ export const AttachmentSearchResultView: React.FC<{ view: AttachmentSearchView }
     const renderAttachment = (row: AttachmentSearchRowView) => {
         const attKey = `${row.library_id}-${row.zotero_key}`;
         const isHovered = hoveredKey === attKey;
-        const title = row.is_external ? 'Click to open the file' : 'Click to reveal in Zotero';
+        const title = row.is_external ? t('Click to open the file') : t('Click to reveal in Zotero');
         return (
             <React.Fragment key={attKey}>
                 <div
@@ -281,14 +279,25 @@ export const AttachmentSearchResultView: React.FC<{ view: AttachmentSearchView }
     const collapseNegative = positive.length > 0 && negative.length > 0;
     const errorCount = negative.filter((row) => rowStatus(row) === 'error').length;
     const toggleHovered = hoveredKey === '__no-matches-toggle';
-    const toggleLabel = `${showNoMatches ? 'Hide' : 'Show'} ${pluralize(negative.length, 'document')} without matches`
-        + (errorCount > 0 ? ` (${errorCount} could not be searched)` : '');
+    const toggleAction = showNoMatches
+        ? tn(negative.length, 'Hide {count} document without matches', 'Hide {count} documents without matches')
+        : tn(negative.length, 'Show {count} document without matches', 'Show {count} documents without matches');
+    const toggleLabel = errorCount > 0
+        ? t('{label} ({count} could not be searched)', { label: toggleAction, count: errorCount })
+        : toggleAction;
 
     const returnedMatches = attachments.reduce((sum, row) => sum + rowMatches(row).length, 0);
     const documentsWithMatches = attachments.filter((row) => rowMatches(row).length > 0).length;
     const footerText = returnedMatches === view.total_matches
-        ? `${pluralize(view.total_matches, 'match')} found across ${pluralize(documentsWithMatches, 'document')}`
-        : `Showing ${returnedMatches} of ${view.total_matches} matches across ${pluralize(documentsWithMatches, 'document')}`;
+        ? t('{matches} found across {documents}', {
+            matches: matchCount(view.total_matches),
+            documents: documentCount(documentsWithMatches),
+        })
+        : t('Showing {shown} of {total} matches across {documents}', {
+            shown: returnedMatches,
+            total: view.total_matches,
+            documents: documentCount(documentsWithMatches),
+        });
 
     return (
         <div className="display-flex flex-col min-w-0">

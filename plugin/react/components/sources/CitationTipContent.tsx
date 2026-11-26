@@ -1,4 +1,5 @@
 import React from 'react';
+import { t } from '../../../src/utils/i18n';
 
 const citationBadge: React.CSSProperties = {
     fontSize: '0.85em',
@@ -32,12 +33,12 @@ const blue: React.CSSProperties = {
 
 export const CitationTipContent: React.FC = () => (
     <div className="text-base font-color-secondary" style={{ lineHeight: '1.6' }}>
-        AlphainZ cites sources from your library and beyond.
+        {t('AlphainZ cites sources from your library and beyond.')}
         <br />
-        <span style={gray}>1</span> points to an item in your library.
+        <span style={gray}>1</span>{' '}{t('points to an item in your library.')}
         <br />
-        <span style={green}>2</span> opens your PDF and highlights the exact passage it's based on.
+        <span style={green}>2</span>{' '}{t('opens your PDF and highlights the exact passage it\'s based on.')}
         <br />
-        <span style={blue}>3</span> is an external reference you can explore or import to your library.
+        <span style={blue}>3</span>{' '}{t('is an external reference you can explore or import to your library.')}
     </div>
 );

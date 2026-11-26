@@ -6,6 +6,7 @@ import { QuillWriteIcon, BookSearchIcon, LayersIcon, HighlighterIcon } from "./i
 import CategoryPanel from "./CategoryPanel";
 import { ActionCategory } from "@beaver/agent-core/types/actions";
 import { homeLauncherCategoryAtom, HomeLauncherCategoryId } from "../atoms/ui";
+import { msg, t } from '../../src/utils/i18n';
 
 type CategoryId = HomeLauncherCategoryId;
 
@@ -22,24 +23,24 @@ interface CategoryDef {
 
 const CATEGORIES: CategoryDef[] = [
     {
-        id: "research", label: "Research", icon: BookSearchIcon, category: "research",
-        tooltipTitle: "Ask and explore your library",
-        tooltipDescription: "Grounded answers from full text, plus related work and gaps",
+        id: "research", label: msg("Research"), icon: BookSearchIcon, category: "research",
+        tooltipTitle: msg("Ask and explore your library"),
+        tooltipDescription: msg("Grounded answers from full text, plus related work and gaps"),
     },
     {
-        id: "write", label: "Write", icon: QuillWriteIcon, category: "write",
-        tooltipTitle: "Write & synthesize",
-        tooltipDescription: "Summaries, reviews, and notes drawn from your sources — every claim cited",
+        id: "write", label: msg("Write"), icon: QuillWriteIcon, category: "write",
+        tooltipTitle: msg("Write & synthesize"),
+        tooltipDescription: msg("Summaries, reviews, and notes drawn from your sources — every claim cited"),
     },
     {
-        id: "organize", label: "Organize", icon: LayersIcon, category: "organize",
-        tooltipTitle: "Organize & edit your library",
-        tooltipDescription: "Tag, sort, and fix metadata. You approve every change",
+        id: "organize", label: msg("Organize"), icon: LayersIcon, category: "organize",
+        tooltipTitle: msg("Organize & edit your library"),
+        tooltipDescription: msg("Tag, sort, and fix metadata. You approve every change"),
     },
     {
-        id: "annotate", label: "Annotate", icon: HighlighterIcon, category: "annotate",
-        tooltipTitle: "AI-powered PDF annotations",
-        tooltipDescription: "Highlights and notes added right in your PDF, ready to review",
+        id: "annotate", label: msg("Annotate"), icon: HighlighterIcon, category: "annotate",
+        tooltipTitle: msg("AI-powered PDF annotations"),
+        tooltipDescription: msg("Highlights and notes added right in your PDF, ready to review"),
     },
 ];
 
@@ -68,13 +69,13 @@ const HomeLauncher: React.FC<{ style?: React.CSSProperties }> = ({ style }) => {
                     return (
                         <Tooltip
                             key={cat.id}
-                            content={cat.tooltipTitle}
+                            content={t(cat.tooltipTitle)}
                             padding={false}
                             width="210px"
                             customContent={
                                 <div className="px-2 py-1 display-flex flex-col gap-1">
-                                    <span className="text-base font-color-secondary font-medium">{cat.tooltipTitle}</span>
-                                    <span className="text-sm font-color-secondary">{cat.tooltipDescription}</span>
+                                    <span className="text-base font-color-secondary font-medium">{t(cat.tooltipTitle)}</span>
+                                    <span className="text-sm font-color-secondary">{t(cat.tooltipDescription)}</span>
                                 </div>
                             }
                         >
@@ -86,7 +87,7 @@ const HomeLauncher: React.FC<{ style?: React.CSSProperties }> = ({ style }) => {
                                 iconClassName="flex-shrink-0 scale-11"
                                 style={{ padding: "4px 7px", borderRadius: "6px" }}
                             >
-                                <span className="font-medium">{cat.label}</span>
+                                <span className="font-medium">{t(cat.label)}</span>
                             </Button>
                         </Tooltip>
                     );

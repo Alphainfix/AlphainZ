@@ -2,6 +2,8 @@ import React, { useCallback, useState } from 'react';
 import { SettingsGroup, SettingsRow, SectionLabel } from './components/SettingsElements';
 import { getPref, setPref } from '../../../src/utils/prefs';
 import { applyAppearance, FONT_SIZES, LINE_HEIGHTS, normalizeTheme, type UiTheme } from '../../../src/utils/appearance';
+import { msg, t } from '../../../src/utils/i18n';
+import { LanguageSettingRow } from './LanguageChoice';
 
 /**
  * Appearance.
@@ -12,28 +14,28 @@ import { applyAppearance, FONT_SIZES, LINE_HEIGHTS, normalizeTheme, type UiTheme
  * which is the only honest way to pick a colour. Fresh is the default.
  */
 const THEMES: Array<{ id: UiTheme; label: string; hint: string }> = [
-    { id: 'fresh', label: 'Fresh', hint: 'Celadon on rice paper — light and quiet' },
-    { id: 'warm', label: 'Warm', hint: 'Warm paper and terracotta' },
-    { id: 'quiet', label: 'Quiet', hint: 'Warm paper and a slate blue' },
-    { id: 'sky', label: 'Sky', hint: 'Pale blue paper, white cards, a cool blue — the DeepSeek Harness look' },
+    { id: 'fresh', label: msg('Fresh'), hint: msg('Celadon on rice paper — light and quiet') },
+    { id: 'warm', label: msg('Warm'), hint: msg('Warm paper and terracotta') },
+    { id: 'quiet', label: msg('Quiet'), hint: msg('Warm paper and a slate blue') },
+    { id: 'sky', label: msg('Sky'), hint: msg('Pale blue paper, white cards, a cool blue — the DeepSeek Harness look') },
 ];
 
 const SCHEMES: Array<{ id: string; label: string }> = [
-    { id: 'auto', label: 'Follow Zotero' },
-    { id: 'light', label: 'Light' },
-    { id: 'dark', label: 'Dark' },
+    { id: 'auto', label: msg('Follow Zotero') },
+    { id: 'light', label: msg('Light') },
+    { id: 'dark', label: msg('Dark') },
 ];
 
 const FONTS: Array<{ id: string; label: string; hint: string }> = [
-    { id: 'system', label: 'System', hint: "Zotero's own interface font" },
-    { id: 'serif', label: 'Serif', hint: 'Iowan / Palatino / 宋体' },
-    { id: 'sans', label: 'Sans', hint: 'Inter / SF / 苹方' },
+    { id: 'system', label: msg('System'), hint: msg("Zotero's own interface font") },
+    { id: 'serif', label: msg('Serif'), hint: 'Iowan / Palatino / 宋体' },
+    { id: 'sans', label: msg('Sans'), hint: 'Inter / SF / 苹方' },
 ];
 
 const LEADING_LABELS: Record<string, string> = {
-    compact: 'Compact',
-    normal: 'Normal',
-    relaxed: 'Relaxed',
+    compact: msg('Compact'),
+    normal: msg('Normal'),
+    relaxed: msg('Relaxed'),
 };
 
 /**
@@ -50,18 +52,22 @@ const Choice: React.FC<{
     onChange: (v: string) => void;
 }> = ({ label, value, options, onChange }) => (
     <select
-        aria-label={label}
+        aria-label={t(label)}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onClick={(e) => e.stopPropagation()}
         className="py-1 preference-input text-sm"
         style={{ paddingLeft: '8px', paddingRight: '26px', minWidth: '9rem' }}
     >
-        {options.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+        {options.map((o) => <option key={o.id} value={o.id}>{t(o.label)}</option>)}
     </select>
 );
 
-const AppearanceSection: React.FC = () => {
+/**
+ * `showLanguage` is off in the welcome wizard, whose first page has its own
+ * language row.
+ */
+const AppearanceSection: React.FC<{ showLanguage?: boolean }> = ({ showLanguage = true }) => {
     const [theme, setTheme] = useState<UiTheme>(() => normalizeTheme(getPref('uiTheme')));
     const [scheme, setScheme] = useState(() => String(getPref('uiColorScheme') ?? 'auto'));
     const [font, setFont] = useState(() => String(getPref('uiFont') ?? 'system'));
@@ -77,43 +83,44 @@ const AppearanceSection: React.FC = () => {
 
     return (
         <>
-            <SectionLabel>Appearance</SectionLabel>
+            <SectionLabel>{t('Appearance')}</SectionLabel>
             <div className="text-base font-color-secondary mb-2" style={{ paddingLeft: '2px' }}>
-                Affects AlphainZ's own panes only — the rest of Zotero is untouched.
+                {t("Affects AlphainZ's own panes only — the rest of Zotero is untouched.")}
             </div>
             <SettingsGroup>
+                {showLanguage && <LanguageSettingRow renderSelect={(props) => <Choice {...props} />} />}
                 <SettingsRow
-                    title="Theme"
-                    description={THEMES.find((t) => t.id === theme)?.hint}
+                    title={t('Theme')}
+                    description={t(THEMES.find((option) => option.id === theme)?.hint ?? '')}
                     control={
-                        <Choice label="Theme" value={theme} options={THEMES}
+                        <Choice label={t('Theme')} value={theme} options={THEMES}
                             onChange={(v) => change('uiTheme', v, setTheme)} />
                     }
                 />
                 <SettingsRow
-                    title="Light or dark"
-                    description="Overrides the system setting for AlphainZ"
+                    title={t('Light or dark')}
+                    description={t('Overrides the system setting for AlphainZ')}
                     control={
-                        <Choice label="Light or dark" value={scheme}
+                        <Choice label={t('Light or dark')} value={scheme}
                             options={SCHEMES}
                             onChange={(v) => change('uiColorScheme', v, setScheme)} />
                     }
                 />
                 <SettingsRow
-                    title="Font"
-                    description={FONTS.find((f) => f.id === font)?.hint}
+                    title={t('Font')}
+                    description={t(FONTS.find((f) => f.id === font)?.hint ?? '')}
                     control={
-                        <Choice label="Font" value={font} options={FONTS}
+                        <Choice label={t('Font')} value={font} options={FONTS}
                             onChange={(v) => change('uiFont', v, setFont)} />
                     }
                 />
                 <SettingsRow
-                    title="Text size"
+                    title={t('Text size')}
                     description={`${size} px`}
                     control={
                         <input
                             type="range"
-                            aria-label="Text size"
+                            aria-label={t('Text size')}
                             min={FONT_SIZES[0]}
                             max={FONT_SIZES[FONT_SIZES.length - 1]}
                             step={1}
@@ -125,10 +132,10 @@ const AppearanceSection: React.FC = () => {
                     }
                 />
                 <SettingsRow
-                    title="Line spacing"
+                    title={t('Line spacing')}
                     description={`${LINE_HEIGHTS[leading] ?? 1.55}×`}
                     control={
-                        <Choice label="Line spacing" value={leading}
+                        <Choice label={t('Line spacing')} value={leading}
                             options={Object.keys(LINE_HEIGHTS).map((k) => ({ id: k, label: LEADING_LABELS[k] ?? k }))}
                             onChange={(v) => change('uiLineHeight', v, setLeading)} />
                     }

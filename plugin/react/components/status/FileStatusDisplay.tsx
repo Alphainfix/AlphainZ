@@ -11,6 +11,7 @@ import { SkippedFilesSummary } from "./SkippedFilesSummary";
 import { ConnectionStatus } from "../../types/fileStatus";
 import Button from "@beaver/agent-ui/primitives/Button";
 import { zoteroServerCredentialsErrorAtom, zoteroServerDownloadErrorAtom } from "../../atoms/ui";
+import { t } from '../../../src/utils/i18n';
 
 interface FileStatusDisplayProps {
     connectionStatus: ConnectionStatus;
@@ -131,7 +132,7 @@ const FileStatusDisplay: React.FC<FileStatusDisplayProps> = ({ connectionStatus,
                         </div>
                         <div className="flex-1"/>
                         <div className="font-color-tertiary text-base">
-                            {displayConnectionStatus === 'connected' && `${fileStats.totalFiles.toLocaleString()} Files`}
+                            {displayConnectionStatus === 'connected' && t('{totalFiles} Files', { totalFiles: fileStats.totalFiles.toLocaleString() })}
                         </div>
                     </div>
 
@@ -170,7 +171,7 @@ const FileStatusDisplay: React.FC<FileStatusDisplayProps> = ({ connectionStatus,
                             count={fileStats.failedUploadCount}
                             icon={AlertIcon}
                             title={`Failed upload${fileStats.failedUploadCount > 1 ? 's' : ''}`}
-                            tooltipTitle="Failed Uploads. Retry to upload again."
+                            tooltipTitle={t('Failed Uploads. Retry to upload again.')}
                             textColorClassName="font-color-red"
                             retryUploadsButton={true}
                         />
@@ -181,8 +182,8 @@ const FileStatusDisplay: React.FC<FileStatusDisplayProps> = ({ connectionStatus,
                         <PaginatedFailedProcessingList
                             statuses={["failed_system"]}
                             count={fileStats.failedSystemCount}
-                            title={`Failed processing`}
-                            tooltipTitle="Processing errors"
+                            title={t('Failed processing')}
+                            tooltipTitle={t('Processing errors')}
                             tooltipContent={<FailedProcessingTooltipContent />}
                             icon={AlertIcon}
                             textColorClassName="font-color-red"
@@ -210,7 +211,7 @@ const FileStatusDisplay: React.FC<FileStatusDisplayProps> = ({ connectionStatus,
                                             iconClassName={`mr-0 mt-015 scale-12 font-color-secondary`}
                                         >
                                             <span className={`text-base font-color-secondary`} style={{ marginLeft: '-3px' }}>
-                                                {skippedFilesCount.toLocaleString()} Skipped file{skippedFilesCount > 1 ? 's' : ''}
+                                                {skippedFilesCount.toLocaleString()}{' '}{t('Skipped file')}{skippedFilesCount > 1 ? 's' : ''}
                                             </span>
                                         </Button>
                                     </div>
@@ -223,14 +224,14 @@ const FileStatusDisplay: React.FC<FileStatusDisplayProps> = ({ connectionStatus,
                     {/* Zotero server credentials error */}
                     {fileStats.uploadFailedCount > 0 && zoteroServerCredentialsError && (
                         <div className="font-color-tertiary text-sm">
-                            Some uploads failed because the user is not logged in to Zotero. Please log in to Zotero and try again.
+                            {t('Some uploads failed because the user is not logged in to Zotero. Please log in to Zotero and try again.')}
                         </div>
                     )}
 
                     {/* Zotero server download error */}
                     {fileStats.uploadFailedCount > 0 && !zoteroServerCredentialsError && zoteroServerDownloadError && (
                         <div className="font-color-tertiary text-sm">
-                            Some uploads failed because they could not be downloaded from Zotero's server. Please try again later.
+                            {t('Some uploads failed because they could not be downloaded from Zotero\'s server. Please try again later.')}
                         </div>
                     )}
                 </div>
@@ -241,10 +242,9 @@ const FileStatusDisplay: React.FC<FileStatusDisplayProps> = ({ connectionStatus,
                 <div className="font-color-tertiary display-flex flex-row gap-3 items-start">
                     <Icon icon={AlertIcon} className="scale-11 mt-020" />
                     <div className="items-start display-flex flex-col gap-2">
-                        <span>File processing limit reached</span>
+                        <span>{t('File processing limit reached')}</span>
                         <span className="text-sm">
-                            The free beta has a 125,000-page processing limit.
-                            Some files weren't processed. Limits will change after the beta.
+                            {t('The free beta has a 125,000-page processing limit. Some files weren\'t processed. Limits will change after the beta.')}
                         </span>
                     </div>
                 </div>

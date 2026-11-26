@@ -31,6 +31,7 @@ import type { ThreadCompaction } from '../../src/services/database';
 import { getConversationBackend } from '../../src/services/conversationSync';
 import { getFirstRequestInputTokens } from '../utils/runUsage';
 import { addPopupMessageAtom } from '../utils/popupMessageUtils';
+import { t, tn } from '../../src/utils/i18n';
 
 /**
  * The open thread's compaction record, hydrated on thread load and cleared on
@@ -191,8 +192,8 @@ export async function maybeCompactThread(
 
         store.set(addPopupMessageAtom, {
             type: 'info',
-            title: `Compacted ${plan.cover.length} earlier exchange${plan.cover.length === 1 ? '' : 's'}`,
-            text: 'The model now reads a summary of them instead. Click the marker in the chat to read or discard it.',
+            title: tn(plan.cover.length, 'Compacted {count} earlier exchange', 'Compacted {count} earlier exchanges'),
+            text: t('The model now reads a summary of them instead. Click the marker in the chat to read or discard it.'),
             expire: true,
             duration: 5000,
         });

@@ -17,6 +17,7 @@ import { ActionPreview } from './ActionPreview';
 import { useEditNoteActions, type EditNotePrecomputed } from './useEditNoteActions';
 import type { EditNoteRowDescriptor } from '../../../components/agentRuns/editNoteShared';
 import { buildBatchRowPreviewData } from './editNoteBatchPreviewData';
+import { t } from '../../../../src/utils/i18n';
 
 interface EditNoteRowViewProps {
     part: ToolCallPart;
@@ -150,13 +151,13 @@ const EditNoteRowViewComponent: React.FC<EditNoteRowViewProps> = ({
                     open the note and jump to THIS edit's position. */}
                 {isBatchRow && !isStreamingPlaceholder && previewData && showOpenNoteAction && (
                     <div className="display-flex flex-col py-2 mr-2 flex-shrink-0">
-                        <Tooltip content="Open note and jump to edit" showArrow singleLine>
+                        <Tooltip content={t('Open note and jump to edit')} showArrow singleLine>
                             <IconButton
                                 icon={ArrowUpRightIcon}
                                 variant="ghost-secondary"
                                 iconClassName="font-color-secondary scale-10"
                                 onClick={() => { void handleOpenNoteForRow(rowDescriptor); }}
-                                ariaLabel="Open note and jump to edit"
+                                ariaLabel={t('Open note and jump to edit')}
                             />
                         </Tooltip>
                     </div>
@@ -172,7 +173,7 @@ const EditNoteRowViewComponent: React.FC<EditNoteRowViewProps> = ({
                     {(isProcessing ? (
                         <>
                             {clickedButton === 'approve' && (
-                                <Tooltip content="Apply" showArrow singleLine>
+                                <Tooltip content={t('Apply')} showArrow singleLine>
                                     <IconButton
                                         icon={TickIcon}
                                         variant="ghost-secondary"
@@ -180,12 +181,12 @@ const EditNoteRowViewComponent: React.FC<EditNoteRowViewProps> = ({
                                         onClick={() => {}}
                                         loading={true}
                                         disabled={true}
-                                        ariaLabel="Apply"
+                                        ariaLabel={t('Apply')}
                                     />
                                 </Tooltip>
                             )}
                             {clickedButton === 'reject' && (
-                                <Tooltip content="Reject" showArrow singleLine>
+                                <Tooltip content={t('Reject')} showArrow singleLine>
                                     <IconButton
                                         icon={CancelIcon}
                                         variant="ghost-secondary"
@@ -193,12 +194,12 @@ const EditNoteRowViewComponent: React.FC<EditNoteRowViewProps> = ({
                                         onClick={() => {}}
                                         loading={true}
                                         disabled={true}
-                                        ariaLabel="Reject"
+                                        ariaLabel={t('Reject')}
                                     />
                                 </Tooltip>
                             )}
                             {clickedButton === 'undo' && (
-                                <Tooltip content="Undo" showArrow singleLine>
+                                <Tooltip content={t('Undo')} showArrow singleLine>
                                     <IconButton
                                         icon={UndoIcon}
                                         variant="ghost-secondary"
@@ -206,12 +207,12 @@ const EditNoteRowViewComponent: React.FC<EditNoteRowViewProps> = ({
                                         onClick={() => {}}
                                         loading={true}
                                         disabled={true}
-                                        ariaLabel="Undo"
+                                        ariaLabel={t('Undo')}
                                     />
                                 </Tooltip>
                             )}
                             {clickedButton === 'retry' && (
-                                <Tooltip content="Try again" showArrow singleLine>
+                                <Tooltip content={t('Try again')} showArrow singleLine>
                                     <IconButton
                                         icon={RepeatIcon}
                                         variant="ghost-secondary"
@@ -219,7 +220,7 @@ const EditNoteRowViewComponent: React.FC<EditNoteRowViewProps> = ({
                                         onClick={() => {}}
                                         loading={true}
                                         disabled={true}
-                                        ariaLabel="Try again"
+                                        ariaLabel={t('Try again')}
                                     />
                                 </Tooltip>
                             )}
@@ -227,53 +228,53 @@ const EditNoteRowViewComponent: React.FC<EditNoteRowViewProps> = ({
                     ) : (
                         <>
                             {showApply && (
-                                <Tooltip content="Apply" showArrow singleLine>
+                                <Tooltip content={t('Apply')} showArrow singleLine>
                                     <IconButton
                                         icon={TickIcon}
                                         variant="ghost-secondary"
                                         iconClassName="font-color-green scale-12"
                                         onClick={onApply}
                                         disabled={actionButtonsDisabled}
-                                        ariaLabel="Apply"
+                                        ariaLabel={t('Apply')}
                                     />
                                 </Tooltip>
                             )}
 
                             {showReject && (
-                                <Tooltip content="Reject" showArrow singleLine>
+                                <Tooltip content={t('Reject')} showArrow singleLine>
                                     <IconButton
                                         icon={CancelIcon}
                                         variant="ghost-secondary"
                                         iconClassName="font-color-red scale-90"
                                         onClick={onReject}
                                         disabled={actionButtonsDisabled}
-                                        ariaLabel="Reject"
+                                        ariaLabel={t('Reject')}
                                     />
                                 </Tooltip>
                             )}
 
                             {showUndo && (
-                                <Tooltip content="Undo" showArrow singleLine>
+                                <Tooltip content={t('Undo')} showArrow singleLine>
                                     <IconButton
                                         icon={UndoIcon}
                                         variant="ghost-secondary"
                                         iconClassName="scale-10"
                                         onClick={handleUndo}
                                         disabled={actionButtonsDisabled}
-                                        ariaLabel="Undo"
+                                        ariaLabel={t('Undo')}
                                     />
                                 </Tooltip>
                             )}
 
                             {showRetry && (
-                                <Tooltip content="Try again" showArrow singleLine>
+                                <Tooltip content={t('Try again')} showArrow singleLine>
                                     <IconButton
                                         icon={RepeatIcon}
                                         variant="ghost-secondary"
                                         iconClassName="scale-90"
                                         onClick={handleRetry}
                                         disabled={actionButtonsDisabled}
-                                        ariaLabel="Try again"
+                                        ariaLabel={t('Try again')}
                                     />
                                 </Tooltip>
                             )}
@@ -297,7 +298,7 @@ const EditNoteRowViewComponent: React.FC<EditNoteRowViewProps> = ({
                         applies whatever the cause.
                     */}
                     <div className="text-sm font-color-secondary" style={{ lineHeight: '1.4' }}>
-                        {displayedUndoError} You can revert manually in the note editor.
+                        {displayedUndoError}{' '}{t('You can revert manually in the note editor.')}
                     </div>
                 </div>
             )}

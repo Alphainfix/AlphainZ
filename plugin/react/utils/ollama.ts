@@ -7,6 +7,8 @@
  * for its cloud models and for publishing your own.
  */
 
+import { msg, t } from '../../src/utils/i18n';
+
 export const OLLAMA_DEFAULT_BASE = 'http://127.0.0.1:11434';
 
 /** The models the guide offers, with why each one. Sizes are what Ollama reports. */
@@ -18,15 +20,15 @@ export const OLLAMA_MODELS = [
         name: 'embeddinggemma-2:440m-q8_0-text-vision',
         role: 'embedding' as const,
         size: '671 MB',
-        purpose: 'EmbeddingGemma 2, Google’s open embedding model: indexes your library for topic search, '
-            + 'in Chinese, English and a hundred other languages. Needs Ollama 0.40 or later.',
+        purpose: msg('EmbeddingGemma 2, Google’s open embedding model: indexes your library for topic search, '
+            + 'in Chinese, English and a hundred other languages. Needs Ollama 0.40 or later.'),
         minOllama: '0.40.0',
     },
     {
         name: 'qwen2.5:7b',
         role: 'chat' as const,
         size: '4.7 GB',
-        purpose: 'A chat model that supports tool calling; good in Chinese. Needs about 8 GB of memory.',
+        purpose: msg('A chat model that supports tool calling; good in Chinese. Needs about 8 GB of memory.'),
     },
 ] as const;
 
@@ -215,7 +217,7 @@ export function parsePullLine(line: string): PullProgress | null {
 }
 
 /** Why a pull that ended without Ollama's `success` line is not a finished download. */
-export const PULL_INTERRUPTED_MESSAGE = 'The download stopped before it finished.';
+export const PULL_INTERRUPTED_MESSAGE = msg('The download stopped before it finished.');
 
 /**
  * Pull `name` into the local Ollama, reporting progress as it streams.
@@ -264,7 +266,7 @@ export async function pullOllamaModel(
         }
         if (buffer.trim()) handle(buffer);
     }
-    if (!succeeded) throw new Error(PULL_INTERRUPTED_MESSAGE);
+    if (!succeeded) throw new Error(t(PULL_INTERRUPTED_MESSAGE));
 }
 
 // ---------------------------------------------------------------------------
@@ -332,7 +334,7 @@ export function startOllamaPull(
     const key = pullKey(base, name);
     if (pulls.get(key)?.state.status === 'pulling') return;
     const controller = new AbortController();
-    setPull(key, { status: 'pulling', percent: null, message: 'Starting…' }, controller);
+    setPull(key, { status: 'pulling', percent: null, message: t('Starting…') }, controller);
     void (async () => {
         let status: OllamaPullState['status'];
         try {
@@ -355,8 +357,8 @@ export function startOllamaPull(
                 status,
                 percent: null,
                 message: status === 'cancelled'
-                    ? 'Download cancelled. What was already downloaded is kept; Resume picks up from there.'
-                    : `Download interrupted (${reason}). Resume picks up where it stopped.`,
+                    ? t('Download cancelled. What was already downloaded is kept; Resume picks up from there.')
+                    : t('Download interrupted ({reason}). Resume picks up where it stopped.', { reason }),
             }, null);
         }
         try {

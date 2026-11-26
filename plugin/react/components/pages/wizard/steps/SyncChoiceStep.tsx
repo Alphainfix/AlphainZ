@@ -5,6 +5,7 @@ import { getPref } from '../../../../../src/utils/prefs';
 import { conversationSyncMode } from '../../../../../src/services/conversationSync';
 import { confirmAndSwitchSyncMode } from '../../../../utils/syncModeSwitch';
 import { pickFolder } from '../../../../utils/folderPicker';
+import { t } from '../../../../../src/utils/i18n';
 
 /**
  * Step ②: where conversations and settings live — one place, or nowhere.
@@ -42,7 +43,7 @@ const SyncChoiceStep: React.FC = () => {
                 ...(needsPicker
                     ? {
                         pickFolder: async () => {
-                            const picked = await pickFolder('Choose the sync folder');
+                            const picked = await pickFolder(t('Choose the sync folder'));
                             return picked.ok ? picked.path : null;
                         },
                     }
@@ -57,36 +58,36 @@ const SyncChoiceStep: React.FC = () => {
     return (
         <>
             <div className="text-base font-color-secondary mb-2">
-                Conversations (and these settings) can follow you between machines.
-                {wasAlreadySet && <span className="font-color-green"> Already set ✓ — your current choice is selected below.</span>}
+                {t('Conversations (and these settings) can follow you between machines.')}
+                {wasAlreadySet && <span className="font-color-green">{' '}{t('Already set ✓ — your current choice is selected below.')}</span>}
             </div>
             <SettingsGroup>
                 <SettingsRow
-                    title="Not now"
-                    description="Everything stays on this computer. You can turn sync on later in Settings → Advanced."
+                    title={t('Not now')}
+                    description={t('Everything stays on this computer. You can turn sync on later in Settings → Advanced.')}
                     onClick={() => choose('off')}
-                    control={<input type="radio" name="wizard-sync" aria-label="No sync" checked={mode === 'off'} onChange={() => choose('off')} onClick={(e) => e.stopPropagation()} />}
+                    control={<input type="radio" name="wizard-sync" aria-label={t('No sync')} checked={mode === 'off'} onChange={() => choose('off')} onClick={(e) => e.stopPropagation()} />}
                 />
                 <SettingsRow
-                    title="Through Zotero sync"
-                    description="Stored as attachments in your Zotero library; your existing Zotero account carries them."
+                    title={t('Through Zotero sync')}
+                    description={t('Stored as attachments in your Zotero library; your existing Zotero account carries them.')}
                     onClick={() => choose('zotero')}
-                    control={<input type="radio" name="wizard-sync" aria-label="Zotero sync" checked={mode === 'zotero'} onChange={() => choose('zotero')} onClick={(e) => e.stopPropagation()} />}
+                    control={<input type="radio" name="wizard-sync" aria-label={t('Zotero sync')} checked={mode === 'zotero'} onChange={() => choose('zotero')} onClick={(e) => e.stopPropagation()} />}
                 />
                 <SettingsRow
-                    title="Synced folder"
+                    title={t('Synced folder')}
                     description={mode === 'folder' && folderPath
                         ? folderPath
-                        : 'Plain JSON files in a folder you choose. Put it inside iCloud Drive, OneDrive or any synced folder — the plugin only reads and writes files there, like Obsidian.'}
+                        : t('Plain JSON files in a folder you choose. Put it inside iCloud Drive, OneDrive or any synced folder — the plugin only reads and writes files there, like Obsidian.')}
                     onClick={() => choose('folder')}
                     control={
                         <div className="display-flex flex-row items-center gap-2">
-                            <input type="radio" name="wizard-sync" aria-label="Synced folder"
+                            <input type="radio" name="wizard-sync" aria-label={t('Synced folder')}
                                 checked={mode === 'folder'}
                                 onChange={() => choose('folder')}
                                 onClick={(e) => e.stopPropagation()} />
                             <Button variant="outline" onClick={(e: any) => { e.stopPropagation(); choose('folder', true); }}>
-                                {folderPath ? 'Change…' : 'Choose…'}
+                                {folderPath ? t('Change…') : t('Choose…')}
                             </Button>
                         </div>
                     }

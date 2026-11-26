@@ -8,6 +8,7 @@ import { parseTextWithLinksAndNewlines } from '../../../utils/parseTextWithLinks
 import FeatureTourContent from './FeatureTourContent';
 import { FeatureStep } from '../../../constants/versionUpdateMessages';
 import { eventManager } from '../../../events/eventManager';
+import { t } from '../../../../src/utils/i18n';
 
 interface VersionUpdateMessageContentProps {
     message: PopupMessage;
@@ -64,7 +65,7 @@ const LegacyVersionContent: React.FC<{
             {learnMoreUrl && (
                 <div className="display-flex flex-row gap-3 items-center justify-end pt-1">
                     <Button onClick={handleLearnMore} variant="outline">
-                        {learnMoreLabel || 'Learn more'}
+                        {learnMoreLabel || t('Learn more')}
                     </Button>
                 </div>
             )}
@@ -114,7 +115,7 @@ const FloatingVersionCard: React.FC<{
         return isBeta ? `${cleanVersion} Beta` : cleanVersion;
     }
 
-    const versionString = version ? `AlphainZ v${formatVersion(version)}` : 'Now Available';
+    const versionString = version ? `AlphainZ v${formatVersion(version)}` : t('Now Available');
 
     return (
         <div className="display-flex flex-col gap-4 w-full">
@@ -186,7 +187,7 @@ const FloatingVersionCard: React.FC<{
                             handleLearnMore();
                         }}
                     >
-                        {learnMoreLabel || 'Learn More'}
+                        {learnMoreLabel || t('Learn More')}
                     </a>
                 )}
                 {/* Footer text */}
@@ -197,7 +198,7 @@ const FloatingVersionCard: React.FC<{
                 )}
                 {!footer && !learnMoreUrl && <div />}
                 <Button onClick={handleOpenBeaver} variant="solid">
-                    Open AlphainZ
+                    {t('Open AlphainZ')}
                 </Button>
             </div>
         </div>

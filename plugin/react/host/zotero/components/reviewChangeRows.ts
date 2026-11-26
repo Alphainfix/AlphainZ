@@ -1,5 +1,6 @@
 import type { AgentAction } from '@beaver/agent-core/agents/agentActionTypes';
 import { isBulkApprovable } from '../../../atoms/runApprovalPolicy';
+import { tn } from '../../../../src/utils/i18n';
 
 /** A tool call the review card offers for review, with all of its actions. */
 export interface ReviewRow {
@@ -153,19 +154,19 @@ export function getReviewHeaderCopy(rows: ReviewRow[]): {
     }
 
     const actions = Array.from(counted.values());
-    const noun = actions.length === 1 ? 'change' : 'changes';
+    const count = actions.length;
 
     if (actions.some((action) => action.status === 'pending')) {
-        const verb = actions.length === 1 ? 'needs' : 'need';
-        return { text: `${actions.length} ${noun} ${verb} your review`, tone: 'review' };
+        return { text: tn(count, '{count} change needs your review', '{count} changes need your review'), tone: 'review' };
     }
 
     const allApplied = actions.every((action) => action.status === 'applied');
-    return { text: `${actions.length} ${noun} ${allApplied ? 'applied' : 'reviewed'}`, tone: 'resolved' };
-}
-
-function plural(count: number, noun: string, pluralNoun?: string): string {
-    return `${count} ${count === 1 ? noun : pluralNoun ?? `${noun}s`}`;
+    return {
+        text: allApplied
+            ? tn(count, '{count} change applied', '{count} changes applied')
+            : tn(count, '{count} change reviewed', '{count} changes reviewed'),
+        tone: 'resolved',
+    };
 }
 
 function countAnnotationTargets(data: any): number {
@@ -254,29 +255,29 @@ function completedTypeKey(action: AgentAction): string {
 function completedPhrase(typeKey: string, count: number): string | null {
     switch (typeKey) {
         case 'create_item':
-            return `Imported ${plural(count, 'item')}`;
+            return tn(count, 'Imported {count} item', 'Imported {count} items');
         case 'create_note':
-            return `Created ${plural(count, 'note')}`;
+            return tn(count, 'Created {count} note', 'Created {count} notes');
         case 'create_collection':
-            return `Created ${plural(count, 'collection')}`;
+            return tn(count, 'Created {count} collection', 'Created {count} collections');
         case 'edit_metadata':
-            return `Edited ${plural(count, 'item')}`;
+            return tn(count, 'Edited {count} item', 'Edited {count} items');
         case 'edit_note':
-            return `Edited ${plural(count, 'note')}`;
+            return tn(count, 'Edited {count} note', 'Edited {count} notes');
         case 'organize_items':
-            return `Organized ${plural(count, 'item')}`;
+            return tn(count, 'Organized {count} item', 'Organized {count} items');
         case 'manage_tags':
-            return `Updated ${plural(count, 'tag')}`;
+            return tn(count, 'Updated {count} tag', 'Updated {count} tags');
         case 'manage_collections':
-            return `Updated ${plural(count, 'collection')}`;
+            return tn(count, 'Updated {count} collection', 'Updated {count} collections');
         case 'create_highlight_annotations':
-            return `Created ${plural(count, 'highlight')}`;
+            return tn(count, 'Created {count} highlight', 'Created {count} highlights');
         case 'create_note_annotations':
-            return `Created ${plural(count, 'sticky note')}`;
+            return tn(count, 'Created {count} sticky note', 'Created {count} sticky notes');
         case 'edit_annotations':
-            return `Edited ${plural(count, 'annotation')}`;
+            return tn(count, 'Edited {count} annotation', 'Edited {count} annotations');
         case 'delete_annotations':
-            return `Deleted ${plural(count, 'annotation')}`;
+            return tn(count, 'Deleted {count} annotation', 'Deleted {count} annotations');
         default:
             return null;
     }
@@ -364,7 +365,7 @@ export function getCompletedHeaderCopy(rows: ReviewRow[]): string {
     const inEffect = actions.filter(isChangeInEffect);
 
     if (inEffect.length === 0) {
-        return `Reverted ${plural(actions.length, 'library change')}`;
+        return tn(actions.length, 'Reverted {count} library change', 'Reverted {count} library changes');
     }
 
     const typeKeys = new Set(inEffect.map(completedTypeKey));
@@ -375,5 +376,5 @@ export function getCompletedHeaderCopy(rows: ReviewRow[]): string {
         if (phrase) return phrase;
     }
 
-    return `Completed ${plural(inEffect.length, 'library change')}`;
+    return tn(inEffect.length, 'Completed {count} library change', 'Completed {count} library changes');
 }

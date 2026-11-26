@@ -48,6 +48,7 @@ import ThreadFilterMenu from './ui/menus/ThreadFilterMenu';
 import Tooltip from '@beaver/agent-ui/primitives/Tooltip';
 import { clearRecentChatsCache } from './RecentChats';
 import { isTransientNetworkError } from '../utils/isTransientNetworkError';
+import { msg, t, tn } from '../../src/utils/i18n';
 
 type FetchError = { offline: boolean } | null;
 
@@ -120,8 +121,8 @@ async function localArchivePage(
 // a bare "account" would read as the user's Beaver account, which never
 // differs here. A mismatch always implies a different profile (see
 // `isThreadInstanceMismatch`), so one label covers every case.
-const FOREIGN_THREAD_LABEL = 'Other Zotero profile';
-const FOREIGN_THREAD_TITLE = 'Created in a different Zotero account or profile';
+const FOREIGN_THREAD_LABEL = msg('Other Zotero profile');
+const FOREIGN_THREAD_TITLE = msg('Created in a different Zotero account or profile');
 
 /**
  * Cache key for a thread-list fetch. Includes the live instance identity so
@@ -656,14 +657,14 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
             if (outcome === 'missing') {
                 addPopupMessage({
                     type: 'info',
-                    title: 'Not written yet',
+                    title: t('Not written yet'),
                     // "Export all" walks the active history only, so it is no
                     // answer for an archived chat.
                     text: archived
-                        ? 'This archived chat has no file in the sync location -- archived chats '
-                            + 'are not exported. Restore it, and its file is written with its next change.'
-                        : 'This conversation has no file yet -- it is written when the '
-                            + 'next answer finishes, or by "Export all conversations" in settings.',
+                        ? t('This archived chat has no file in the sync location -- archived chats '
+                            + 'are not exported. Restore it, and its file is written with its next change.')
+                        : t('This conversation has no file yet -- it is written when the '
+                            + 'next answer finishes, or by "Export all conversations" in settings.'),
                     expire: true,
                     duration: 6000,
                 });
@@ -672,7 +673,7 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
         } catch (error) {
             addPopupMessage({
                 type: 'error',
-                title: 'Could not open the conversation JSON',
+                title: t('Could not open the conversation JSON'),
                 text: String(error),
                 expire: true,
                 duration: 8000,
@@ -684,20 +685,20 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
         try {
             const { localRestoreThread } = await import('../atoms/loadLocalThreads');
             await localRestoreThread(threadId, ownerId);
-            setThreads((prev) => prev.filter((t) => t.id !== threadId));
+            setThreads((prev) => prev.filter((th) => th.id !== threadId));
             searchCache.clear();
             clearRecentChatsCache();
             addPopupMessage({
                 type: 'info',
-                title: 'Restored',
-                text: 'The chat is back in your history.',
+                title: t('Restored'),
+                text: t('The chat is back in your history.'),
                 expire: true,
                 duration: 4000,
             });
         } catch (error) {
             addPopupMessage({
                 type: 'error',
-                title: 'Could not restore the chat',
+                title: t('Could not restore the chat'),
                 text: String(error),
                 expire: true,
                 duration: 6000,
@@ -708,18 +709,18 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
     const handlePurge = async (threadId: string) => {
         const buttonIndex = Zotero.Prompt.confirm({
             window: Zotero.getMainWindow(),
-            title: 'Delete forever?',
+            title: t('Delete forever?'),
             // Honest this time: the tombstone makes the deletion stick on
             // every synced machine, so "cannot be undone" is finally true.
-            text: 'This permanently deletes the chat here and on your other synced computers. It cannot be undone.',
+            text: t('This permanently deletes the chat here and on your other synced computers. It cannot be undone.'),
             button0: Zotero.Prompt.BUTTON_TITLE_YES,
             button1: Zotero.Prompt.BUTTON_TITLE_NO,
             defaultButton: 1,
         });
         if (buttonIndex !== 0) return;
 
-        const removed = threads.find(t => t.id === threadId);
-        setThreads(prev => prev.filter(t => t.id !== threadId));
+        const removed = threads.find(th => th.id === threadId);
+        setThreads(prev => prev.filter(th => th.id !== threadId));
         searchCache.clear();
         clearRecentChatsCache(threadId);
 
@@ -731,22 +732,22 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
             }
             addPopupMessage({
                 type: 'info',
-                title: 'Deleted forever',
-                text: 'The chat was permanently removed.',
+                title: t('Deleted forever'),
+                text: t('The chat was permanently removed.'),
                 expire: true,
                 duration: 4000,
             });
         } catch (error) {
             console.error('Error purging thread:', error);
             if (removed) {
-                setThreads(prev => prev.some(t => t.id === threadId)
+                setThreads(prev => prev.some(th => th.id === threadId)
                     ? prev
                     : [removed, ...prev]);
             }
             searchCache.clear();
             addPopupMessage({
                 type: 'error',
-                title: 'Could not delete the chat',
+                title: t('Could not delete the chat'),
                 text: String(error),
                 expire: true,
                 duration: 6000,
@@ -757,11 +758,11 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
     const handleDelete = async (threadId: string) => {
         const buttonIndex = Zotero.Prompt.confirm({
             window: Zotero.getMainWindow(),
-            title: 'Delete chat?',
+            title: t('Delete chat?'),
             // It goes to the archive. The old copy promised the opposite —
             // "cannot be undone" — which is both wrong and the scarier of the
             // two things it could say.
-            text: 'This chat moves to the archive. You can restore it from there.',
+            text: t('This chat moves to the archive. You can restore it from there.'),
             button0: Zotero.Prompt.BUTTON_TITLE_YES,
             button1: Zotero.Prompt.BUTTON_TITLE_NO,
             defaultButton: 1,
@@ -780,8 +781,8 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
          * update used to answer out of a cache that still held the row and put
          * it straight back.
          */
-        const removed = threads.find(t => t.id === threadId);
-        setThreads(prev => prev.filter(t => t.id !== threadId));
+        const removed = threads.find(th => th.id === threadId);
+        setThreads(prev => prev.filter(th => th.id !== threadId));
         searchCache.clear();
         clearRecentChatsCache(threadId);
 
@@ -798,7 +799,7 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
             // Put it back rather than leave the list claiming something that
             // did not happen.
             if (removed) {
-                setThreads(prev => prev.some(t => t.id === threadId)
+                setThreads(prev => prev.some(th => th.id === threadId)
                     ? prev
                     : [removed, ...prev]);
             }
@@ -808,7 +809,7 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
 
     const handleStartRename = (threadId: string, currentName: string) => {
         setEditingThreadId(threadId);
-        setEditingName(currentName || 'Unnamed conversation');
+        setEditingName(currentName || t('Unnamed conversation'));
     };
 
     const handleCancelRename = () => {
@@ -825,8 +826,8 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
         try {
             if (isLocalBrain()) await localRenameThread(threadId, newName, ownerId);
             else await threadService.renameThread(threadId, newName);
-            setThreads(prev => prev.map(t =>
-                t.id === threadId ? { ...t, name: newName } : t
+            setThreads(prev => prev.map(th =>
+                th.id === threadId ? { ...th, name: newName } : th
             ));
             /*
              * The open conversation's name also lives in memory — the header
@@ -845,7 +846,7 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
             // closing it silently would look like a rename that worked.
             addPopupMessage({
                 type: 'error',
-                title: 'Could not rename the chat',
+                title: t('Could not rename the chat'),
                 text: String(error),
                 expire: true,
                 duration: 6000,
@@ -871,8 +872,8 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
     // no partition is needed there.
     const filteredMismatchCount = useMemo(
         () => filter
-            ? threads.filter(t => isThreadInstanceMismatch(instanceRef, {
-                zoteroUserId: t.zoteroUserId, zoteroLocalId: t.zoteroLocalId,
+            ? threads.filter(th => isThreadInstanceMismatch(instanceRef, {
+                zoteroUserId: th.zoteroUserId, zoteroLocalId: th.zoteroLocalId,
             })).length
             : 0,
         [filter, threads, instanceRef]
@@ -881,12 +882,12 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
     const displayedThreads = useMemo(() => {
         let visible = threads;
         if (filter && !showAllInstances) {
-            visible = visible.filter(t => !isThreadInstanceMismatch(instanceRef, {
-                zoteroUserId: t.zoteroUserId, zoteroLocalId: t.zoteroLocalId,
+            visible = visible.filter(th => !isThreadInstanceMismatch(instanceRef, {
+                zoteroUserId: th.zoteroUserId, zoteroLocalId: th.zoteroLocalId,
             }));
         }
         if (filter && activeQuery) {
-            visible = visible.filter(t => (t.name || 'Unnamed conversation').toLowerCase().includes(activeQuery.toLowerCase()));
+            visible = visible.filter(th => (th.name || t('Unnamed conversation')).toLowerCase().includes(activeQuery.toLowerCase()));
         }
         return visible;
     }, [filter, activeQuery, threads, showAllInstances, instanceRef]);
@@ -901,22 +902,20 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
     // Item-filtered mode partitions client-side, so its count is exact.
     const hasExactHiddenCount = !!filter || !activeQuery;
     const hiddenCountSummary = !hasExactHiddenCount
-        ? 'Chats from other Zotero profiles are hidden'
-        : hiddenInstanceCount === 1
-            ? '1 chat from a different Zotero profile is hidden'
-            : `${hiddenInstanceCount} chats from other Zotero profiles are hidden`;
+        ? t('Chats from other Zotero profiles are hidden')
+        : tn(hiddenInstanceCount, '{count} chat from a different Zotero profile is hidden', '{count} chats from other Zotero profiles are hidden');
     const hiddenExplanation = !hasExactHiddenCount
-        ? 'Some of your chats were created in a different Zotero profile. AlphainZ keeps chat history separate for each one.'
-        : hiddenInstanceCount === 1
-            ? 'You have 1 chat that was created in a different Zotero profile. AlphainZ keeps chat history separate for each one.'
-            : `You have ${hiddenInstanceCount} chats that were created in a different Zotero profile. AlphainZ keeps chat history separate for each one.`;
+        ? t('Some of your chats were created in a different Zotero profile. AlphainZ keeps chat history separate for each one.')
+        : tn(hiddenInstanceCount,
+            'You have {count} chat that was created in a different Zotero profile. AlphainZ keeps chat history separate for each one.',
+            'You have {count} chats that were created in a different Zotero profile. AlphainZ keeps chat history separate for each one.');
 
     const groupedThreads = groupThreadsByDate(displayedThreads);
 
     return (
         <div className="display-flex flex-col flex-1 min-h-0" ref={containerRef}>
             {/* Title */}
-            <div className="thread-overlay-title mb-1">Chats</div>
+            <div className="thread-overlay-title mb-1">{t('Chats')}</div>
 
             {/* Search bar */}
             <div className="px-3 pb-2">
@@ -929,8 +928,8 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                     <input
                         type="text"
                         className="thread-search-input"
-                        placeholder="Search chats..."
-                        aria-label="Search chats"
+                        placeholder={t('Search chats...')}
+                        aria-label={t('Search chats')}
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
                         onKeyDown={handleSearchKeyDown}
@@ -951,20 +950,20 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                     separate screen, so search, the item filter and the row
                     actions all keep working inside it. */}
                 <Tooltip
-                    content={showArchive ? 'Back to your chats' : 'Archive'}
+                    content={showArchive ? t('Back to your chats') : t('Archive')}
                     secondaryContent={showArchive
                         ? undefined
-                        : 'Deleted chats are kept here and can be restored.'}
+                        : t('Deleted chats are kept here and can be restored.')}
                     width="220px"
                 >
                     <ChipButton
                         className={showArchive ? 'thread-filter-chip' : undefined}
                         onClick={() => setShowArchive((v) => !v)}
-                        aria-label="Archive"
+                        aria-label={t('Archive')}
                         aria-pressed={showArchive}
                     >
                         <Icon icon={showArchive ? UndoIcon : ClockIcon} className="scale-80" />
-                        <span className="truncate">Archive</span>
+                        <span className="truncate">{t('Archive')}</span>
                     </ChipButton>
                 </Tooltip>
                 <div className="thread-filter-divider" />
@@ -980,13 +979,13 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                         <ChipButton
                             className="thread-filter-chip"
                             onClick={() => {}}
-                            aria-label={`Filtered by ${filter.label}`}
+                            aria-label={t('Filtered by {label}', { label: filter.label })}
                         >
                             <CSSItemTypeIcon itemType={filter.itemType} className="scale-80" />
                             <span className="truncate">{filter.label}</span>
                             <span
                                 role="button"
-                                aria-label="Remove filter"
+                                aria-label={t('Remove filter')}
                                 className="thread-filter-chip-remove"
                                 onClick={(e) => { e.stopPropagation(); setFilter(null); focusSearchInput(); }}
                             >
@@ -1002,15 +1001,15 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                 {showAllInstances && (
                     <div className="thread-filter-row-end">
                         <Tooltip
-                            content="Showing all Zotero profiles"
-                            secondaryContent="AlphainZ normally shows only chats created with this Zotero profile."
+                            content={t('Showing all Zotero profiles')}
+                            secondaryContent={t('AlphainZ normally shows only chats created with this Zotero profile.')}
                             width="220px"
                         >
                             <ChipButton
                                 onClick={() => toggleShowAllInstances(false)}
-                                aria-label="Showing chats from all Zotero profiles. Show only this profile's chats"
+                                aria-label={t('Showing chats from all Zotero profiles. Show only this profile\'s chats')}
                             >
-                                <span className="truncate">All profiles</span>
+                                <span className="truncate">{t('All profiles')}</span>
                                 <span className="thread-filter-chip-remove" aria-hidden="true">
                                     <CSSIcon name="x-8" className="icon-16 scale-80" />
                                 </span>
@@ -1021,7 +1020,9 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
             </div>
             {filter && !isLoading && (
                 <div className="thread-filter-count">
-                    Showing {displayedThreads.length}{showArchive ? ' archived' : ''} chat{displayedThreads.length === 1 ? '' : 's'} related to {filter.label}
+                    {showArchive
+                        ? tn(displayedThreads.length, 'Showing {count} archived chat related to {label}', 'Showing {count} archived chats related to {label}', { label: filter.label })
+                        : tn(displayedThreads.length, 'Showing {count} chat related to {label}', 'Showing {count} chats related to {label}', { label: filter.label })}
                 </div>
             )}
 
@@ -1031,9 +1032,9 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                     if (groupThreads.length === 0) return null;
                     return (
                         <div key={groupName}>
-                            <div className="thread-group-header">{groupName}</div>
+                            <div className="thread-group-header">{t(groupName)}</div>
                             {groupThreads.map(thread => {
-                                const threadName = thread.name || 'Unnamed conversation';
+                                const threadName = thread.name || t('Unnamed conversation');
                                 const isCurrent = thread.id === currentThreadId;
                                 const isEditing = editingThreadId === thread.id;
                                 const isHovered = hoveredThreadId === thread.id;
@@ -1055,7 +1056,12 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                                         className={`thread-list-item ${isEditing ? 'thread-list-item-editing' : ''} ${isHovered ? 'thread-list-item-hovered' : ''}`}
                                         role={isEditing ? undefined : 'button'}
                                         tabIndex={isEditing ? undefined : 0}
-                                        aria-label={isEditing ? undefined : `${threadName}, ${formatTimeAgo(thread.updatedAt)}${isCurrent ? ', current chat' : ''}${isForeign ? `, ${FOREIGN_THREAD_TITLE}` : ''}`}
+                                        aria-label={isEditing ? undefined : [
+                                            threadName,
+                                            formatTimeAgo(thread.updatedAt),
+                                            isCurrent ? t('current chat') : null,
+                                            isForeign ? t(FOREIGN_THREAD_TITLE) : null,
+                                        ].filter(Boolean).join(', ')}
                                         onClick={() => {
                                             if (!isEditing) {
                                                 handleSelectThread(thread);
@@ -1091,10 +1097,10 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                                                 </div>
                                             )}
                                             <div className="thread-list-item-time">
-                                                {formatTimeAgo(thread.updatedAt)}{isCurrent && ' (current chat)'}
+                                                {formatTimeAgo(thread.updatedAt)}{isCurrent && t(' (current chat)')}
                                                 {isForeign && (
-                                                    <span className="thread-list-item-badge" title={FOREIGN_THREAD_TITLE}>
-                                                        {FOREIGN_THREAD_LABEL}
+                                                    <span className="thread-list-item-badge" title={t(FOREIGN_THREAD_TITLE)}>
+                                                        {t(FOREIGN_THREAD_LABEL)}
                                                     </span>
                                                 )}
                                             </div>
@@ -1110,7 +1116,7 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                                                             handleCancelRename();
                                                         }}
                                                         className="scale-90"
-                                                        ariaLabel="Cancel rename"
+                                                        ariaLabel={t('Cancel rename')}
                                                     />
                                                     <IconButton
                                                         icon={TickIcon}
@@ -1120,7 +1126,7 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                                                             handleConfirmRename(thread.id);
                                                         }}
                                                         className="scale-11"
-                                                        ariaLabel="Confirm rename"
+                                                        ariaLabel={t('Confirm rename')}
                                                         loading={isSavingRename}
                                                     />
                                                 </div>
@@ -1135,7 +1141,7 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                                                                 void handleRevealJson(thread.id, isArchivedRow);
                                                             }}
                                                             className="scale-95"
-                                                            ariaLabel="Show conversation JSON in Zotero"
+                                                            ariaLabel={t('Show conversation JSON in Zotero')}
                                                         />
                                                     )}
                                                     <IconButton
@@ -1146,7 +1152,7 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                                                             handleStartRename(thread.id, threadName);
                                                         }}
                                                         className="scale-95"
-                                                        ariaLabel="Rename thread"
+                                                        ariaLabel={t('Rename thread')}
                                                     />
                                                     <IconButton
                                                         icon={isArchivedRow ? UndoIcon : DeleteIcon}
@@ -1158,8 +1164,8 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                                                         }}
                                                         className="scale-95"
                                                         ariaLabel={isArchivedRow
-                                                            ? 'Restore this chat'
-                                                            : 'Move this chat to the archive'}
+                                                            ? t('Restore this chat')
+                                                            : t('Move this chat to the archive')}
                                                     />
                                                     {isArchivedRow && (
                                                         <IconButton
@@ -1170,7 +1176,7 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                                                                 void handlePurge(thread.id);
                                                             }}
                                                             className="scale-95"
-                                                            ariaLabel="Delete this chat forever, on every synced computer"
+                                                            ariaLabel={t('Delete this chat forever, on every synced computer')}
                                                         />
                                                     )}
                                                 </div>
@@ -1187,12 +1193,12 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                 {!isLoading && displayedThreads.length === 0 && fetchError && (
                     <div className="display-flex flex-col items-center justify-center gap-2 py-6 text-center px-3 mt-2">
                         <span className="font-color-primary font-semibold text-sm">
-                            {fetchError.offline ? "You're offline" : "Couldn't load chats"}
+                            {fetchError.offline ? t('You\'re offline') : t('Couldn\'t load chats')}
                         </span>
                         <span className="font-color-tertiary text-sm">
                             {fetchError.offline
-                                ? 'Reconnect to load your chats.'
-                                : 'Check your connection and try again.'}
+                                ? t('Reconnect to load your chats.')
+                                : t('Check your connection and try again.')}
                         </span>
                         <Button
                             variant="outline"
@@ -1201,7 +1207,7 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                             type="button"
                             loading={isLoading}
                         >
-                            Try again
+                            {t('Try again')}
                         </Button>
                     </div>
                 )}
@@ -1212,7 +1218,7 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                 {!isLoading && displayedThreads.length === 0 && !fetchError && canShowHidden && (
                     <div className="display-flex flex-col items-center justify-center gap-3 py-6 text-center px-3 mt-2">
                         <span className="font-color-primary font-semibold text-base">
-                            {activeQuery ? 'No matching chats' : filter ? `No chats about ${filter.label}` : 'No chats on this Zotero profile'}
+                            {activeQuery ? t('No matching chats') : filter ? t('No chats about {label}', { label: filter.label }) : t('No chats on this Zotero profile')}
                         </span>
                         <span className="font-color-secondary text-base">
                             {hiddenExplanation}
@@ -1223,7 +1229,7 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                             type="button"
                             className="mt-2"
                         >
-                            Show all chats
+                            {t('Show all chats')}
                         </Button>
                     </div>
                 )}
@@ -1233,10 +1239,12 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                     <div className="display-flex items-center justify-center py-6">
                         <span className="font-color-tertiary text-sm">
                             {activeQuery
-                                ? 'No matching chats'
+                                ? t('No matching chats')
                                 : filter
-                                    ? `No ${showArchive ? 'archived ' : ''}chats about ${filter.label}`
-                                    : showArchive ? 'The archive is empty' : 'No chats yet'}
+                                    ? (showArchive
+                                        ? t('No archived chats about {label}', { label: filter.label })
+                                        : t('No chats about {label}', { label: filter.label }))
+                                    : showArchive ? t('The archive is empty') : t('No chats yet')}
                         </span>
                     </div>
                 )}
@@ -1252,7 +1260,7 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                 {displayedThreads.length > 0 && fetchError && !isLoading && (
                     <div className="display-flex items-center gap-2 px-3 py-2">
                         <span className="font-color-tertiary text-sm flex-1">
-                            {fetchError.offline ? "You're offline." : "Couldn't reach the server."}
+                            {fetchError.offline ? t('You\'re offline.') : t('Couldn\'t reach the server.')}
                         </span>
                         <Button
                             variant="outline"
@@ -1260,7 +1268,7 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                             disabled={isLoading}
                             type="button"
                         >
-                            Try again
+                            {t('Try again')}
                         </Button>
                     </div>
                 )}
@@ -1275,7 +1283,7 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                             type="button"
                             loading={isLoading}
                         >
-                            Show more
+                            {t('Show more')}
                         </Button>
                     </div>
                 )}
@@ -1295,7 +1303,7 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                         onClick={() => toggleShowAllInstances(true)}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleShowAllInstances(true); } }}
                     >
-                        Show all
+                        {t('Show all')}
                     </span>
                 </div>
             )}
@@ -1315,16 +1323,16 @@ const ThreadListView: React.FC<ThreadListViewProps> = ({ isWindow: _isWindow }) 
                         onClick={handleSyncNow}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSyncNow(); } }}
                     >
-                        Sync now
+                        {t('Sync now')}
                     </span>
                     {(syncStatus.running || !syncHealth.folderMissing) && (
                         <>
                             {' · '}
                             {syncStatus.running
-                                ? 'syncing…'
+                                ? t('syncing…')
                                 : syncStatus.lastAt
-                                    ? `last synced ${formatTimeAgo(syncStatus.lastAt)}`
-                                    : 'not synced yet'}
+                                    ? t('last synced {time}', { time: formatTimeAgo(syncStatus.lastAt) })
+                                    : t('not synced yet')}
                         </>
                     )}
                     {describeSyncHealth(syncHealth).length > 0 && (

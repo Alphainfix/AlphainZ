@@ -29,6 +29,7 @@ import { welcomeWizardForcedAtom } from '../../../atoms/welcomeWizard';
 import { whereToStartVisibleAtom } from '../../../atoms/whereToStart';
 import { logger } from '@beaver/agent-core/platform/logger';
 import { addPopupMessageAtom } from '../../../utils/popupMessageUtils';
+import { t } from '../../../../src/utils/i18n';
 
 interface DevToolsMenuButtonProps {
     className?: string;
@@ -901,7 +902,7 @@ const DevToolsMenuButton: React.FC<DevToolsMenuButtonProps> = ({
             icon={ToolsIcon}
             className={className}
             ariaLabel={ariaLabel}
-            tooltipContent="Development Tools"
+            tooltipContent={t('Development Tools')}
             showArrow={true}
         />
     );

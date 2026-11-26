@@ -34,6 +34,7 @@
 import { config } from "../../package.json";
 import { logger } from "@beaver/agent-core/platform/logger";
 import { getPref } from "../utils/prefs";
+import { t } from "../utils/i18n";
 import { store } from "../../react/store";
 import { isSidebarVisibleAtom } from "../../react/atoms/ui";
 import { BeaverUIFactory } from "../ui/ui";
@@ -135,21 +136,21 @@ function shouldNotifySystem(): boolean {
  * Human-readable notification text for an approval request.
  */
 function describeApproval(event: WSDeferredApprovalRequest): { title: string; body: string } {
-    const title = "AlphainZ needs your approval";
+    const title = t("AlphainZ needs your approval");
     switch (event.action_type) {
         case "confirm_extraction":
-            return { title, body: "Approve text extraction to let the task continue." };
+            return { title, body: t("Approve text extraction to let the task continue.") };
         case "confirm_external_search":
-            return { title, body: "Approve an external literature search to let the task continue." };
+            return { title, body: t("Approve an external literature search to let the task continue.") };
         case "edit_note":
         case "edit_note_batch":
-            return { title, body: "Review a note edit to let the task continue." };
+            return { title, body: t("Review a note edit to let the task continue.") };
         case "edit_annotations":
-            return { title, body: "Review an annotation change to let the task continue." };
+            return { title, body: t("Review an annotation change to let the task continue.") };
         case "edit_metadata":
-            return { title, body: "Review a metadata change to let the task continue." };
+            return { title, body: t("Review a metadata change to let the task continue.") };
         default:
-            return { title, body: "A task is waiting for your decision." };
+            return { title, body: t("A task is waiting for your decision.") };
     }
 }
 
@@ -162,8 +163,8 @@ function describeApprovals(events: WSDeferredApprovalRequest[]): { title: string
         return describeApproval(events[0]);
     }
     return {
-        title: "AlphainZ needs your approval",
-        body: `${events.length} actions are waiting for your decision.`,
+        title: t("AlphainZ needs your approval"),
+        body: t("{count} actions are waiting for your decision.", { count: events.length }),
     };
 }
 
@@ -279,7 +280,7 @@ export function notifyApprovalRequest(event: WSDeferredApprovalRequest): void {
  * text directly; a burst of questions collapses into a count.
  */
 function describeQuestions(event: WSAskUserQuestionRequest): { title: string; body: string } {
-    const title = "AlphainZ has a question";
+    const title = t("AlphainZ has a question");
     const questions = event.questions ?? [];
     if (questions.length <= 1) {
         const question = questions[0]?.question?.trim();
@@ -287,12 +288,12 @@ function describeQuestions(event: WSAskUserQuestionRequest): { title: string; bo
             title,
             body: question && question.length > 0
                 ? question
-                : "Answer a question to let the task continue.",
+                : t("Answer a question to let the task continue."),
         };
     }
     return {
         title,
-        body: `${questions.length} questions are waiting for your answer.`,
+        body: t("{count} questions are waiting for your answer.", { count: questions.length }),
     };
 }
 
@@ -397,8 +398,8 @@ export function notifyRunComplete(runId?: string | null): void {
     }
 
     showNotification(
-        "AlphainZ finished",
-        "Your response is ready. Click to open it.",
+        t("AlphainZ finished"),
+        t("Your response is ready. Click to open it."),
         RUN_COMPLETE_NOTIFICATION_NAME,
     );
 }

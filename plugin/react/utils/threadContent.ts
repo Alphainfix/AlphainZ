@@ -2,6 +2,7 @@ import { AgentRun, TextPart, ToolCallPart } from '@beaver/agent-core/agents/type
 import { isRenderableMessage } from '@beaver/agent-core/agents/messageVisibility';
 import { getToolCallLabel, type ToolCallLabelEnrich } from '@beaver/agent-core/run-state/toolLabels';
 import { isToolResultView } from '@beaver/agent-core/run-state/toolResultViews';
+import { t } from '../../src/utils/i18n';
 
 /**
  * Parse args from a ToolCallPart, handling both string and object formats.
@@ -153,8 +154,8 @@ export function extractThreadContent(
 
         if (userMessage) {
             const userHeading = includeRunLinks && threadId
-                ? ` [User ↗](zotero://alphainz/thread/${threadId}/run/${run.id})`
-                : 'User';
+                ? ` [${t('User')} ↗](zotero://alphainz/thread/${threadId}/run/${run.id})`
+                : t('User');
             const formattedMessage = userMessageAsBlockquote
                 ? `> ${userMessage.replace(/\n/g, '\n> ')}`
                 : userMessage;

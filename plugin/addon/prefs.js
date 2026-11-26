@@ -303,6 +303,9 @@ pref("uiFontSize", 13);
 pref("uiLineHeight", "normal");
 // "auto" follows Zotero; "light"/"dark" pin a custom theme to one palette.
 pref("uiColorScheme", "auto");
+// The interface language: "auto" follows Zotero's own (Chinese for a Chinese
+// Zotero, English otherwise), "en" or "zh-CN" pins one.
+pref("uiLanguage", "auto");
 // The question rail at the right edge of a conversation: one mark per question,
 // in place of the thread view's scroll bar. Off brings the scroll bar back; the
 // outline button in the header shows either way.

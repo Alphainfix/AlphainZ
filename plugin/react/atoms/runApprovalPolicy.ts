@@ -1,5 +1,6 @@
 import { atom } from 'jotai';
 import type { AgentActionType } from '@beaver/agent-core/protocol/agentProtocol';
+import { msg, t } from '../../src/utils/i18n';
 
 /**
  * Stable groups for actual deferred tool names. These seed persistent
@@ -74,14 +75,14 @@ const RUN_APPROVAL_TOOL_GROUPS: Record<string, string> = {
 
 /** Labels complete the phrase "Allow all … for this run". */
 export const TOOL_GROUP_RUN_LABELS: Record<string, string> = {
-    metadata_edits: 'metadata edits',
-    note_edits: 'note edits',
-    note_creation: 'note creation',
-    library_modifications: 'item organization and collection creation',
-    library_structure: 'library-wide tag and collection changes',
-    annotations: 'annotation creation and editing',
-    annotation_deletion: 'annotation deletion',
-    create_items: 'item creation',
+    metadata_edits: msg('metadata edits'),
+    note_edits: msg('note edits'),
+    note_creation: msg('note creation'),
+    library_modifications: msg('item organization and collection creation'),
+    library_structure: msg('library-wide tag and collection changes'),
+    annotations: msg('annotation creation and editing'),
+    annotation_deletion: msg('annotation deletion'),
+    create_items: msg('item creation'),
 };
 
 export function getToolGroup(toolName: string): string | null {
@@ -131,14 +132,15 @@ export function getActionToolGroup(
 
 export function getToolGroupRunApprovalLabel(toolName: string): string | null {
     const scope = getToolGroupRunApprovalScope(toolName);
-    return scope ? `Allow all ${scope} for this run` : null;
+    return scope ? t('Allow all {scope} for this run', { scope }) : null;
 }
 
 /** Short scope shown beneath the shared "Allow for this run" menu title. */
 export function getToolGroupRunApprovalScope(toolName: string): string | null {
     const group = getToolGroup(toolName);
     if (!group) return null;
-    return TOOL_GROUP_RUN_LABELS[group] ?? null;
+    const label = TOOL_GROUP_RUN_LABELS[group];
+    return label ? t(label) : null;
 }
 
 /**

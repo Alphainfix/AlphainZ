@@ -22,6 +22,7 @@ import {
     getBatchRewriteOldContent,
     getEditNotePreviewKind,
 } from './editNoteBatchPreviewData';
+import { t } from '../../../../src/utils/i18n';
 
 /** A library's name, when it is on this device. */
 function libraryNameFor(libraryRef: string | undefined, libraryId: number | undefined): string | null {
@@ -90,10 +91,18 @@ const NoteDestination: React.FC<{ previewData: PreviewData; status: ActionStatus
 
     let text: string | null = null;
     if (parentKey) {
-        if (paperTitle) text = `${saved ? 'Added to' : 'Adding to'}: ${paperTitle}`;
+        if (paperTitle) {
+            text = saved
+                ? t('Added to: {paper}', { paper: paperTitle })
+                : t('Adding to: {paper}', { paper: paperTitle });
+        }
     } else {
         const libraryName = previewData.currentValue?.library_name ?? libraryNameFor(libraryRef, libraryId);
-        if (libraryName) text = `${saved ? 'Saved as a standalone note in' : 'A standalone note in'} ${libraryName}`;
+        if (libraryName) {
+            text = saved
+                ? t('Saved as a standalone note in {library}', { library: libraryName })
+                : t('A standalone note in {library}', { library: libraryName });
+        }
     }
     if (!text) return null;
 
@@ -365,7 +374,7 @@ export const ActionPreview: React.FC<{
         if (rows.length === 0) {
             return (
                 <div className="text-sm font-color-secondary px-3 py-2">
-                    No item data available
+                    {t('No item data available')}
                 </div>
             );
         }
@@ -421,7 +430,7 @@ export const ActionPreview: React.FC<{
                                 its own scope line. */}
                             {edits.length > 1 && !isRewrite && (
                                 <div className="text-sm font-color-secondary px-3 py-1">
-                                    {`Edit ${position + 1}`}
+                                    {t('Edit {number}', { number: position + 1 })}
                                 </div>
                             )}
                             <EditNotePreview
@@ -499,7 +508,7 @@ export const ActionPreview: React.FC<{
     // Fallback for unsupported action types
     return (
         <div className="text-sm font-color-secondary">
-            <div className="font-medium mb-1">Action: {previewData.actionType}</div>
+            <div className="font-medium mb-1">{t('Action: {type}', { type: previewData.actionType })}</div>
             <pre className="text-xs overflow-auto max-h-32 p-2 rounded">
                 {JSON.stringify(previewData.actionData, null, 2)}
             </pre>

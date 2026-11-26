@@ -77,6 +77,7 @@ import {
     parseEditNoteToolCallArgs,
     resolveEditNoteTargetFromData,
 } from '../../../components/agentRuns/editNoteShared';
+import { t } from '../../../../src/utils/i18n';
 
 interface EditNoteGroupViewProps {
     parts: ToolCallPart[];
@@ -311,7 +312,7 @@ export const EditNoteGroupView: React.FC<EditNoteGroupViewProps> = ({
                     resolvedTarget.zoteroKey,
                 );
                 if (!item || cancelled) return;
-                const title = item.isNote?.() ? (item.getNoteTitle?.() || '(untitled)') : '(untitled)';
+                const title = item.isNote?.() ? (item.getNoteTitle?.() || t('(untitled)')) : t('(untitled)');
                 setItemTitle({ key: itemTitleKey, title });
                 // The terminal review rows are keyed by toolcall id. Seed the
                 // same title under those keys so they can reuse this lookup.
@@ -494,7 +495,7 @@ export const EditNoteGroupView: React.FC<EditNoteGroupViewProps> = ({
                     logger(`EditNoteGroupView: Undone ${action.action_type} action ${action.id}`, 1);
                     continue;
                 }
-                const errorMessage = result.failed[0]?.error ?? result.fatalError ?? 'Failed to undo note edit';
+                const errorMessage = result.failed[0]?.error ?? result.fatalError ?? t('Failed to undo note edit');
                 logger(`EditNoteGroupView: Failed to undo ${action.action_type} action ${action.id}: ${errorMessage}`, 1);
                 if (action.toolcall_id) {
                     newFailures[action.toolcall_id] = errorMessage;
@@ -549,7 +550,7 @@ export const EditNoteGroupView: React.FC<EditNoteGroupViewProps> = ({
                     continue;
                 }
 
-                const errorMessage = result.failed[0]?.error ?? result.fatalError ?? 'Failed to undo note edit';
+                const errorMessage = result.failed[0]?.error ?? result.fatalError ?? t('Failed to undo note edit');
                 if (toolcallId) {
                     setPerEditUndoErrors((prev) => ({ ...prev, [toolcallId]: errorMessage }));
                 }
@@ -681,8 +682,8 @@ export const EditNoteGroupView: React.FC<EditNoteGroupViewProps> = ({
         [partStates],
     );
     const groupLabel = isWholeNoteRewrite
-        ? 'Rewrite Note'
-        : (editCount === 1 ? 'Note Edit' : `${editCount} Note Edits`);
+        ? t('Rewrite Note')
+        : (editCount === 1 ? t('Note Edit') : t('{count} Note Edits', { count: editCount }));
     // A rewrite validation classified as destructive is authorized on its own,
     // so a note-edit run grant neither approves it nor sweeps it up. Offering
     // "Allow all note edits for this run" here would look like it applies the
@@ -758,12 +759,12 @@ export const EditNoteGroupView: React.FC<EditNoteGroupViewProps> = ({
                                     <span className="font-color-secondary ml-15">{noteTitle}</span>
                                     {'\u00A0'}
                                     {resolvedTarget && (
-                                        <Tooltip content="Open note" singleLine>
+                                        <Tooltip content={t('Open note')} singleLine>
                                             <span
                                                 className="font-color-secondary scale-10"
                                                 style={{ display: 'inline-flex', verticalAlign: 'middle', cursor: 'pointer' }}
                                                 role="button"
-                                                aria-label="Open note"
+                                                aria-label={t('Open note')}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     e.preventDefault();
@@ -786,14 +787,14 @@ export const EditNoteGroupView: React.FC<EditNoteGroupViewProps> = ({
                     className="display-flex flex-row items-center gap-25 mr-2 mt-015"
                     style={{ visibility: !(aggregateStatus === 'awaiting' || aggregateStatus === 'pending') ? 'visible' : 'hidden' }}
                 >
-                    <Tooltip content={isExpanded ? 'Collapse' : 'Expand'} showArrow singleLine>
+                    <Tooltip content={isExpanded ? t('Collapse') : t('Expand')} showArrow singleLine>
                         <IconButton
                             icon={ChevronIcon}
                             variant="ghost-secondary"
                             iconClassName="scale-12"
                             onClick={toggleExpanded}
                             disabled={hasStreamingChild}
-                            ariaLabel={`${isExpanded ? 'Collapse' : 'Expand'} ${groupLabel}`}
+                            ariaLabel={isExpanded ? t('Collapse {target}', { target: groupLabel }) : t('Expand {target}', { target: groupLabel })}
                         />
                     </Tooltip>
                 </div>
@@ -801,7 +802,7 @@ export const EditNoteGroupView: React.FC<EditNoteGroupViewProps> = ({
                 {showCollapsedHeaderActions && (
                     <div className="display-flex flex-row items-center gap-25 mr-3 mt-015">
                         {(!isProcessing || clickedButton === 'reject') && (
-                            <Tooltip content="Reject all" showArrow singleLine>
+                            <Tooltip content={t('Reject all')} showArrow singleLine>
                                 <IconButton
                                     icon={CancelIcon}
                                     variant="ghost-secondary"
@@ -809,12 +810,12 @@ export const EditNoteGroupView: React.FC<EditNoteGroupViewProps> = ({
                                     onClick={handleRejectAll}
                                     disabled={isProcessing}
                                     loading={isProcessing && clickedButton === 'reject'}
-                                    ariaLabel={`Reject all: ${groupLabel}`}
+                                    ariaLabel={t('Reject all: {target}', { target: groupLabel })}
                                 />
                             </Tooltip>
                         )}
                         {(!isProcessing || clickedButton === 'approve') && (
-                            <Tooltip content="Apply all" showArrow singleLine>
+                            <Tooltip content={t('Apply all')} showArrow singleLine>
                                 <IconButton
                                     icon={TickIcon}
                                     variant="ghost-secondary"
@@ -822,7 +823,7 @@ export const EditNoteGroupView: React.FC<EditNoteGroupViewProps> = ({
                                     onClick={handleApplyAll}
                                     disabled={isProcessing}
                                     loading={isProcessing && clickedButton === 'approve'}
-                                    ariaLabel={`Apply all: ${groupLabel}`}
+                                    ariaLabel={t('Apply all: {target}', { target: groupLabel })}
                                 />
                             </Tooltip>
                         )}
@@ -874,7 +875,7 @@ export const EditNoteGroupView: React.FC<EditNoteGroupViewProps> = ({
                                     style={{ padding: '3px 6px' }}
                                     disabled={isProcessing}
                                 >
-                                    Preview
+                                    {t('Preview')}
                                 </Button>
                             )}
 
@@ -885,7 +886,7 @@ export const EditNoteGroupView: React.FC<EditNoteGroupViewProps> = ({
                                     loading={isProcessing && clickedButton === 'reject'}
                                     disabled={isProcessing}
                                 >
-                                    Reject All
+                                    {t('Reject All')}
                                 </Button>
                             )}
 
@@ -896,7 +897,7 @@ export const EditNoteGroupView: React.FC<EditNoteGroupViewProps> = ({
                                     loading={isProcessing && clickedButton === 'undo'}
                                     disabled={isProcessing}
                                 >
-                                    Undo All
+                                    {t('Undo All')}
                                 </Button>
                             )}
 
@@ -908,7 +909,7 @@ export const EditNoteGroupView: React.FC<EditNoteGroupViewProps> = ({
                                     loading={isProcessing && clickedButton === 'retry'}
                                     disabled={isProcessing}
                                 >
-                                    Retry All
+                                    {t('Retry All')}
                                 </Button>
                             )}
 
@@ -919,7 +920,7 @@ export const EditNoteGroupView: React.FC<EditNoteGroupViewProps> = ({
                                         onApplyAll={handleApproveNoteEditsForRun}
                                         loading={isProcessing && clickedButton === 'approve'}
                                         disabled={isProcessing}
-                                        primaryLabel="Apply All"
+                                        primaryLabel={t('Apply All')}
                                         applyAllLabel={getToolGroupRunApprovalLabel('edit_note') ?? undefined}
                                         applyAllScope={getToolGroupRunApprovalScope('edit_note') ?? undefined}
                                     />
@@ -930,7 +931,7 @@ export const EditNoteGroupView: React.FC<EditNoteGroupViewProps> = ({
                                         loading={isProcessing && clickedButton === 'approve'}
                                         disabled={isProcessing}
                                     >
-                                        <span>Apply All</span>
+                                        <span>{t('Apply All')}</span>
                                     </Button>
                                 )
                             )}

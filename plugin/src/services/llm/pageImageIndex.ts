@@ -209,7 +209,7 @@ export async function runPageImageIndex(options: {
                 const resumeAt = indexingResumesAt(embedding.failure);
                 result.paused = {
                     attachmentKey: candidate.attachmentKey,
-                    message: describeIndexingPause(embedding.failure).replace(/^Indexing paused/, 'Figure indexing paused'),
+                    message: describeIndexingPause(embedding.failure, 'figures'),
                     ...(resumeAt !== undefined ? { resumeAt } : {}),
                 };
                 break;

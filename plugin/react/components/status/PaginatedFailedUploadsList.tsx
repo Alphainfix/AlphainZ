@@ -13,6 +13,7 @@ import { Icon, ArrowDownIcon, ArrowRightIcon, RepeatIcon } from '../icons/icons'
 import IconButton from '@beaver/agent-ui/primitives/IconButton';
 import { store } from '../../../react/store';
 import { planFeaturesAtom } from '../../atoms/profile';
+import { t } from '../../../src/utils/i18n';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -209,7 +210,7 @@ const PaginatedFailedUploadsList: React.FC<PaginatedFailedUploadsListProps> = ({
                                     onClick={handleShowMore}
                                     disabled={isLoading || !hasMore}
                                 >
-                                    {isLoading ? "Loading..." : "Show More"}
+                                    {isLoading ? t('Loading...') : t('Show More')}
                                 </Button>
                             )}
                         </div>

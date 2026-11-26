@@ -1,4 +1,6 @@
 import React from 'react';
+import { t, tn } from '../../../../src/utils/i18n';
+import { tr } from '../../../utils/i18nNodes';
 
 type ActionStatus = 'pending' | 'applied' | 'rejected' | 'undone' | 'error' | 'awaiting';
 
@@ -29,28 +31,52 @@ export const ConfirmExtractionPreview: React.FC<ConfirmExtractionPreviewProps> =
 }) => {
     const isRejectedOrUndone = status === 'rejected' || status === 'undone';
     const isApplied = status === 'applied';
+    const papers = (
+        <span className="font-color-primary font-medium">
+            {tn(attachmentCount, '{count} paper', '{count} papers')}
+        </span>
+    );
+    const credits = (
+        <span className="font-color-primary font-medium">
+            {tn(extraCredits, '{count} extra credit', '{count} extra credits')}
+        </span>
+    );
 
     return (
         <div className={`confirm-extraction-preview overflow-hidden ${isRejectedOrUndone ? 'opacity-60' : ''}`}>
             <div className="px-3 py-3 text-sm font-color-secondary">
                 {isApplied ? (
-                    <span>Approved extraction from {attachmentCount} paper{attachmentCount !== 1 ? 's' : ''}{label ? ` — ${label}` : ''}.</span>
+                    <span>
+                        {label
+                            ? tn(
+                                attachmentCount,
+                                'Approved extraction from {count} paper — {label}.',
+                                'Approved extraction from {count} papers — {label}.',
+                                { label },
+                            )
+                            : tn(attachmentCount, 'Approved extraction from {count} paper.', 'Approved extraction from {count} papers.')}
+                    </span>
                 ) : isRejectedOrUndone ? (
-                    <span>Declined extraction from {attachmentCount} paper{attachmentCount !== 1 ? 's' : ''}{label ? ` — ${label}` : ''}.</span>
+                    <span>
+                        {label
+                            ? tn(
+                                attachmentCount,
+                                'Declined extraction from {count} paper — {label}.',
+                                'Declined extraction from {count} papers — {label}.',
+                                { label },
+                            )
+                            : tn(attachmentCount, 'Declined extraction from {count} paper.', 'Declined extraction from {count} papers.')}
+                    </span>
                 ) : (
                     <span>
-                        {label ? (
-                            <>Extracting{' '}
-                            <span className="font-color-primary font-medium">{label}</span>
-                            {' '}from{' '}
-                            <span className="font-color-primary font-medium">{attachmentCount} paper{attachmentCount !== 1 ? 's' : ''}</span></>
-                        ) : (
-                            <>Extracting from{' '}
-                            <span className="font-color-primary font-medium">{attachmentCount} paper{attachmentCount !== 1 ? 's' : ''}</span></>
-                        )}
-                        {' '}will use up to{' '}
-                        <span className="font-color-primary font-medium">{extraCredits} extra credit{extraCredits !== 1 ? 's' : ''}</span>.
-                        {' '}You're only charged for successful extractions.
+                        {label
+                            ? tr('Extracting {label} from {papers} will use up to {credits}.', {
+                                label: <span className="font-color-primary font-medium">{label}</span>,
+                                papers,
+                                credits,
+                            })
+                            : tr('Extracting from {papers} will use up to {credits}.', { papers, credits })}
+                        {' '}{t('You\'re only charged for successful extractions.')}
                     </span>
                 )}
             </div>

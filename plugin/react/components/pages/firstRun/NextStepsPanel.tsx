@@ -19,6 +19,7 @@ import BackToSuggestions from './BackToSuggestions';
 import IconButton from '@beaver/agent-ui/primitives/IconButton';
 import Tooltip from '@beaver/agent-ui/primitives/Tooltip';
 import { textWithTrailingNoWrap } from '../../../utils/textWithTrailingNoWrap';
+import { t } from '../../../../src/utils/i18n';
 
 
 /**
@@ -106,13 +107,13 @@ const NextStepsPanel: React.FC<NextStepsPanelProps> = ({ origin, onDismiss }) =>
                         className="font-color-primary text-sm font-semibold uppercase"
                         style={{ letterSpacing: '0.05em' }}
                     >
-                        Guided next steps
+                        {t('Guided next steps')}
                     </div>
-                    <Tooltip content="Dismiss next steps" showArrow singleLine>
+                    <Tooltip content={t('Dismiss next steps')} showArrow singleLine>
                         <IconButton
                             icon={CancelIcon}
                             onClick={onDismiss}
-                            ariaLabel="Dismiss next steps"
+                            ariaLabel={t('Dismiss next steps')}
                             variant="ghost-secondary"
                         />
                     </Tooltip>

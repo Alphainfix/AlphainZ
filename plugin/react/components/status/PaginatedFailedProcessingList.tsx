@@ -13,6 +13,7 @@ import { getMimeType, loadFullItemData } from '../../../src/utils/zoteroUtils';
 import { UNRESOLVED_LIBRARY_ID } from '../../../src/utils/libraryIdentity';
 import IconButton from '@beaver/agent-ui/primitives/IconButton';
 import { retryUploads } from '../../../src/services/FileUploader';
+import { t } from '../../../src/utils/i18n';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -217,7 +218,7 @@ const PaginatedFailedProcessingList: React.FC<PaginatedFailedProcessingListProps
                                     onClick={handleShowMore}
                                     disabled={isLoading || !hasMore}
                                 >
-                                    {isLoading ? "Loading..." : "Show More"}
+                                    {isLoading ? t('Loading...') : t('Show More')}
                                 </Button>
                             )}
                         </div>

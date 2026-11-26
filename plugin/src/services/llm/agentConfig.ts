@@ -56,6 +56,7 @@ import { buildSystemPrompt, type PromptContext } from './systemPrompt';
 import { toolSchemas } from './toolSchemas';
 import { IMAGE_TOOLS, LIBRARY_TOOL_NAMES } from './zoteroToolDispatch';
 import type { ChatProvider, ToolSchema } from './types';
+import { currentUiLanguage } from '../../utils/i18n';
 
 /** Every thinking tier a model can take, least first; each model offers its own subset. */
 export const REASONING_EFFORTS = THINKING_TIERS;
@@ -736,7 +737,7 @@ function finishAgentConfig(
  * stays identical from one message to the next until the user changes one.
  */
 export function buildAgentSystemPrompt(
-    context: Omit<PromptContext, 'semanticSearchAvailable' | 'literatureLookups' | 'writesAllowed' | 'readsImages'> = {},
+    context: Omit<PromptContext, 'semanticSearchAvailable' | 'literatureLookups' | 'writesAllowed' | 'readsImages' | 'interfaceLanguage'> = {},
 ): string {
     return buildSystemPrompt({
         ...context,
@@ -745,6 +746,7 @@ export function buildAgentSystemPrompt(
         // The same preference that decides whether the write tools are offered.
         writesAllowed: getPref('allowAgentWrites') === true,
         readsImages: currentModelReadsImages(),
+        interfaceLanguage: currentUiLanguage(),
     });
 }
 

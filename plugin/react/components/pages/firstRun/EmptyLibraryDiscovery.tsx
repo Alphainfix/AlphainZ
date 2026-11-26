@@ -9,6 +9,7 @@ import {
 import Button from '@beaver/agent-ui/primitives/Button';
 import { ArrowRightIcon, Spinner } from '../../icons/icons';
 import { logger } from '@beaver/agent-core/platform/logger';
+import { msg, t } from '../../../../src/utils/i18n';
 
 /**
  * Empty-library first-run experience: research-interest textarea + submit
@@ -19,11 +20,11 @@ import { logger } from '@beaver/agent-core/platform/logger';
  * for an empty library.
  */
 const EXAMPLE_TOPICS = [
-    'Social media and teen mental health',
-    'mRNA cancer vaccines',
-    'Coral reef restoration',
-    'How LLMs hallucinate',
-    'Psychedelics for depression',
+    msg('Social media and teen mental health'),
+    msg('mRNA cancer vaccines'),
+    msg('Coral reef restoration'),
+    msg('How LLMs hallucinate'),
+    msg('Psychedelics for depression'),
 ];
 
 const EmptyLibraryDiscovery: React.FC = () => {
@@ -85,7 +86,7 @@ const EmptyLibraryDiscovery: React.FC = () => {
                     value={interest}
                     onChange={handleChange}
                     onKeyDown={handleKeyDown}
-                    placeholder="Describe what you're researching…"
+                    placeholder={t('Describe what you\'re researching…')}
                     className="chat-input empty-library-discover-input"
                     rows={3}
                     maxLength={EMPTY_LIBRARY_DISCOVER_MAX_LENGTH}
@@ -99,12 +100,12 @@ const EmptyLibraryDiscovery: React.FC = () => {
                     <Button
                         key={topic}
                         variant="surface-light"
-                        onClick={() => handleChipClick(topic)}
+                        onClick={() => handleChipClick(t(topic))}
                         disabled={isSubmitting}
                         className="fit-content"
                         style={{ padding: '2px 8px', fontSize: '0.875rem' }}
                     >
-                        {topic}
+                        {t(topic)}
                     </Button>
                 ))}
             </div>
@@ -117,13 +118,13 @@ const EmptyLibraryDiscovery: React.FC = () => {
                     rightIcon={isSubmitting ? Spinner : ArrowRightIcon}
                     className="fit-content whitespace-nowrap"
                 >
-                    Discover papers
+                    {t('Discover papers')}
                 </Button>
             </div>
 
             {isSubmitting && trimmed.length > 0 && (
                 <div className="font-color-secondary text-sm mt-1">
-                    Finding recent work on {trimmed}…
+                    {t('Finding recent work on {topic}…', { topic: trimmed })}
                 </div>
             )}
         </div>

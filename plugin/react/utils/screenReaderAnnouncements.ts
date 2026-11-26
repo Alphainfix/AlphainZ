@@ -1,5 +1,6 @@
 import { AgentRun, TextPart } from '@beaver/agent-core/agents/types';
 import { isRenderableMessage } from '@beaver/agent-core/agents/messageVisibility';
+import { t } from '../../src/utils/i18n';
 
 const MAX_RESPONSE_ANNOUNCEMENT_CHARS = 4000;
 
@@ -74,22 +75,22 @@ export function buildRunCompletionAnnouncement(run: AgentRun): string | null {
     if (run.status === 'completed') {
         const responseText = extractAssistantResponseText(run);
         if (!responseText) {
-            return 'Response complete.';
+            return t('Response complete.');
         }
         if (responseText.length > MAX_RESPONSE_ANNOUNCEMENT_CHARS) {
-            return `Response complete. AlphainZ wrote about ${countWords(responseText)} words. Navigate to the latest message to read it.`;
+            return t('Response complete. AlphainZ wrote about {count} words. Navigate to the latest message to read it.', { count: countWords(responseText) });
         }
-        return `AlphainZ response: ${responseText}`;
+        return t('AlphainZ response: {text}', { text: responseText });
     }
 
     if (run.status === 'error') {
-        const message = run.error?.message ? toScreenReaderText(run.error.message) : 'Unknown error.';
-        const punctuatedMessage = /[.!?]$/.test(message) ? message : `${message}.`;
-        return `AlphainZ response failed: ${punctuatedMessage} Press Tab or Enter to move to error actions, or Escape to message AlphainZ.`;
+        const message = run.error?.message ? toScreenReaderText(run.error.message) : t('Unknown error.');
+        const punctuatedMessage = /[.!?。！？]$/.test(message) ? message : `${message}.`;
+        return t('AlphainZ response failed: {message} Press Tab or Enter to move to error actions, or Escape to message AlphainZ.', { message: punctuatedMessage });
     }
 
     if (run.status === 'canceled') {
-        return 'Response canceled.';
+        return t('Response canceled.');
     }
 
     return null;

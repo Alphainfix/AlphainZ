@@ -2,6 +2,7 @@ import React from 'react';
 import PermissionMenu, { PermissionMenuOption } from '@beaver/agent-ui/primitives/PermissionMenu';
 import HandIcon from '@beaver/agent-ui/icons/HandIcon';
 import SecurityWarningIcon from '@beaver/agent-ui/icons/SecurityWarningIcon';
+import { msg, t } from '../../../../src/utils/i18n';
 
 /**
  * How much Beaver may change in the library on its own: ask before every write,
@@ -9,7 +10,7 @@ import SecurityWarningIcon from '@beaver/agent-ui/icons/SecurityWarningIcon';
  */
 export type LibraryPermissionMode = 'ask' | 'full_access';
 
-export const LIBRARY_PERMISSION_HEADING = 'How should library changes be approved?';
+export const LIBRARY_PERMISSION_HEADING = msg('How should library changes be approved?');
 
 /**
  * The Zotero-side copy for the shared permission menu. The menu itself is
@@ -18,14 +19,14 @@ export const LIBRARY_PERMISSION_HEADING = 'How should library changes be approve
 export const LIBRARY_PERMISSION_OPTIONS: readonly PermissionMenuOption<LibraryPermissionMode>[] = [
     {
         value: 'ask',
-        label: 'Ask for approval',
-        description: 'Review every change before it is applied',
+        label: msg('Ask for approval'),
+        description: msg('Review every change before it is applied'),
         icon: HandIcon,
     },
     {
         value: 'full_access',
-        label: 'Full access',
-        description: 'Edit items, collections, and annotations without asking',
+        label: msg('Full access'),
+        description: msg('Edit items, collections, and annotations without asking'),
         icon: SecurityWarningIcon,
         tone: 'warning',
     },
@@ -58,15 +59,15 @@ const LibraryPermissionButton: React.FC<LibraryPermissionButtonProps> = ({
     onAfterClose,
 }) => (
     <PermissionMenu
-        options={LIBRARY_PERMISSION_OPTIONS}
+        options={LIBRARY_PERMISSION_OPTIONS.map((option) => ({ ...option, label: t(option.label), description: option.description && t(option.description) }))}
         value={mode}
         onChange={onChange}
-        heading={LIBRARY_PERMISSION_HEADING}
+        heading={t(LIBRARY_PERMISSION_HEADING)}
         disabled={disabled}
         iconOnly={iconOnly}
         className={className}
         style={style ?? { padding: '2px 6px', fontSize: '0.80rem' }}
-        tooltipContent="How library changes are approved"
+        tooltipContent={t('How library changes are approved')}
         onAfterClose={onAfterClose}
     />
 );

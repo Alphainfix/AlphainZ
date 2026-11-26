@@ -10,6 +10,7 @@ import { logger } from '@beaver/agent-core/platform/logger';
 import { accountService } from '@beaver/agent-core/transport/clients/accountService';
 import { ZoteroLibrary } from '@beaver/agent-core/types/zotero';
 import { serializeZoteroLibrary } from '../../../../src/utils/zoteroSerializers';
+import { t } from '../../../../src/utils/i18n';
 
 interface AddLibraryButtonProps {
     disabled?: boolean;
@@ -56,7 +57,7 @@ const AddLibraryButton: React.FC<AddLibraryButtonProps> = ({ disabled=false }) =
                 Zotero.alert(
                     Zotero.getMainWindow(),
                     'Unable to add library "' + lib.name + '"',
-                    'The library includes too many files that are stored on the Zotero server and not locally.\n\nConsider changing the "Download files" setting to "at sync time" in Zotero preferences -> Sync.\n\nA later version might support syncing files stored on the Zotero server.',
+                    t('The library includes too many files that are stored on the Zotero server and not locally.\n\nConsider changing the "Download files" setting to "at sync time" in Zotero preferences -> Sync.\n\nA later version might support syncing files stored on the Zotero server.'),
                 );
                 logger(`AddLibraryButton: Library ${libraryID} includes too many files that are stored on the Zotero server and not locally`, 1);
                 return;
@@ -66,7 +67,7 @@ const AddLibraryButton: React.FC<AddLibraryButtonProps> = ({ disabled=false }) =
         // Confirm adding the library
         const buttonIndex = Zotero.Prompt.confirm({
             window: Zotero.getMainWindow(),
-            title: 'Sync Library?',
+            title: t('Sync Library?'),
             text: `Sync "${lib.name}" with AlphainZ?\n\nWe'll import your Zotero data, upload attachments, and index everything for search and AI features.`,
             button0: Zotero.Prompt.BUTTON_TITLE_YES,
             button1: Zotero.Prompt.BUTTON_TITLE_NO,
@@ -167,7 +168,7 @@ const AddLibraryButton: React.FC<AddLibraryButtonProps> = ({ disabled=false }) =
                                 <div className="display-flex flex-col min-w-0 flex-1">
                                     <span className="truncate font-color-primary">{library.name}</span>
                                     <span className="text-sm font-color-tertiary">
-                                        Library not synced with Zotero
+                                        {t('Library not synced with Zotero')}
                                     </span>
                                 </div>
                             </div>
@@ -187,7 +188,7 @@ const AddLibraryButton: React.FC<AddLibraryButtonProps> = ({ disabled=false }) =
                                 <span className="truncate font-color-primary">{library.name}</span>
                                 {stats && (
                                     <span className="text-sm font-color-tertiary">
-                                        {stats.itemCount} items, {stats.attachmentCount} attachments
+                                        {t('{itemCount} items, {attachmentCount} attachments', { itemCount: stats.itemCount, attachmentCount: stats.attachmentCount })}
                                     </span>
                                 )}
                             </div>
@@ -213,12 +214,12 @@ const AddLibraryButton: React.FC<AddLibraryButtonProps> = ({ disabled=false }) =
                 ref={buttonRef}
                 onClick={handleButtonClick}
                 disabled={disabled}
-                aria-label="Add Library"
+                aria-label={t('Add Library')}
                 aria-haspopup="menu"
                 aria-expanded={isMenuOpen}
             >
                 <Icon icon={PlusSignIcon} className="scale-11" />
-                <span>Add Library</span>
+                <span>{t('Add Library')}</span>
             </button>
             <SearchMenu
                 menuItems={menuItems}
@@ -231,8 +232,8 @@ const AddLibraryButton: React.FC<AddLibraryButtonProps> = ({ disabled=false }) =
                 width="220px"
                 maxHeight="260px"
                 onSearch={handleSearch}
-                noResultsText="No libraries found"
-                placeholder="Search libraries"
+                noResultsText={t('No libraries found')}
+                placeholder={t('Search libraries')}
                 closeOnSelect={true}
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}

@@ -17,6 +17,7 @@ import { planRunStream } from '../components/agentRuns/workStream';
 import { toZoteroCommentText } from '../../src/utils/zoteroCommentText';
 import { excludedLibraryIdsAtom } from '../atoms/profile';
 import { store } from '../store';
+import { t } from '../../src/utils/i18n';
 
 /** Marks the block this plugin appended, so a second answer can be added after it. */
 const MARKER = '— AlphainZ';
@@ -80,15 +81,15 @@ export type CommentSaveResult =
 export function commentSaveFailureMessage(reason: CommentSaveFailure, detail?: string): string {
     switch (reason) {
         case 'missing':
-            return 'That highlight no longer exists.';
+            return t('That highlight no longer exists.');
         case 'read_only':
-            return 'Zotero does not let you change that highlight, so the answer could not be added to its comment.';
+            return t('Zotero does not let you change that highlight, so the answer could not be added to its comment.');
         case 'excluded':
-            return 'That highlight is in a library excluded from AlphainZ, so AlphainZ does not change it.';
+            return t('That highlight is in a library excluded from AlphainZ, so AlphainZ does not change it.');
         case 'error':
             return detail
-                ? `Zotero could not save the comment: ${detail}`
-                : 'Zotero could not save the comment.';
+                ? t('Zotero could not save the comment: {detail}', { detail })
+                : t('Zotero could not save the comment.');
     }
 }
 

@@ -4,6 +4,7 @@ import Button from '../primitives/Button';
 import Tooltip from '../primitives/Tooltip';
 import DocsLink from '../primitives/DocsLink';
 import { DollarCircleIcon, Icon, StopStrokeIcon } from '../icons';
+import { t } from '../i18n';
 
 /** The decision callbacks the card's buttons fire. */
 export interface CreditDecisionHandlers {
@@ -75,7 +76,7 @@ export const CreditConfirmationCard: React.FC<CreditConfirmationCardProps> = ({
         className="user-message-display"
         style={{ minHeight: 'fit-content' }}
         role="group"
-        aria-label="Credit confirmation"
+        aria-label={t('Credit confirmation')}
         // The card takes no focus, so this is the only thing that tells a
         // screen reader the run has stopped and is waiting on a decision.
         aria-live="assertive"
@@ -114,15 +115,15 @@ export const CreditConfirmationCard: React.FC<CreditConfirmationCardProps> = ({
 
             {/* Footer: Stop ... Decline Approve */}
             <div className="display-flex flex-row items-center pt-2 gap-2">
-                <Tooltip content="Stop the agent run" showArrow singleLine>
+                <Tooltip content={t('Stop the agent run')} showArrow singleLine>
                     <Button
                         variant="outline"
                         rightIcon={StopStrokeIcon}
-                        ariaLabel="Stop generating"
+                        ariaLabel={t('Stop generating')}
                         style={{ padding: '2px 5px' }}
                         onClick={onStop}
                     >
-                        Stop
+                        {t('Stop')}
                     </Button>
                 </Tooltip>
                 <div className="flex-1" />

@@ -11,6 +11,7 @@ import { getPref } from '../../../src/utils/prefs';
 import { LOCAL_USER_ID, userAtom } from '../../atoms/auth';
 import { discardThreadCompaction, threadCompactionAtom } from '../../atoms/threadCompaction';
 import { addPopupMessageAtom, removePopupMessageAtom } from '../../utils/popupMessageUtils';
+import { t, tn } from '../../../src/utils/i18n';
 
 /**
  * The marker where the conversation was compacted.
@@ -27,14 +28,13 @@ export const CompactionMarker: React.FC = () => {
     const compaction = useAtomValue(threadCompactionAtom);
     if (!compaction) return null;
     const inUse = getPref('contextCompactionEnabled') === true;
-    const plural = compaction.runCount === 1 ? '' : 's';
 
     const openCard = () => {
         const popupId = 'compaction-summary';
         store.set(addPopupMessageAtom, {
             id: popupId,
             type: 'info',
-            title: `Summary of ${compaction.runCount} earlier exchange${plural}`,
+            title: tn(compaction.runCount, 'Summary of {count} earlier exchange', 'Summary of {count} earlier exchanges'),
             expire: false,
             customContent: createElement(CompactionSummaryCard, {
                 summary: compaction.summary,
@@ -60,7 +60,7 @@ export const CompactionMarker: React.FC = () => {
     };
 
     return (
-        <div className="display-flex flex-row items-center px-4" aria-label="Earlier exchanges summarized here">
+        <div className="display-flex flex-row items-center px-4" aria-label={t('Earlier exchanges summarized here')}>
             <Button
                 variant="ghost-secondary"
                 onClick={openCard}
@@ -71,8 +71,16 @@ export const CompactionMarker: React.FC = () => {
                     <Icon icon={PuzzleIcon} className="scale-90" />
                     <span className="font-color-tertiary">
                         {inUse
-                            ? `${compaction.runCount} earlier exchange${plural} compacted — the model reads a summary of ${compaction.runCount === 1 ? 'it' : 'them'} instead`
-                            : `${compaction.runCount} earlier exchange${plural} compacted — the summary is not used while automatic compaction is off`}
+                            ? tn(
+                                compaction.runCount,
+                                '{count} earlier exchange compacted — the model reads a summary of it instead',
+                                '{count} earlier exchanges compacted — the model reads a summary of them instead',
+                            )
+                            : tn(
+                                compaction.runCount,
+                                '{count} earlier exchange compacted — the summary is not used while automatic compaction is off',
+                                '{count} earlier exchanges compacted — the summary is not used while automatic compaction is off',
+                            )}
                     </span>
                 </div>
             </Button>
@@ -98,8 +106,6 @@ export const CompactionSummaryCard: React.FC<{
     onDiscard: () => Promise<void>;
 }> = ({ summary, runCount, inUse = true, onDismiss, onDiscard }) => {
     const [busy, setBusy] = React.useState(false);
-    const exchanges = runCount === 1 ? 'that earlier exchange' : `those ${runCount} earlier exchanges`;
-    const theyStay = runCount === 1 ? 'It stays' : 'They stay';
     return (
         <div className="display-flex flex-col gap-2 px-1">
             <div
@@ -110,22 +116,25 @@ export const CompactionSummaryCard: React.FC<{
             </div>
             {inUse ? (
                 <div className="text-sm font-color-tertiary">
-                    The model reads this summary instead of {exchanges}. {theyStay} here in full, and
-                    nothing on this computer changes. If the summary gets something wrong, discard it.
-                    From your next message the model is sent your last 10 exchanges instead of the
-                    summary (older ones are left out), which costs more. A new summary is written from
-                    the originals later.
+                    {tn(
+                        runCount,
+                        'The model reads this summary instead of that earlier exchange. It stays here in full, '
+                            + 'and nothing on this computer changes.',
+                        'The model reads this summary instead of those {count} earlier exchanges. They stay here '
+                            + 'in full, and nothing on this computer changes.',
+                    )}{' '}
+                    {t('If the summary gets something wrong, discard it. From your next message the model is sent '
+                        + 'your last 10 exchanges instead of the summary (older ones are left out), which costs more. '
+                        + 'A new summary is written from the originals later.')}
                 </div>
             ) : (
                 <div className="text-sm font-color-tertiary">
-                    Automatic compaction is off in Settings → Advanced, so the model is not sent this
-                    summary: it is sent your last 10 exchanges, and older ones are left out. If you turn
-                    compaction back on, the summary is used again unless you discard it.
+                    {t('Automatic compaction is off in Settings → Advanced, so the model is not sent this summary: it is sent your last 10 exchanges, and older ones are left out. If you turn compaction back on, the summary is used again unless you discard it.')}
                 </div>
             )}
             <div className="display-flex flex-row gap-2">
                 <div className="flex-1" />
-                <Button variant="outline" onClick={onDismiss}>Keep</Button>
+                <Button variant="outline" onClick={onDismiss}>{t('Keep')}</Button>
                 <Button
                     variant="outline"
                     loading={busy}
@@ -135,7 +144,7 @@ export const CompactionSummaryCard: React.FC<{
                         void onDiscard().finally(() => setBusy(false));
                     }}
                 >
-                    Discard summary
+                    {t('Discard summary')}
                 </Button>
             </div>
         </div>

@@ -25,6 +25,7 @@ import {
     CopyIcon,
     LockIcon,
 } from "../icons/icons";
+import { t } from '../../../src/utils/i18n';
 
 const MAX_TITLE_LENGTH = 45;
 const MAX_NAME_LENGTH = 45;
@@ -53,7 +54,7 @@ const categoryIcon = (cat: ActionCategory | undefined): React.ComponentType<Reac
  *  glance what still blocks saving. */
 const RequiredMark: React.FC<{ satisfied: boolean }> = ({ satisfied }) => (
     <span className={`text-sm font-normal ${satisfied ? "font-color-tertiary" : "font-color-red"}`}>
-        Required
+        {t('Required')}
     </span>
 );
 
@@ -310,16 +311,16 @@ const ActionCard: React.FC<ActionCardProps> = ({
                 if (!path) return; // user cancelled
                 addPopupMessage({
                     type: 'info',
-                    title: 'Action exported',
-                    text: `Saved "${snapshot.title}" to a file. Share it and others can import it into AlphainZ.`,
+                    title: t('Action exported'),
+                    text: t('Saved "{title}" to a file. Share it and others can import it into AlphainZ.', { title: snapshot.title }),
                     expire: true,
                 });
             })
             .catch(() => {
                 addPopupMessage({
                     type: 'error',
-                    title: 'Export failed',
-                    text: 'Could not save the action to a file.',
+                    title: t('Export failed'),
+                    text: t('Could not save the action to a file.'),
                     expire: true,
                 });
             });
@@ -340,12 +341,12 @@ const ActionCard: React.FC<ActionCardProps> = ({
     // set, so hand-edited custom sets round-trip untouched until the user
     // picks a preset here.
     const targetMenuItems: MenuItem[] = TARGET_PRESETS.map(preset => ({
-        label: preset.label,
+        label: t(preset.label),
         onClick: () => setEditTargets(preset.targets),
         customContent: (
             <div className="display-flex flex-col">
-                <span className="text-sm font-color-primary">{preset.label}</span>
-                <span className="text-sm font-color-secondary">{preset.description}</span>
+                <span className="text-sm font-color-primary">{t(preset.label)}</span>
+                <span className="text-sm font-color-secondary">{t(preset.description)}</span>
             </div>
         )
     }));
@@ -377,16 +378,16 @@ const ActionCard: React.FC<ActionCardProps> = ({
                             className="font-color-secondary flex-shrink-0"
                         />
                         <div className="font-color-primary text-base font-medium">
-                            {action.title || <span className="font-color-tertiary">Untitled action</span>}
+                            {action.title ? t(action.title) : <span className="font-color-tertiary">{t('Untitled action')}</span>}
                         </div>
                         <div className="font-color-secondary text-base truncate">
                             /{getActionCommand(action)}
                         </div>
                         <div className="flex-1" />
                         {hasUserInputVariables(action.text) && (
-                            <Tooltip content="This prompt contains [[ ]] placeholders, which are sent as written." width="220px">
+                            <Tooltip content={t('This prompt contains [[ ]] placeholders, which are sent as written.')} width="220px">
                                 <span className="action-target-badge" data-type="placeholder">
-                                    Placeholders
+                                    {t('Placeholders')}
                                 </span>
                             </Tooltip>
                         )}
@@ -418,12 +419,12 @@ const ActionCard: React.FC<ActionCardProps> = ({
                         size={15}
                         className="font-color-secondary flex-shrink-0"
                     />
-                    <span className="font-semibold font-color-primary truncate">{editTitle.trim() || "New action"}</span>
+                    <span className="font-semibold font-color-primary truncate">{editTitle.trim() ? (isEditing ? editTitle.trim() : t(editTitle.trim())) : t('New action')}</span>
                     {isLocked && (
-                        <Tooltip content="This action is built in and can't be edited. Duplicate it to make an editable copy." width="220px">
+                        <Tooltip content={t('This action is built in and can\'t be edited. Duplicate it to make an editable copy.')} width="220px">
                             <span className="action-target-badge display-flex flex-row items-center gap-1" data-type="placeholder">
                                 <Icon icon={LockIcon} size={11} />
-                                Locked
+                                {t('Locked')}
                             </span>
                         </Tooltip>
                     )}
@@ -436,7 +437,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
                             style={{ padding: '3px 12px' }}
                             onClick={handleCancel}
                         >
-                            Close
+                            {t('Close')}
                         </Button>
                     ) : (
                         <>
@@ -446,7 +447,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
                                 style={{ padding: '3px 12px' }}
                                 onClick={handleCancel}
                             >
-                                Cancel
+                                {t('Cancel')}
                             </Button>
                             <Button
                                 type="button"
@@ -454,9 +455,9 @@ const ActionCard: React.FC<ActionCardProps> = ({
                                 style={{ padding: '3px 12px' }}
                                 onClick={handleSave}
                                 disabled={!canSave}
-                                title={!canSave ? "Add a title and a prompt to save" : undefined}
+                                title={!canSave ? t('Add a title and a prompt to save') : undefined}
                             >
-                                Save
+                                {t('Save')}
                             </Button>
                         </>
                     )}
@@ -466,7 +467,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
             <div className="action-edit-body">
                 {/* Title */}
                 <div className="action-field-label text-base font-color-primary font-semibold">
-                    <span>Title</span>
+                    <span>{t('Title')}</span>
                     <RequiredMark satisfied={!!editTitle.trim()} />
                 </div>
                 <div className="action-field-box">
@@ -475,8 +476,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
                         type="text"
                         value={editTitle}
                         onChange={(e) => setEditTitle(e.target.value.slice(0, MAX_TITLE_LENGTH))}
-                        placeholder="Action title..."
-                        aria-label="Action title"
+                        placeholder={t('Action title...')}
+                        aria-label={t('Action title')}
                         maxLength={MAX_TITLE_LENGTH}
                         readOnly={isLocked}
                         className="action-field-control text-base font-medium"
@@ -486,16 +487,16 @@ const ActionCard: React.FC<ActionCardProps> = ({
                 {/* Description — optional summary surfaced in the /command hover card */}
                 <div className="mt-3">
                     <FieldLabel
-                        label="Description"
-                        tooltip="Short summary shown when you hover the /command in the chat. Optional."
+                        label={t('Description')}
+                        tooltip={t('Short summary shown when you hover the /command in the chat. Optional.')}
                     />
                     <div className="action-field-box">
                         <input
                             type="text"
                             value={editDescription}
                             onChange={(e) => setEditDescription(e.target.value.slice(0, MAX_DESCRIPTION_LENGTH))}
-                            placeholder="e.g. Summarize the key findings of the selected paper"
-                            aria-label="Action description"
+                            placeholder={t('e.g. Summarize the key findings of the selected paper')}
+                            aria-label={t('Action description')}
                             maxLength={MAX_DESCRIPTION_LENGTH}
                             readOnly={isLocked}
                             className="action-field-control text-base"
@@ -507,8 +508,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
                 <div className="display-flex flex-row gap-4 mt-3">
                     <div className="display-flex flex-col flex-1 min-w-0">
                         <FieldLabel
-                            label="Slash command"
-                            tooltip="Typing /command in the chat input inserts this action. Derived from the title unless you set it yourself; spaces are not allowed."
+                            label={t('Slash command')}
+                            tooltip={t('Typing /command in the chat input inserts this action. Derived from the title unless you set it yourself; spaces are not allowed.')}
                         />
                         <div className="action-field-box display-flex flex-row items-center">
                             <span className="font-color-tertiary text-base">/</span>
@@ -516,8 +517,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
                                 type="text"
                                 value={displayedName}
                                 onChange={(e) => setEditName(e.target.value.toLowerCase().replace(/\s+/g, "-").slice(0, MAX_NAME_LENGTH))}
-                                placeholder="action-name"
-                                aria-label="Slash command name"
+                                placeholder={t('action-name')}
+                                aria-label={t('Slash command name')}
                                 maxLength={MAX_NAME_LENGTH}
                                 readOnly={isLocked}
                                 className="action-field-control text-base"
@@ -525,39 +526,39 @@ const ActionCard: React.FC<ActionCardProps> = ({
                         </div>
                         <div className={`action-field-help text-sm ${manualNameConflict ? "font-color-red" : "font-color-tertiary"}`}>
                             {manualNameConflict
-                                ? "Already used. A number will be added."
+                                ? t('Already used. A number will be added.')
                                 : isAutoName
-                                    ? "Derived from the title. Edit to set your own."
-                                    : "Clear the field to derive it from the title again."}
+                                    ? t('Derived from the title. Edit to set your own.')
+                                    : t('Clear the field to derive it from the title again.')}
                         </div>
                     </div>
 
                     <div className="display-flex flex-col flex-1 min-w-0">
                         <FieldLabel
-                            label="Argument hint"
-                            tooltip="Hint shown during autocomplete to indicate expected arguments."
+                            label={t('Argument hint')}
+                            tooltip={t('Hint shown during autocomplete to indicate expected arguments.')}
                         />
                         <div className="action-field-box">
                             <input
                                 type="text"
                                 value={editArgumentHint}
                                 onChange={(e) => setEditArgumentHint(e.target.value.slice(0, MAX_ARGUMENT_HINT_LENGTH))}
-                                placeholder="e.g. topic or question"
-                                aria-label="Argument hint"
+                                placeholder={t('e.g. topic or question')}
+                                aria-label={t('Argument hint')}
                                 maxLength={MAX_ARGUMENT_HINT_LENGTH}
                                 readOnly={isLocked}
                                 className="action-field-control text-base"
                             />
                         </div>
                         <div className="action-field-help text-sm font-color-tertiary">
-                            Shown greyed out after the inserted command.
+                            {t('Shown greyed out after the inserted command.')}
                         </div>
                     </div>
                 </div>
 
                 {/* Prompt */}
                 <div className="action-field-label text-base font-color-primary font-semibold mt-3">
-                    <span>Prompt</span>
+                    <span>{t('Prompt')}</span>
                     <RequiredMark satisfied={!!editText.trim()} />
                 </div>
                 <div className="action-field-box">
@@ -569,8 +570,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
                             e.currentTarget.style.height = "auto";
                             e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
                         }}
-                        placeholder="Enter prompt text..."
-                        aria-label="Action prompt text"
+                        placeholder={t('Enter prompt text...')}
+                        aria-label={t('Action prompt text')}
                         maxLength={MAX_PROMPT_TEXT_LENGTH}
                         readOnly={isLocked}
                         className="action-field-control action-edit-textarea text-base"
@@ -581,15 +582,14 @@ const ActionCard: React.FC<ActionCardProps> = ({
                     understands why further typing is truncated. */}
                 {editText.length >= MAX_PROMPT_TEXT_LENGTH - 500 && (
                     <div className="action-field-help text-sm font-color-tertiary">
-                        {editText.length.toLocaleString()} / {MAX_PROMPT_TEXT_LENGTH.toLocaleString()} characters
+                        {t('{count} / {max} characters', { count: editText.length.toLocaleString(), max: MAX_PROMPT_TEXT_LENGTH.toLocaleString() })}
                     </div>
                 )}
                 {hasUserInputVariables(editText) && (
                     <div className="action-field-help text-sm font-color-tertiary display-flex flex-row gap-2 items-start">
                         <Icon icon={InformationCircleIcon} size={13} className="flex-shrink-0" style={{ marginTop: '2px' }} />
                         <span>
-                            This prompt contains [[ ]] placeholders. They are currently sent to the
-                            assistant as written; a new way to fill them in is coming in a future update.
+                            {t('This prompt contains [[ ]] placeholders. They are currently sent to the assistant as written; a new way to fill them in is coming in a future update.')}
                         </span>
                     </div>
                 )}
@@ -600,14 +600,14 @@ const ActionCard: React.FC<ActionCardProps> = ({
                     <div className="display-flex flex-col flex-1 min-w-0">
                         <div className="display-flex flex-row items-center gap-2 min-w-0">
                             <FieldLabel
-                                label="Category"
-                                tooltip="Groups this action on the home page launcher."
+                                label={t('Category')}
+                                tooltip={t('Groups this action on the home page launcher.')}
                                 className="action-field-label-inline"
                             />
                             <MenuButton
                                 menuItems={categoryMenuItems}
                                 variant="outline"
-                                ariaLabel="Select category"
+                                ariaLabel={t('Select category')}
                                 disabled={isLocked}
                                 className="action-field-select flex-1"
                                 customContent={
@@ -623,14 +623,14 @@ const ActionCard: React.FC<ActionCardProps> = ({
                     <div className="display-flex flex-col flex-1 min-w-0">
                         <div className="display-flex flex-row items-center gap-2 min-w-0">
                             <FieldLabel
-                                label="Applies to"
-                                tooltip="Controls when this action shows up, based on your current Zotero selection."
+                                label={t('Applies to')}
+                                tooltip={t('Controls when this action shows up, based on your current Zotero selection.')}
                                 className="action-field-label-inline"
                             />
                             <MenuButton
                                 menuItems={targetMenuItems}
                                 variant="outline"
-                                ariaLabel="Select what this action applies to"
+                                ariaLabel={t('Select what this action applies to')}
                                 disabled={isLocked}
                                 className="action-field-select flex-1"
                                 customContent={
@@ -654,20 +654,20 @@ const ActionCard: React.FC<ActionCardProps> = ({
                         icon={ShareIcon}
                         style={{ padding: '4px 6px' }}
                         disabled={!canSave}
-                        title={!canSave ? "Add a title and a prompt to export" : "Save this action to a file you can share"}
+                        title={!canSave ? t('Add a title and a prompt to export') : t('Save this action to a file you can share')}
                         onClick={(e) => { e.stopPropagation(); handleExport(); }}
                     >
-                        Export
+                        {t('Export')}
                     </Button>
                     {onDuplicate && (
                         <Button
                             variant="outline"
                             icon={CopyIcon}
                             style={{ padding: '4px 6px' }}
-                            title="Create an editable copy of this action"
+                            title={t('Create an editable copy of this action')}
                             onClick={(e) => { e.stopPropagation(); onDuplicate(); }}
                         >
-                            Duplicate
+                            {t('Duplicate')}
                         </Button>
                     )}
                     <div className="flex-1"></div>
@@ -684,7 +684,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
                                 // the fields, so we stay in edit mode showing the restored values.
                                 onClick={(e) => { e.stopPropagation(); onResetToDefault(); }}
                             >
-                                Reset to default
+                                {t('Reset to default')}
                             </Button>
                         </>
                     )}
@@ -696,7 +696,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
                             style={{ padding: '4px 6px' }}
                             onClick={(e) => { e.stopPropagation(); (isBuiltin ? onHide : onRemove)?.(); setIsEditing(false); }}
                         >
-                            <span className="font-color-red">Delete</span>
+                            <span className="font-color-red">{t('Delete')}</span>
                         </Button>
                     )}
                 </div>

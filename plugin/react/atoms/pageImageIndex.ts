@@ -33,6 +33,7 @@ import { fulltextIndexStateAtom, listAllCandidates } from './fulltextIndex';
 import { fulltextSweepDueAtom } from './indexSchedule';
 import { searchableLibraryIdsAtom } from './profile';
 import { store } from '../store';
+import { msg, t } from '../../src/utils/i18n';
 
 export interface PageImageIndexState {
     status: 'idle' | 'indexing' | 'error';
@@ -105,7 +106,7 @@ const MAX_PASSES = 20;
 const TEXT_FIRST_MAX_WAIT_MS = 20 * 60 * 1000;
 
 /** Shown as the run's current document while it waits. */
-export const WAITING_FOR_TEXT = 'Waiting for the text index';
+export const WAITING_FOR_TEXT = msg('Waiting for the text index');
 
 function setState(patch: Partial<PageImageIndexState>): void {
     store.set(pageImageIndexStateAtom, (prev: PageImageIndexState) => ({ ...prev, ...patch }));
@@ -132,7 +133,7 @@ function textIndexBusy(): boolean {
  */
 async function letTextGoFirst(signal?: AbortSignal, stopWaiting?: () => boolean): Promise<void> {
     if (signal?.aborted || stopWaiting?.() || !textIndexBusy()) return;
-    setState({ current: WAITING_FOR_TEXT });
+    setState({ current: t(WAITING_FOR_TEXT) });
     await new Promise<void>((resolve) => {
         const stops: Array<() => void> = [];
         let settled = false;
@@ -203,14 +204,14 @@ export function pageImageProvider(): EmbeddingProvider | null {
 export function missingFileReason(attachment: any): string {
     const linkedFile = (Zotero as any).Attachments?.LINK_MODE_LINKED_FILE ?? 2;
     if (attachment.attachmentLinkMode === linkedFile) {
-        return 'The linked PDF is not at its path on this computer. Relink it in Zotero, then retry.';
+        return t('The linked PDF is not at its path on this computer. Relink it in Zotero, then retry.');
     }
     // Zotero keeps the hash of a file it has synced; without one there is no
     // copy online to download.
     if (!attachment.attachmentSyncedHash) {
-        return 'The PDF file is not on this computer, and Zotero never uploaded it, so it cannot be downloaded '
+        return t('The PDF file is not on this computer, and Zotero never uploaded it, so it cannot be downloaded '
             + 'either. Attach the PDF to the item again (for example, move the empty attachment to the trash, '
-            + 'then use Find Available PDF on the item), then retry.';
+            + 'then use Find Available PDF on the item), then retry.');
     }
     let syncsFiles = true;
     try {
@@ -219,9 +220,9 @@ export function missingFileReason(attachment: any): string {
         /* unknown: assume Zotero can download it */
     }
     return syncsFiles
-        ? 'The PDF is not downloaded to this computer yet. Open it once in Zotero to download it, then retry.'
-        : 'The PDF file is not on this computer, and file syncing is off for this library in Zotero\'s Sync '
-            + 'settings. Turn it on or attach the PDF again, then retry.';
+        ? t('The PDF is not downloaded to this computer yet. Open it once in Zotero to download it, then retry.')
+        : t('The PDF file is not on this computer, and file syncing is off for this library in Zotero\'s Sync '
+            + 'settings. Turn it on or attach the PDF again, then retry.');
 }
 
 /**

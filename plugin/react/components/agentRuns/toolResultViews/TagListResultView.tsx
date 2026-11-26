@@ -1,7 +1,6 @@
 import React from 'react';
 import { TagListView, TagRowView } from '@beaver/agent-core/run-state/toolResultViews';
-
-const plural = (n: number, noun: string) => `${n} ${noun}${n !== 1 ? 's' : ''}`;
+import { t, tn } from '../../../../src/utils/i18n';
 
 /** Total number of objects (across all types) carrying the tag. */
 const tagTotal = (tag: TagRowView): number =>
@@ -10,12 +9,12 @@ const tagTotal = (tag: TagRowView): number =>
 /** Human-readable breakdown, e.g. "5 items, 2 attachments, 1 annotation". */
 const tagTooltip = (tag: TagRowView): string => {
     const parts: string[] = [];
-    if (tag.item_count) parts.push(plural(tag.item_count, 'item'));
-    if (tag.attachment_count) parts.push(plural(tag.attachment_count, 'attachment'));
-    if (tag.note_count) parts.push(plural(tag.note_count, 'note'));
-    if (tag.annotation_count) parts.push(plural(tag.annotation_count, 'annotation'));
+    if (tag.item_count) parts.push(tn(tag.item_count, '{count} item', '{count} items'));
+    if (tag.attachment_count) parts.push(tn(tag.attachment_count, '{count} attachment', '{count} attachments'));
+    if (tag.note_count) parts.push(tn(tag.note_count, '{count} note', '{count} notes'));
+    if (tag.annotation_count) parts.push(tn(tag.annotation_count, '{count} annotation', '{count} annotations'));
     // Fall back to the total when every category is zero (keeps "0 items").
-    return parts.length > 0 ? parts.join(', ') : plural(tagTotal(tag), 'item');
+    return parts.length > 0 ? parts.join(', ') : tn(tagTotal(tag), '{count} item', '{count} items');
 };
 
 /**
@@ -31,7 +30,7 @@ export const TagListResultView: React.FC<{ view: TagListView }> = ({ view }) => 
     if (tags.length === 0) {
         return (
             <div className="p-3 text-sm font-color-tertiary">
-                No tags found
+                {t('No tags found')}
             </div>
         );
     }
@@ -56,7 +55,7 @@ export const TagListResultView: React.FC<{ view: TagListView }> = ({ view }) => 
             </div>
             {view.total_count > tags.length && (
                 <div className="px-15 py-2 text-xs font-color-tertiary border-t border-primary">
-                    Showing {tags.length} of {view.total_count} tags
+                    {t('Showing {shown} of {total} tags', { shown: tags.length, total: view.total_count })}
                 </div>
             )}
         </div>

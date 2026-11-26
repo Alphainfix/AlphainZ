@@ -40,6 +40,7 @@ import { getCurrentCollectionKeyForItem, revealSource } from '../../../../utils/
 import Button from '@beaver/agent-ui/primitives/Button';
 import IconButton from '@beaver/agent-ui/primitives/IconButton';
 import Tooltip from '@beaver/agent-ui/primitives/Tooltip';
+import { t } from '../../../../../src/utils/i18n';
 
 interface ReviewActionRowProps {
     runId: string;
@@ -269,20 +270,20 @@ export const ReviewActionRow: React.FC<ReviewActionRowProps> = ({
 
                 <div className="display-flex flex-row items-center gap-2 mr-3 mt-010" style={{ flexShrink: 0 }}>
                     {revealReference && !isBusy && (
-                        <Tooltip content="Show in library" showArrow singleLine>
+                        <Tooltip content={t('Show in library')} showArrow singleLine>
                             <IconButton
                                 icon={ArrowUpRightIcon}
                                 variant="ghost-secondary"
                                 iconClassName="font-color-secondary scale-10"
                                 onClick={handleReveal}
                                 disabled={isDisabled}
-                                ariaLabel="Show in library"
+                                ariaLabel={t('Show in library')}
                             />
                         </Tooltip>
                     )}
 
                     {(config.showUndo || (isBusy && activeButton === 'undo')) && (
-                        <Tooltip content={row.actionType === 'create_note' ? 'Delete' : 'Undo'} showArrow singleLine>
+                        <Tooltip content={row.actionType === 'create_note' ? t('Delete') : t('Undo')} showArrow singleLine>
                             <IconButton
                                 icon={UndoIcon}
                                 variant="ghost-secondary"
@@ -290,7 +291,9 @@ export const ReviewActionRow: React.FC<ReviewActionRowProps> = ({
                                 onClick={handleUndo}
                                 loading={isBusy && activeButton === 'undo'}
                                 disabled={isDisabled}
-                                ariaLabel={`${row.actionType === 'create_note' ? 'Delete' : 'Undo'} ${rowName}`}
+                                ariaLabel={row.actionType === 'create_note'
+                                    ? t('Delete {target}', { target: rowName })
+                                    : t('Undo {target}', { target: rowName })}
                             />
                         </Tooltip>
                     )}
@@ -303,12 +306,12 @@ export const ReviewActionRow: React.FC<ReviewActionRowProps> = ({
                             disabled={isDisabled}
                             style={GHOST_BUTTON_STYLE}
                         >
-                            {isUndoRetry ? 'Retry Undo' : 'Try Again'}
+                            {isUndoRetry ? t('Retry Undo') : t('Try Again')}
                         </Button>
                     )}
 
                     {config.showReject && (!isBusy || activeButton === 'reject') && (
-                        <Tooltip content="Reject" showArrow singleLine>
+                        <Tooltip content={t('Reject')} showArrow singleLine>
                             <IconButton
                                 icon={CancelIcon}
                                 variant="ghost-secondary"
@@ -316,13 +319,13 @@ export const ReviewActionRow: React.FC<ReviewActionRowProps> = ({
                                 onClick={handleReject}
                                 disabled={isDisabled}
                                 loading={isBusy && activeButton === 'reject'}
-                                ariaLabel={`Reject ${rowName}`}
+                                ariaLabel={t('Reject {target}', { target: rowName })}
                             />
                         </Tooltip>
                     )}
 
                     {config.showApply && (!isBusy || activeButton === 'approve') && (
-                        <Tooltip content="Apply" showArrow singleLine>
+                        <Tooltip content={t('Apply')} showArrow singleLine>
                             <IconButton
                                 icon={TickIcon}
                                 variant="ghost-secondary"
@@ -330,18 +333,18 @@ export const ReviewActionRow: React.FC<ReviewActionRowProps> = ({
                                 onClick={handleApply}
                                 disabled={isDisabled}
                                 loading={isBusy && activeButton === 'approve'}
-                                ariaLabel={`Apply ${rowName}`}
+                                ariaLabel={t('Apply {target}', { target: rowName })}
                             />
                         </Tooltip>
                     )}
 
                     {onDismiss && !isBusy && (
-                        <Tooltip content="Dismiss" showArrow singleLine>
+                        <Tooltip content={t('Dismiss')} showArrow singleLine>
                             <IconButton
                                 icon={CancelIcon}
                                 variant="ghost-secondary"
                                 onClick={onDismiss}
-                                ariaLabel="Dismiss"
+                                ariaLabel={t('Dismiss')}
                             />
                         </Tooltip>
                     )}

@@ -3,6 +3,7 @@ import { SearchMenuItem } from '@beaver/agent-ui/primitives/SearchMenu';
 import { TagMenuItemContext, createTagMenuItem } from '../utils/menuItemFactories';
 import { getActiveZoteroLibraryId } from '../../../../../src/utils/zoteroUtils';
 import { ZoteroTag } from '@beaver/agent-core/types/zotero';
+import { t } from '../../../../../src/utils/i18n';
 
 interface UseTagsMenuOptions {
     isActive: boolean;
@@ -134,10 +135,10 @@ export const useTagsMenu = ({
             createTagMenuItem(tag, tagMenuItemContext, searchQuery)
         );
 
-        let headerLabel = 'Select Tags';
+        let headerLabel = t('Select Tags');
         if (activeLibraryId) {
             const library = Zotero.Libraries.get(activeLibraryId);
-            headerLabel = library ? `Tags in ${library.name}` : headerLabel;
+            headerLabel = library ? t('Tags in {library}', { library: library.name }) : headerLabel;
         }
 
         const header: SearchMenuItem = { label: headerLabel, isGroupHeader: true, onClick: () => {} };

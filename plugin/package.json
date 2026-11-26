@@ -1,7 +1,7 @@
 {
   "name": "alphain-reader",
   "type": "module",
-  "version": "0.1.78",
+  "version": "0.1.80",
   "description": "AlphainZ — a local-brain research agent in Zotero: your own models, your own retrieval, no credits.",
   "config": {
     "addonName": "AlphainZ",

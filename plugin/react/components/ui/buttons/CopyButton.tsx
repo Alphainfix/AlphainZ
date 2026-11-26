@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CopyIcon, TickIcon } from '../../icons/icons';
 import IconButton from '@beaver/agent-ui/primitives/IconButton';
 import { copyToClipboard } from '../../../utils/clipboard';
+import { t } from '../../../../src/utils/i18n';
 
 interface CopyButtonProps {
     /** Text content to copy, or a provider resolved when the button is clicked */
@@ -29,8 +30,8 @@ const CopyButton: React.FC<CopyButtonProps> = ({
     className = 'scale-12',
     onCopySuccess,
     formatContent = (text) => text,
-    title = 'Copy to clipboard',
-    ariaLabel = 'Copy to clipboard',
+    title = t('Copy to clipboard'),
+    ariaLabel = t('Copy to clipboard'),
     variant = 'ghost'
 }) => {
     const [justCopied, setJustCopied] = useState(false);

@@ -23,6 +23,7 @@ import RepeatIcon from '@beaver/agent-ui/icons/RepeatIcon';
 import { OnboardingHeader, OnboardingFooter } from './onboarding';
 import { ChargingPermissions } from '@beaver/agent-core/protocol/agentProtocol';
 import { logger } from '@beaver/agent-core/platform/logger';
+import { t } from '../../../src/utils/i18n';
 
 // Suggested first-run actions launch without cost-confirmation prompts.
 const FIRST_RUN_PERMISSIONS_OVERRIDE: Partial<ChargingPermissions> = {
@@ -76,7 +77,7 @@ const FirstRunPage: React.FC<FirstRunPageProps> = () => {
         } catch (err) {
             logger(`FirstRunPage: complete failed: ${err}`, 1);
             setFooterError(
-                "Failed to connect to AlphainZ. Please try again.",
+                t("Failed to connect to AlphainZ. Please try again."),
             );
         } finally {
             setIsCompleting(false);
@@ -92,22 +93,22 @@ const FirstRunPage: React.FC<FirstRunPageProps> = () => {
 
     const headerMessage = isSuggestionsMode ? (
         <div className="display-flex flex-col gap-2 py-2 mt-3">
-            <div className="text-lg font-semibold">Ideas for your library</div>
+            <div className="text-lg font-semibold">{t('Ideas for your library')}</div>
         </div>
     ) : isLibraryEmpty ? (
         <div className="display-flex flex-col gap-2 py-2 mt-2">
-            <div>Tell us what you&apos;re researching and we&apos;ll find recent, highly-cited papers to start your library.</div>
+            <div>{t('Tell us what you\'re researching and we\'ll find recent, highly-cited papers to start your library.')}</div>
         </div>
     ) : (
         <div className="display-flex flex-col gap-2 py-2 mt-3">
-            <div className="text-lg font-semibold">Your AI research assistant in Zotero</div>
-            <div>Search across your library, read papers faster, compare findings, and discover relevant new research.</div>
+            <div className="text-lg font-semibold">{t('Your AI research assistant in Zotero')}</div>
+            <div>{t('Search across your library, read papers faster, compare findings, and discover relevant new research.')}</div>
         </div>
     );
 
     const footerLabel = isSuggestionsMode
-        ? 'Cancel'
-        : isLibraryEmpty ? 'Skip for now' : 'Skip';
+        ? t('Cancel')
+        : isLibraryEmpty ? t('Skip for now') : t('Skip');
     // Empty-library skip is a secondary path — the primary CTA lives inside
     // EmptyLibraryDiscovery. Other onboarding screens keep the solid default.
     const footerButtonVariant = !isSuggestionsMode && isLibraryEmpty ? 'ghost' : 'solid';
@@ -127,7 +128,7 @@ const FirstRunPage: React.FC<FirstRunPageProps> = () => {
                 {!isSuggestionsMode && !isLibraryEmpty && (
                     <div className="display-flex flex-row items-center justify-between gap-4">
                         <div className="text-base font-semibold mt-2 mb-3">
-                            A few ideas based on your library
+                            {t('A few ideas based on your library')}
                         </div>
                         {isDev && (
                             <IconButton
@@ -135,7 +136,7 @@ const FirstRunPage: React.FC<FirstRunPageProps> = () => {
                                 variant="ghost-secondary"
                                 onClick={() => void refresh()}
                                 disabled={isLoading}
-                                ariaLabel="Refresh suggestions (dev)"
+                                ariaLabel={t('Refresh suggestions (dev)')}
                             />
                         )}
                     </div>

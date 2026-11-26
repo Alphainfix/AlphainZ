@@ -3,6 +3,7 @@ import { CSSIcon, Icon, PlusSignIcon } from '../../../components/icons/icons';
 import { getHost } from '@beaver/agent-ui/host';
 import { libraryRefForLibraryID } from '../../../../src/utils/libraryIdentity';
 import { resolveLibraryRef } from '../../../../src/utils/libraryIdentity';
+import { t, tn } from '../../../../src/utils/i18n';
 
 type ActionStatus = 'pending' | 'applied' | 'rejected' | 'undone' | 'error' | 'awaiting';
 
@@ -138,13 +139,13 @@ export const CreateCollectionPreview: React.FC<CreateCollectionPreviewProps> = (
                             onClick={canRevealParent ? () => revealCollection(parentKey) : undefined}
                             onMouseEnter={canRevealParent ? () => setHoveredRow('parent') : undefined}
                             onMouseLeave={canRevealParent ? () => setHoveredRow(null) : undefined}
-                            title={canRevealParent ? 'Click to reveal in Zotero' : undefined}
+                            title={canRevealParent ? t('Click to reveal in Zotero') : undefined}
                         >
                             <span className="scale-75 display-flex">
                                 <CSSIcon name="collection" className="icon-16" />
                             </span>
                             <span className="text-sm font-color-primary truncate">
-                                {parentName || 'Parent Collection'}
+                                {parentName || t('Parent Collection')}
                             </span>
                         </div>
                     )}
@@ -156,7 +157,7 @@ export const CreateCollectionPreview: React.FC<CreateCollectionPreviewProps> = (
                         onClick={canRevealNew ? () => revealCollection(newCollectionKey!) : undefined}
                         onMouseEnter={canRevealNew ? () => setHoveredRow('new') : undefined}
                         onMouseLeave={canRevealNew ? () => setHoveredRow(null) : undefined}
-                        title={canRevealNew ? 'Click to reveal in Zotero' : undefined}
+                        title={canRevealNew ? t('Click to reveal in Zotero') : undefined}
                     >
                         <span className="scale-75 display-flex">
                             <CSSIcon name="collection" className="icon-16" />
@@ -179,12 +180,12 @@ export const CreateCollectionPreview: React.FC<CreateCollectionPreviewProps> = (
                             <span>
                                 {isApplied && resultData?.items_added !== undefined && (
                                     <span className="ml-1">
-                                        Added {resultData.items_added} item{resultData.items_added !== 1 ? 's' : ''}
+                                        {tn(resultData.items_added, 'Added {count} item', 'Added {count} items')}
                                     </span>
                                 )}
                                 {!isApplied && itemCount && itemCount > 0 && (
                                     <span className="ml-1">
-                                        Adding {itemCount} item{itemCount !== 1 ? 's' : ''}
+                                        {tn(itemCount, 'Adding {count} item', 'Adding {count} items')}
                                     </span>
                                 )}
                             </span>

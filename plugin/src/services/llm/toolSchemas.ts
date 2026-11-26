@@ -277,7 +277,7 @@ export const TOOL_SPECS: ToolSpec[] = [
                     },
                     annotation_type: {
                         type: 'string',
-                        enum: ['highlight', 'note', 'underline', 'image', 'ink'],
+                        enum: ['highlight', 'note', 'underline'],
                         description: 'Restrict to one annotation type.',
                     },
                     attachment_id: {

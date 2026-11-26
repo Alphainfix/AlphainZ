@@ -12,6 +12,7 @@ import { logger } from '@beaver/agent-core/platform/logger';
 import { ensureItemSynced } from '../../src/utils/sync';
 import { scheduleBackgroundTask, generateTaskId, cancelTasksForItem, deduplicatedSync } from '../../src/utils/backgroundTasks';
 import { resolveItemReference, resolveWriteTargetLibrary } from '../../src/utils/libraryIdentity';
+import { t } from '../../src/utils/i18n';
 
 /** Maximum concurrent item creations in batch operations */
 const BATCH_CONCURRENCY_LIMIT = 3;
@@ -80,7 +81,7 @@ function scheduleSyncTask(libraryId: number, itemKey: string): void {
         {
             itemKey,
             libraryId,
-            progressMessage: 'Saving to Zotero…',
+            progressMessage: t('Saving to Zotero…'),
         }
     );
 }

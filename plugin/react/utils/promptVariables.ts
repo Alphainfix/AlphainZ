@@ -30,19 +30,20 @@ import { pureCollectionSelection } from './actionVisibility';
 import { ActionTargetType } from '@beaver/agent-core/types/actions';
 import { CollectionReference } from '@beaver/agent-core/types/zotero';
 import { collectionToReference } from './zoteroReferences';
+import { msg } from '../../src/utils/i18n';
 
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
-/** Human-readable hints shown when an item variable resolves to zero items */
+/** Hints shown when an item variable resolves to zero items, in English; shown through `t`. */
 export const EMPTY_VARIABLE_HINTS: Record<string, string> = {
-    recent_items:    'No recently added items found in your library.',
-    recent_item:     'No recently added item found in your library.',
-    selected_items:  'No items are selected in the library view.',
-    open_attachment: 'No attachment is open in the reader.',
-    open_note:       'No note is open in a tab.',
-    active_item:     'No active item found. Try opening a PDF or selecting an item.',
+    recent_items:    msg('No recently added items found in your library.'),
+    recent_item:     msg('No recently added item found in your library.'),
+    selected_items:  msg('No items are selected in the library view.'),
+    open_attachment: msg('No attachment is open in the reader.'),
+    open_note:       msg('No note is open in a tab.'),
+    active_item:     msg('No active item found. Try opening a PDF or selecting an item.'),
 };
 
 /** Metadata for each supported variable (used for UI hints) */

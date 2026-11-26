@@ -17,6 +17,7 @@ import {
 import { AlertIcon, CSSIcon, Icon, PlusSignIcon, UndoIcon } from '../icons/icons';
 import IconButton from '@beaver/agent-ui/primitives/IconButton';
 import SearchMenu, { MenuPosition, SearchMenuItem } from '@beaver/agent-ui/primitives/SearchMenu';
+import { t } from '../../../src/utils/i18n';
 
 type LocalZoteroLibraryLike = {
     libraryID: number;
@@ -182,7 +183,7 @@ const ExcludedLibrariesList: React.FC = () => {
                             <span className="truncate font-color-primary">{library.name}</span>
                             {stats && (
                                 <span className="text-sm font-color-tertiary">
-                                    {stats.itemCount.toLocaleString()} items, {stats.attachmentCount.toLocaleString()} attachments
+                                    {t('{itemCount} items, {attachmentCount} attachments', { itemCount: stats.itemCount.toLocaleString(), attachmentCount: stats.attachmentCount.toLocaleString() })}
                                 </span>
                             )}
                         </div>
@@ -209,10 +210,10 @@ const ExcludedLibrariesList: React.FC = () => {
             {allLibraries.length > 0 && (
                 <div className="text-base font-color-secondary" style={{ paddingLeft: '2px' }}>
                     {unexcludedLibraries.length === 0
-                        ? "AlphainZ can't access any libraries."
+                        ? t('AlphainZ can\'t access any libraries.')
                         : excludedKeys.size === 0
-                            ? `AlphainZ can access all your libraries: ${accessibleLibraryNames}`
-                            : `AlphainZ can access the following libraries: ${accessibleLibraryNames}`
+                            ? t('AlphainZ can access all your libraries: {accessibleLibraryNames}', { accessibleLibraryNames })
+                            : t('AlphainZ can access the following libraries: {accessibleLibraryNames}', { accessibleLibraryNames })
                     }
                 </div>
             )}
@@ -225,7 +226,7 @@ const ExcludedLibrariesList: React.FC = () => {
                         className="text-base font-color-primary font-medium"
                         style={{ paddingLeft: '2px', fontSize: '1.05rem' }}
                     >
-                        Excluded Libraries
+                        {t('Excluded Libraries')}
                     </div>
                     <button
                         ref={buttonRef}
@@ -234,10 +235,10 @@ const ExcludedLibrariesList: React.FC = () => {
                         style={{ marginRight: '1px', padding: '4px 6px' }}
                         onClick={handleButtonClick}
                         disabled={unexcludedLibraries.length === 0 || isUpdating}
-                        aria-label="Exclude a library"
+                        aria-label={t('Exclude a library')}
                     >
                         <Icon icon={PlusSignIcon} className="scale-11" />
-                        <span>Exclude a library...</span>
+                        <span>{t('Exclude a library...')}</span>
                     </button>
                 </div>
 
@@ -249,8 +250,8 @@ const ExcludedLibrariesList: React.FC = () => {
                         <Icon icon={AlertIcon} className="scale-11 mt-015 flex-none" />
                         <span>
                             {allLibrariesExcluded
-                                ? "All libraries are excluded. AlphainZ can't access any libraries."
-                                : "Your personal library is excluded on every device connected to this account."}
+                                ? t('All libraries are excluded. AlphainZ can\'t access any libraries.')
+                                : t('Your personal library is excluded on every device connected to this account.')}
                         </span>
                     </div>
                 )}
@@ -258,7 +259,7 @@ const ExcludedLibrariesList: React.FC = () => {
                 <div className="display-flex flex-col rounded-md border-popup">
                     {excludedRows.length === 0 ? (
                         <div className="p-2 text-base font-color-secondary">
-                            No libraries excluded.
+                            {t('No libraries excluded.')}
                         </div>
                     ) : (
                         excludedRows.map((library, index) => {
@@ -279,8 +280,8 @@ const ExcludedLibrariesList: React.FC = () => {
                                             <div className="font-color-primary truncate">{library.name}</div>
                                             <div className="text-sm font-color-tertiary">
                                                 {isLoadingStats && !stats
-                                                    ? 'Loading...'
-                                                    : stats ? `${stats.itemCount.toLocaleString()} items, ${stats.attachmentCount.toLocaleString()} attachments` : '...'
+                                                    ? t('Loading...')
+                                                    : stats ? t('{itemCount} items, {attachmentCount} attachments', { itemCount: stats.itemCount.toLocaleString(), attachmentCount: stats.attachmentCount.toLocaleString() }) : '...'
                                                 }
                                             </div>
                                         </div>
@@ -289,9 +290,9 @@ const ExcludedLibrariesList: React.FC = () => {
                                         <IconButton
                                             onClick={() => handleToggleLibrary(library)}
                                             variant="ghost-secondary"
-                                            ariaLabel="Restore Library"
+                                            ariaLabel={t('Restore Library')}
                                             disabled={isUpdating}
-                                            title="Restore Library"
+                                            title={t('Restore Library')}
                                             icon={UndoIcon}
                                             className="scale-11"
                                         />
@@ -314,8 +315,8 @@ const ExcludedLibrariesList: React.FC = () => {
                 width="280px"
                 maxHeight="260px"
                 onSearch={() => {}}
-                noResultsText="No libraries found"
-                placeholder="Search libraries"
+                noResultsText={t('No libraries found')}
+                placeholder={t('Search libraries')}
                 closeOnSelect={true}
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}

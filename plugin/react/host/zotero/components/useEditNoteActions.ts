@@ -44,6 +44,7 @@ import {
 } from '../../../components/agentRuns/editNoteShared';
 import type { EditNoteOperation } from '@beaver/agent-core/types/agentActions/editNote';
 import { dismissActiveEditNotePreview } from '../editNotePreviewLifecycle';
+import { t } from '../../../../src/utils/i18n';
 
 export { dismissActiveEditNotePreview } from '../editNotePreviewLifecycle';
 
@@ -392,9 +393,9 @@ export function useEditNoteActions({
                 logger(`useEditNoteActions: Failed to undo edit_note action ${action.id}: ${errorMessage}`, 1);
             }
             if (onUndoErrorChange) {
-                onUndoErrorChange(toolcallId, errorMessage ?? 'Failed to undo note edit');
+                onUndoErrorChange(toolcallId, errorMessage ?? t('Failed to undo note edit'));
             } else {
-                setUndoError(errorMessage ?? 'Failed to undo note edit');
+                setUndoError(errorMessage ?? t('Failed to undo note edit'));
             }
         } finally {
             setIsProcessingAction(false);
@@ -481,7 +482,7 @@ export function useEditNoteActions({
         showUndo,
         showRetry,
         showOpenNoteAction: resolvedTarget !== null,
-        openNoteTooltip: action || pendingApproval ? 'Open note and jump to edit' : 'Open note',
+        openNoteTooltip: action || pendingApproval ? t('Open note and jump to edit') : t('Open note'),
         handleApprove,
         handleReject,
         handleApplyPending,

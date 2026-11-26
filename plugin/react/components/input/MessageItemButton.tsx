@@ -18,6 +18,7 @@ import { buildAnnotationChipPopup } from '../agentRuns/requestChips/RequestChipP
 import { ChipButton } from '../agentRuns/requestChips/ChipButton';
 import { ChipRemovableIcon } from '../agentRuns/requestChips/ChipRemovableIcon';
 import { buildMessageItemChipPopup } from './MessageItemChipPopup';
+import { t } from '../../../src/utils/i18n';
 
 const MAX_ITEM_TEXT_LENGTH = 30;
 
@@ -78,12 +79,12 @@ const AnnotationImagePopupPreview = ({ item }: { item: Zotero.Item }) => {
             {imageUri ? (
                 <img
                     src={imageUri}
-                    alt="Area annotation"
+                    alt={t('Area annotation')}
                     style={{ maxWidth: '100%', maxHeight: '150px', objectFit: 'contain' }}
                 />
             ) : (
                 <span className="font-color-secondary text-sm px-2 text-center">
-                    {imageError ? 'Image preview unavailable' : 'Loading image...'}
+                    {imageError ? t('Image preview unavailable') : t('Loading image...')}
                 </span>
             )}
         </span>
@@ -142,7 +143,7 @@ export const MessageItemButton = forwardRef<HTMLButtonElement, MessageItemButton
 
         // Determine display name based on item type
         const displayName = isAnnotation && annotation
-            ? ANNOTATION_TEXT_BY_TYPE[annotation.annotation_type] || 'Annotation'
+            ? t(ANNOTATION_TEXT_BY_TYPE[annotation.annotation_type] || 'Annotation')
             : (item.isRegularItem() || item.isNote())
                 ? item.isRegularItem() ? truncateText(getDisplayNameFromItem(item), MAX_ITEM_TEXT_LENGTH) : getDisplayNameFromItem(item)
                 : truncateText(item.getDisplayTitle(), MAX_ITEM_TEXT_LENGTH);
@@ -207,18 +208,18 @@ export const MessageItemButton = forwardRef<HTMLButtonElement, MessageItemButton
         // view — when it is open in a background tab, opening it switches to that
         // tab.
         const revealMenuItems: MenuItem[] = isAnnotation
-            ? [{ label: 'Reveal in PDF', icon: PdfIcon, onClick: () => navigateToAnnotation(item) }]
+            ? [{ label: t('Reveal in PDF'), icon: PdfIcon, onClick: () => navigateToAnnotation(item) }]
             : item.isNote()
                 ? [
-                    { label: 'Reveal in Library', icon: LibraryIcon, onClick: revealInLibrary },
-                    { label: 'Open Note', icon: NoteIcon, onClick: () => openNoteById(item.id), disabled: isItemActiveTab(item.id) },
+                    { label: t('Reveal in Library'), icon: LibraryIcon, onClick: revealInLibrary },
+                    { label: t('Open Note'), icon: NoteIcon, onClick: () => openNoteById(item.id), disabled: isItemActiveTab(item.id) },
                 ]
                 : isFileAttachment
                     ? [
-                        { label: 'Reveal in Library', icon: LibraryIcon, onClick: revealInLibrary },
-                        { label: 'Open Attachment', icon: FileViewIcon, onClick: openAttachment, disabled: isItemActiveTab(item.id) },
+                        { label: t('Reveal in Library'), icon: LibraryIcon, onClick: revealInLibrary },
+                        { label: t('Open Attachment'), icon: FileViewIcon, onClick: openAttachment, disabled: isItemActiveTab(item.id) },
                     ]
-                    : [{ label: 'Reveal in Library', icon: LibraryIcon, onClick: revealInLibrary }];
+                    : [{ label: t('Reveal in Library'), icon: LibraryIcon, onClick: revealInLibrary }];
 
         // Right-click "remove" menu for this button. A left-click on the "x"
         // removes just this item; right-clicking the button opens a menu with
@@ -360,9 +361,9 @@ export const MessageItemButton = forwardRef<HTMLButtonElement, MessageItemButton
                 {getIconElement()}
                 <span className={`truncate ${isStrongError ? 'font-color-red' : isUnreadable ? 'font-color-secondary' : ''}`}>
                     {tabContextType === 'reader'
-                        ? isStrongError ? 'Invalid File' : isUnreadable ? 'Unreadable File' : 'Current File'
+                        ? isStrongError ? t('Invalid File') : isUnreadable ? t('Unreadable File') : t('Current File')
                         : tabContextType === 'note'
-                            ? 'Current Note'
+                            ? t('Current Note')
                             : displayName || '...'}
                 </span>
 

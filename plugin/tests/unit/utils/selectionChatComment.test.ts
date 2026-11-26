@@ -73,13 +73,13 @@ describe('appendToComment', () => {
     });
 
     it('writes formulas as the sub- and superscripts the comment can render', () => {
-        // Saved as LaTeX these read `t_2^*` and `\\frac{1}{t_2}` in the reader's popup.
+        // Saved as LaTeX these read `x_2^*` and `\\frac{1}{x_2}` in the reader's popup.
         const text = formatCommentEntry({
             question: 'what limits it?',
-            answer: 'The limit is $t_2^*$, with $\\frac{1}{t_2} \\approx 2\\gamma_w N$ <citation id="u-A" page="3"/>.',
+            answer: 'The limit is $x_2^*$, with $\\frac{1}{x_2} \\approx 2\\alpha_s N$ <citation id="u-A" page="3"/>.',
         });
         expect(text).toBe(
-            '— AlphainZ\nQ: what limits it?\nA: The limit is t<sub>2</sub><sup>*</sup>, with 1/t<sub>2</sub> ≈ 2γ<sub>w</sub> N.',
+            '— AlphainZ\nQ: what limits it?\nA: The limit is x<sub>2</sub><sup>*</sup>, with 1/x<sub>2</sub> ≈ 2α<sub>s</sub> N.',
         );
     });
 
@@ -232,12 +232,12 @@ describe('saveEntryToAnnotation', () => {
 describe('stripMarkdown: math in the comment', () => {
     it('writes inline math as sub- and superscripts', () => {
         // The comment field renders <sub> and <sup>; LaTeX source it cannot.
-        expect(stripMarkdown('The time is $t_2^*$ here.')).toBe('The time is t<sub>2</sub><sup>*</sup> here.');
+        expect(stripMarkdown('The time is $x_2^*$ here.')).toBe('The time is x<sub>2</sub><sup>*</sup> here.');
     });
 
     it('converts display math in place', () => {
-        expect(stripMarkdown('Result:\n\n$$\\frac{1}{t_2} = \\lambda N$$')).toBe(
-            'Result:\n\n1/t<sub>2</sub> = λN',
+        expect(stripMarkdown('Result:\n\n$$\\frac{1}{x_2} = \\lambda N$$')).toBe(
+            'Result:\n\n1/x<sub>2</sub> = λN',
         );
     });
 
@@ -255,6 +255,6 @@ describe('stripMarkdown: math in the comment', () => {
     it('still protects a starred quantity from the italics rule', () => {
         // Two `*` in one line must not pair up as emphasis once they sit in
         // superscript tags.
-        expect(stripMarkdown('$t_2^*$ and $t_2$ differ')).toBe('t<sub>2</sub><sup>*</sup> and t<sub>2</sub> differ');
+        expect(stripMarkdown('$x_2^*$ and $x_2$ differ')).toBe('x<sub>2</sub><sup>*</sup> and x<sub>2</sub> differ');
     });
 });

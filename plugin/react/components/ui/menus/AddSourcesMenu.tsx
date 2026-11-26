@@ -25,6 +25,7 @@ import { useNotesMenu } from './hooks/useNotesMenu';
 import { ZoteroTag } from '@beaver/agent-core/types/zotero';
 import Tooltip from '@beaver/agent-ui/primitives/Tooltip';
 import { AddSourcesMenuHandle, AddSourcesQuerySource } from '@beaver/agent-ui/composer/useAddSourcesMenu';
+import { t } from '../../../../src/utils/i18n';
 
 /** How many recent items are carried in the `recentItems` preference. */
 const RECENT_ITEMS_LIMIT = 5;
@@ -63,7 +64,7 @@ const updateRecentItems = async (newRecentItems: RecentItem[]) => {
     // Combine recent items and new recent items
     const combinedItems = [...newRecentItems, ...recentItems]
         .filter((item, index, self) =>
-            index === self.findIndex((t) => t.zotero_key === item.zotero_key && t.library_id === item.library_id)
+            index === self.findIndex((other) => other.zotero_key === item.zotero_key && other.library_id === item.library_id)
         )
         .map((item) => ({
             ...item,
@@ -300,8 +301,8 @@ const AddSourcesMenu = forwardRef<AddSourcesMenuHandle, AddSourcesMenuProps>(fun
                 'chrome://zotero/content/modules/filePicker.mjs'
             ) as { FilePicker: any };
             const fp = new FilePicker();
-            fp.init(Zotero.getMainWindow(), 'Select Files', fp.modeOpenMultiple);
-            fp.appendFilter('Supported files (PDF, EPUB, text, images)', EXTERNAL_FILE_PICKER_EXTENSIONS.join('; '));
+            fp.init(Zotero.getMainWindow(), t('Select Files'), fp.modeOpenMultiple);
+            fp.appendFilter(t('Supported files (PDF, EPUB, text, images)'), EXTERNAL_FILE_PICKER_EXTENSIONS.join('; '));
             const rv = await fp.show();
             if (rv !== fp.returnOK) return;
             const paths: string[] = fp.files || [];
@@ -492,14 +493,14 @@ const AddSourcesMenu = forwardRef<AddSourcesMenuHandle, AddSourcesMenuProps>(fun
     };
 
     const noResultsText = menuMode === 'sources'
-        ? "No results found"
+        ? t("No results found")
         : menuMode === 'libraries'
-            ? "No libraries found"
+            ? t("No libraries found")
             : menuMode === 'collections'
-                ? "No collections found"
+                ? t("No collections found")
                 : menuMode === 'tags'
-                    ? "No tags found"
-                    : "No notes found";
+                    ? t("No tags found")
+                    : t("No notes found");
 
     // The chat editor is the search box for a typed `@` — the caret stays there
     // and whatever follows the `@` is the query. A menu opened from the "+"
@@ -508,14 +509,14 @@ const AddSourcesMenu = forwardRef<AddSourcesMenuHandle, AddSourcesMenuProps>(fun
     const ownsSearchField = querySource === 'menu';
 
     const placeholderText = menuMode === 'sources'
-        ? "Search by author, year and title"
+        ? t("Search by author, year and title")
         : menuMode === 'libraries'
-            ? "Search libraries"
+            ? t("Search libraries")
             : menuMode === 'collections'
-                ? "Search collections"
+                ? t("Search collections")
                 : menuMode === 'tags'
-                    ? "Search tags"
-                    : "Search notes";
+                    ? t("Search tags")
+                    : t("Search notes");
 
     // Backspace on an empty search field steps back out of a submenu, and
     // closes the menu at the top level. (The editor-driven menu gets the same
@@ -530,19 +531,19 @@ const AddSourcesMenu = forwardRef<AddSourcesMenuHandle, AddSourcesMenuProps>(fun
 
     return (
         <>
-            <Tooltip content="Add Sources" showArrow singleLine placement="top">
+            <Tooltip content={t('Add Sources')} showArrow singleLine placement="top">
                 <button
                     className="variant-outline source-button"
                     style={{ height: '22px', paddingRight: '4px', paddingLeft: '4px', paddingTop: '3px', paddingBottom: '3px' }}
                     ref={buttonRef}
                     onClick={handleButtonClick}
-                    aria-label="Add Sources"
+                    aria-label={t('Add Sources')}
                     aria-haspopup="menu"
                     aria-expanded={isMenuOpen}
                     disabled={disabled}
                 >
                     <Icon icon={PlusSignIcon} className="scale-12" />
-                    {showText && <span>Add Sources</span>}
+                    {showText && <span>{t('Add Sources')}</span>}
                 </button>
             </Tooltip>
             <SearchMenu

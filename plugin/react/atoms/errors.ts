@@ -1,4 +1,5 @@
 import { atom } from "jotai";
+import { msg } from "../../src/utils/i18n";
 import { planFeaturesAtom } from "./profile";
 import { ErrorCode } from "../../src/services/attachmentsService";
 
@@ -9,48 +10,49 @@ interface ErrorGroup {
     errorCodes: ErrorCode[];
 }
 
-// Mapping of error codes to user error messages (covers error codes from ProcessingErrorCode pydantic model)
+// Mapping of error codes to user error messages, in English and shown through `t`
+// (covers error codes from ProcessingErrorCode pydantic model)
 export const errorMapping = {
     // Queue failed
-    "queue_failed": "Unexpected error",
-    "queue_failed_invalid_user": "Unexpected error",
-    "queue_failed_invalid_page_count": "Unable to read file",
-    "queue_failed_database_error": "Unexpected error",
+    "queue_failed": msg("Unexpected error"),
+    "queue_failed_invalid_user": msg("Unexpected error"),
+    "queue_failed_invalid_page_count": msg("Unable to read file"),
+    "queue_failed_database_error": msg("Unexpected error"),
     
     // Plan limits
-    "plan_limit_unsupported_file": "File Type not supported",
-    "plan_limit_max_pages": "Too many pages",
-    "plan_limit_max_pages_ocr": "Too many pages for OCR",
-    "plan_limit_insufficient_balance": "Insufficient balance",
-    "plan_limit_file_size": "File too large",
+    "plan_limit_unsupported_file": msg("File Type not supported"),
+    "plan_limit_max_pages": msg("Too many pages"),
+    "plan_limit_max_pages_ocr": msg("Too many pages for OCR"),
+    "plan_limit_insufficient_balance": msg("Insufficient balance"),
+    "plan_limit_file_size": msg("File too large"),
     
     // File errors
-    "encrypted": "File is encrypted",
-    "no_text_layer": "File requires OCR",
-    "insufficient_text": "Insufficient text",
-    "file_missing": "File missing",
-    "ocr_failed": "OCR failed",
-    "download_failed": "Unexpected error",
-    "preprocessing_failed": "Unexpected error",
-    "conversion_failed": "Unexpected error",
-    "opening_failed": "Unexpected error",
-    "upload_failed": "Unexpected error",
-    "chunk_failed": "Unexpected error",
-    "embedding_failed": "Unexpected error",
-    "db_update_failed": "Unexpected error",
-    "max_retries": "Unexpected error",
-    "timeout": "Unexpected error",
-    "unexpected_error": "Unexpected error",
+    "encrypted": msg("File is encrypted"),
+    "no_text_layer": msg("File requires OCR"),
+    "insufficient_text": msg("Insufficient text"),
+    "file_missing": msg("File missing"),
+    "ocr_failed": msg("OCR failed"),
+    "download_failed": msg("Unexpected error"),
+    "preprocessing_failed": msg("Unexpected error"),
+    "conversion_failed": msg("Unexpected error"),
+    "opening_failed": msg("Unexpected error"),
+    "upload_failed": msg("Unexpected error"),
+    "chunk_failed": msg("Unexpected error"),
+    "embedding_failed": msg("Unexpected error"),
+    "db_update_failed": msg("Unexpected error"),
+    "max_retries": msg("Unexpected error"),
+    "timeout": msg("Unexpected error"),
+    "unexpected_error": msg("Unexpected error"),
     
     // Upload errors 
-    "attachment_not_found": "Attachment deleted",
-    "file_unavailable": "File not available",
-    "zotero_credentials_invalid": "Zotero login required",
-    "server_download_failed": "Zotero server download failed",
-    "unable_to_read_file": "Unable to read file",
-    "storage_upload_failed": "Upload failed",
-    "completion_failed": "Upload failed",
-    "invalid_file_metadata": "Unable to read"
+    "attachment_not_found": msg("Attachment deleted"),
+    "file_unavailable": msg("File not available"),
+    "zotero_credentials_invalid": msg("Zotero login required"),
+    "server_download_failed": msg("Zotero server download failed"),
+    "unable_to_read_file": msg("Unable to read file"),
+    "storage_upload_failed": msg("Upload failed"),
+    "completion_failed": msg("Upload failed"),
+    "invalid_file_metadata": msg("Unable to read")
 }
 
 

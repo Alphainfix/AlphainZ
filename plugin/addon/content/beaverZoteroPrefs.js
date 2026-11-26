@@ -37,3 +37,28 @@ document.addEventListener("command", (event) => {
         }),
     );
 });
+
+/*
+ * The button's label in the plugin's interface language: Chinese when the
+ * plugin is set to Chinese, or set to follow Zotero and Zotero is in Chinese.
+ * The pane fragment is inserted after this script runs, so wait for the button.
+ */
+(function labelOpenButton() {
+    let setting = "auto";
+    try {
+        setting = Zotero.Prefs.get("extensions.zotero.alphainz.uiLanguage", true) || "auto";
+    } catch (_e) { /* default */ }
+    const chinese = setting === "zh-CN" || (setting !== "en" && /^zh(\b|[-_])/i.test(String(Zotero.locale || "")));
+    if (!chinese) return;
+    const apply = () => {
+        const button = document.getElementById("alphainz-open-prefs-btn");
+        if (!button) return false;
+        button.setAttribute("label", "打开 AlphainZ");
+        return true;
+    };
+    if (apply()) return;
+    const observer = new MutationObserver(() => {
+        if (apply()) observer.disconnect();
+    });
+    observer.observe(document, { childList: true, subtree: true });
+})();

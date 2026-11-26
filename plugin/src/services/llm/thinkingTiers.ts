@@ -1,3 +1,5 @@
+import { msg } from '../../utils/i18n';
+
 /**
  * Thinking tiers, and what a model can be told about itself.
  *
@@ -21,13 +23,13 @@ export const LEGACY_THINKING_TIERS: readonly ThinkingTier[] = ['none', 'low', 'm
 
 /** Each tier's name where space is short: the composer's Thinking row, the settings' checkboxes. */
 export const THINKING_TIER_NAMES: Record<ThinkingTier, string> = {
-    none: 'Off',
-    minimal: 'Minimal',
-    low: 'Low',
-    medium: 'Medium',
-    high: 'High',
-    xhigh: 'Extra high',
-    max: 'Max',
+    none: msg('Off'),
+    minimal: msg('Minimal'),
+    low: msg('Low'),
+    medium: msg('Medium'),
+    high: msg('High'),
+    xhigh: msg('Extra high'),
+    max: msg('Max'),
 };
 
 export function isThinkingTier(value: unknown): value is ThinkingTier {

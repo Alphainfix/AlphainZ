@@ -6,6 +6,7 @@ import { isFirstRunOrigin } from '@beaver/agent-core/agents/types';
 import { getPref, setPref } from '../../src/utils/prefs';
 import { addPopupMessageAtom } from '../utils/popupMessageUtils';
 import { isFirstRunVisibleAtom } from './firstRun';
+import { t } from '../../src/utils/i18n';
 
 /**
  * One-time citation tip: shown once the thread holds an external or
@@ -41,7 +42,7 @@ export const maybeShowCitationTipAtom = atom(
 
         set(addPopupMessageAtom, {
             type: 'citation_tip' as const,
-            title: 'Understanding Citations',
+            title: t('Understanding Citations'),
             expire: false,
         });
     }

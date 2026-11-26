@@ -24,6 +24,7 @@ import { beaverDefaultModelAtom, updateSelectedModelAtom } from './models';
 import { ChargingPermissions } from '@beaver/agent-core/protocol/agentProtocol';
 import { logger } from '@beaver/agent-core/platform/logger';
 import { UNRESOLVED_LIBRARY_ID } from '../../src/utils/libraryIdentity';
+import { msg } from '../../src/utils/i18n';
 
 export const firstRunSuggestionsAtom = atom<LibrarySuggestionsResponse | null>(null);
 export const firstRunSuggestionsLoadingAtom = atom<boolean>(false);
@@ -42,8 +43,8 @@ const FALLBACK_FIRST_RUN_CARDS: SuggestionCard[] = [
     {
         kind: 'discover_research',
         slot_index: 0,
-        title: "What's new in my research areas?",
-        description: 'Find recent papers in the topics you are working on.',
+        title: msg("What's new in my research areas?"),
+        description: msg('Find recent papers in the topics you are working on.'),
         description_segments: [
             { text: 'Find ', emphasized: false },
             { text: 'recent papers', emphasized: true },
@@ -55,8 +56,8 @@ const FALLBACK_FIRST_RUN_CARDS: SuggestionCard[] = [
     {
         kind: 'organize_library',
         slot_index: 1,
-        title: 'Organize my recent additions',
-        description: 'Tag and file the items you added in the last 7 days.',
+        title: msg('Organize my recent additions'),
+        description: msg('Tag and file the items you added in the last 7 days.'),
         description_segments: [
             { text: 'Tag and file the items you added in the ', emphasized: false },
             { text: 'last 7 days', emphasized: true },
@@ -68,8 +69,8 @@ const FALLBACK_FIRST_RUN_CARDS: SuggestionCard[] = [
     {
         kind: 'organize_tags',
         slot_index: 2,
-        title: 'Tag all untagged items',
-        description: 'Assign consistent subject tags to items that have none.',
+        title: msg('Tag all untagged items'),
+        description: msg('Assign consistent subject tags to items that have none.'),
         description_segments: [
             { text: 'Assign consistent ', emphasized: false },
             { text: 'subject tags', emphasized: true },

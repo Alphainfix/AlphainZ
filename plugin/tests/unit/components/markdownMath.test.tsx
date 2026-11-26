@@ -19,20 +19,20 @@ const html = (content: string): string =>
 
 describe('math in answers', () => {
     it('typesets dollar-delimited inline math', () => {
-        expect(typeset('The doubling time is $t_2^*$ here.')).toBe(true);
+        expect(typeset('The doubling time is $x_2^*$ here.')).toBe(true);
     });
 
     it('typesets dollar-delimited display math', () => {
-        expect(typeset('Result:\n\n$$\\frac{1}{t_2^*} = \\lambda N$$\n')).toBe(true);
+        expect(typeset('Result:\n\n$$\\frac{1}{x_2^*} = \\lambda N$$\n')).toBe(true);
     });
 
     it('typesets the paren form models often emit instead', () => {
         // Normalised to `$...$` before parsing; remark-math does not accept it.
-        expect(typeset('The doubling time is \\(t_2^*\\) here.')).toBe(true);
+        expect(typeset('The doubling time is \\(x_2^*\\) here.')).toBe(true);
     });
 
     it('typesets the bracket display form', () => {
-        expect(typeset('Result:\n\n\\[ \\frac{1}{t_2} = \\lambda N \\]\n')).toBe(true);
+        expect(typeset('Result:\n\n\\[ \\frac{1}{x_2} = \\lambda N \\]\n')).toBe(true);
     });
 
     it('typesets a LaTeX equation environment', () => {
@@ -60,9 +60,9 @@ describe('math in answers', () => {
     });
 
     it('keeps subscripts and superscripts distinct', () => {
-        // Papers are full of quantities like `t_2^*`; a renderer that
+        // Papers are full of quantities like `x_2^*`; a renderer that
         // drops the star or the subscript is worse than one that shows source.
-        const out = html('The value $t_2^*$ matters.');
+        const out = html('The value $x_2^*$ matters.');
         expect(out).toContain('katex');
         expect(out).toContain('∗');
     });

@@ -10,6 +10,7 @@ import React, {
   MouseEvent,
   KeyboardEvent,
 } from "react";
+import { t } from '../i18n';
 
 // 1) ----------------- TYPES & CONTEXT ------------------
 interface TagContextValue {
@@ -215,7 +216,7 @@ export const TagCloseTrigger = forwardRef<HTMLButtonElement, TagCloseTriggerProp
         type="button"
         ref={ref}
         onClick={handleClick}
-        aria-label="Close tag"
+        aria-label={t('Close tag')}
         style={{
           cursor: "pointer",
           background: "transparent",

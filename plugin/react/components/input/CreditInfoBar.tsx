@@ -4,6 +4,7 @@ import { SpeedIcon, CancelIcon, Icon } from '../icons/icons';
 import { RunWarning, dismissWarningAtom } from '../../atoms/warnings';
 import { openPreferencesWindow } from '../../../src/ui/openPreferencesWindow';
 import IconButton from '@beaver/agent-ui/primitives/IconButton';
+import { t } from '../../../src/utils/i18n';
 
 const AUTO_DISMISS_MS = 300_000;
 
@@ -65,7 +66,7 @@ const CreditInfoBar: React.FC<CreditInfoBarProps> = ({ warning }) => {
             <IconButton
                 variant="ghost-secondary"
                 icon={CancelIcon}
-                ariaLabel="Dismiss credit info"
+                ariaLabel={t('Dismiss credit info')}
                 onClick={handleDismiss}
                 className="scale-85"
             />

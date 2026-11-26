@@ -41,6 +41,11 @@ import { useSyncSuppression } from './hooks/useSyncSuppression';
 import { BeaverTemporaryAnnotations } from './utils/annotationUtils';
 import { setTransportConfig } from '@beaver/agent-core/transport/config';
 import { registerZoteroHost } from './host/zotero';
+import { setTranslator } from '@beaver/agent-ui/i18n';
+import { setTranslator as setCoreTranslator } from '@beaver/agent-core/i18n/translate';
+import { t } from '../src/utils/i18n';
+import LanguageBoundary from './components/LanguageBoundary';
+import { useUiLanguageObserver } from './hooks/useUiLanguageObserver';
 import { registerZoteroDataProvider } from '../src/services/zoteroDataProvider';
 import { registerZoteroLibraryIdentity } from '../src/utils/libraryIdentity';
 import { registerZoteroClientIdentity } from '../src/services/zoteroClientIdentity';
@@ -76,6 +81,11 @@ setTransportConfig({
 // resolve host-specific navigation and data lookups. Non-Zotero clients omit
 // this and run the render surface with the default empty host.
 registerZoteroHost();
+
+// The shared components and the core's tool labels and run copy translate
+// through the same table as the rest of the plugin's interface.
+setTranslator(t);
+setCoreTranslator(t);
 
 // Register the Zotero agent data-provider as the default for AgentService and
 // ProviderConnection. Must run before either singleton serves its first
@@ -219,6 +229,7 @@ const GlobalContextInitializer = () => {
 
     // Handle first-install and first-reader onboarding popups
     useOnboardingPopups();
+    useUiLanguageObserver();
 
     // Offer to reopen a chat that was cut off when Beaver last shut down
     useInterruptedThreadPopup();
@@ -277,7 +288,9 @@ export function renderAiSidebar(domElement: HTMLElement, location: 'library' | '
     // Render the component
     root.render(
         <Provider store={store}>
-            <App location={location} />
+            <LanguageBoundary root={domElement}>
+                <App location={location} />
+            </LanguageBoundary>
         </Provider>
     );
     
@@ -301,7 +314,9 @@ export function renderWindowSidebar(domElement: HTMLElement) {
 
     root.render(
         <Provider store={store}>
-            <WindowSidebar />
+            <LanguageBoundary root={domElement}>
+                <WindowSidebar />
+            </LanguageBoundary>
         </Provider>
     );
 
@@ -325,7 +340,9 @@ export function renderFloatingPopup(domElement: HTMLElement) {
 
     root.render(
         <Provider store={store}>
-            <FloatingPopupRoot />
+            <LanguageBoundary root={domElement}>
+                <FloatingPopupRoot />
+            </LanguageBoundary>
         </Provider>
     );
 

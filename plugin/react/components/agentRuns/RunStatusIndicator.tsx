@@ -4,6 +4,7 @@ import { Icon, Spinner, RepeatIcon } from '../icons/icons';
 import { AgentRunStatus } from '@beaver/agent-core/agents/types';
 import { wsReconnectingAtom, wsRetryAtom } from '@beaver/agent-core/run-state/atoms';
 import { runStatusText } from '@beaver/agent-core/run-state/runStatusCopy';
+import { t } from '../../../src/utils/i18n';
 
 /**
  * How long a wait runs before the indicator starts counting it out loud.
@@ -67,7 +68,7 @@ export const RunStatusIndicator: React.FC<RunStatusIndicatorProps> = ({ status, 
     const state = {
         reconnect: reconnectState,
         backendRetry: isRetrying ? retryState : null,
-        idleLabel: 'Generating',
+        idleLabel: t('Generating'),
     };
     const text = runStatusText({
         ...state,

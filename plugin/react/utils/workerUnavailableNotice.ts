@@ -2,6 +2,7 @@ import { store } from '../store';
 import { addPopupMessageAtom } from './popupMessageUtils';
 import { logger } from '@beaver/agent-core/platform/logger';
 import type { WorkerStartFailureInfo } from '../../src/beaver-extract';
+import { t } from '../../src/utils/i18n';
 
 // Only prompt after this many consecutive start failures
 const START_FAILURE_POPUP_THRESHOLD = 3;
@@ -25,11 +26,11 @@ export function notifyWorkerStartFailure(info: WorkerStartFailureInfo): void {
         store.set(addPopupMessageAtom, {
             id: 'worker-unavailable',
             type: 'warning',
-            title: "AlphainZ's PDF engine didn't start",
+            title: t("AlphainZ's PDF engine didn't start"),
             text:
-                'An internal AlphainZ process failed. As a result, AlphainZ cannot read ' +
+                t('An internal AlphainZ process failed. As a result, AlphainZ cannot read ' +
                 'your PDF files. Please restart Zotero. If the problem continues ' +
-                'after restarting, Zotero\'s debug output (Help → Debug Output Logging) will show why.',
+                'after restarting, Zotero\'s debug output (Help → Debug Output Logging) will show why.'),
             expire: false,
         });
     } catch (error) {

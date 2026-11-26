@@ -27,6 +27,7 @@ import Spinner from '@beaver/agent-ui/icons/Spinner';
 import { prepareCitationRenderContext } from '../../utils/citationRenderContext';
 import { addPopupMessageAtom } from '../../utils/popupMessageUtils';
 import { getHost } from '@beaver/agent-ui/host';
+import { t, tn } from '../../../src/utils/i18n';
 
 interface AgentRunFooterProps {
     run: AgentRun;
@@ -132,15 +133,15 @@ export const AgentRunFooter: React.FC<AgentRunFooterProps> = ({ run }) => {
 
         const items: MenuItem[] = [
             {
-                label: 'Copy',
+                label: t('Copy'),
                 onClick: () => handleCopy()
             },
             {
-                label: 'Copy link to message',
+                label: t('Copy link to message'),
                 onClick: () => copyRunUrl()
             },
             {
-                label: 'Copy message ID',
+                label: t('Copy message ID'),
                 onClick: () => copyRunId()
             }
         ];
@@ -148,12 +149,12 @@ export const AgentRunFooter: React.FC<AgentRunFooterProps> = ({ run }) => {
         if (noteWriter) {
             items.splice(1, 0,
                 {
-                    label: 'Save as note',
+                    label: t('Save as note'),
                     onClick: () => saveToLibrary(),
                     disabled: isResolvingCitations
                 },
                 {
-                    label: 'Save as child note',
+                    label: t('Save as child note'),
                     onClick: () => saveToItem(),
                     disabled: !hasParent || isResolvingCitations
                 },
@@ -162,11 +163,11 @@ export const AgentRunFooter: React.FC<AgentRunFooterProps> = ({ run }) => {
 
         if (host.config?.isDevelopment() ?? false) {
             items.push({
-                label: 'Copy chat ID',
+                label: t('Copy chat ID'),
                 onClick: () => copyThreadId()
             });
             items.push({
-                label: 'Copy citation metadata',
+                label: t('Copy citation metadata'),
                 onClick: () => copyCitationMetadata()
             });
         }
@@ -183,7 +184,7 @@ export const AgentRunFooter: React.FC<AgentRunFooterProps> = ({ run }) => {
         const userQuestion = messageRun.user_prompt.content;
         const sections: string[] = [];
         if (userQuestion) {
-            sections.push(`## User\n\n> ${userQuestion.replace(/\n/g, '\n> ')}`);
+            sections.push(`## ${t('User')}\n\n> ${userQuestion.replace(/\n/g, '\n> ')}`);
         }
         sections.push(`## AlphainZ\n\n${await buildRunContent()}`);
         const noteMarkdown = sections.join('\n\n---\n\n');
@@ -223,8 +224,8 @@ export const AgentRunFooter: React.FC<AgentRunFooterProps> = ({ run }) => {
         } catch (error: any) {
             addPopupMessage({
                 type: 'error',
-                title: 'Could not save note',
-                text: error?.message || 'Failed to save note.',
+                title: t('Could not save note'),
+                text: error?.message || t('Failed to save note.'),
             });
         }
     };
@@ -267,8 +268,12 @@ export const AgentRunFooter: React.FC<AgentRunFooterProps> = ({ run }) => {
         return allRuns.slice(index + 1).filter(r => !r.user_prompt?.is_resume).length;
     }, [allRuns, run.id]);
     const retryLabel = laterExchanges > 0
-        ? `Retry from here — removes the ${laterExchanges === 1 ? 'later message' : `${laterExchanges} later messages`}`
-        : 'Retry';
+        ? tn(
+            laterExchanges,
+            'Retry from here — removes the later message',
+            'Retry from here — removes the {count} later messages',
+        )
+        : t('Retry');
 
     const handleRegenerate = async () => {
         // regenerateFromRunAtom walks the resume chain back to the root
@@ -294,7 +299,7 @@ export const AgentRunFooter: React.FC<AgentRunFooterProps> = ({ run }) => {
                     {isResolvingCitations && uniqueCitations.length === 0 ? (
                         <div className="display-flex items-center gap-2 font-color-secondary">
                             <Spinner size={12} />
-                            <span className="text-sm font-color-secondary">Linking sources...</span>
+                            <span className="text-sm font-color-secondary">{t('Linking sources...')}</span>
                         </div>
                     ) : uniqueCitations.length > 0 ? (
                         <Button
@@ -304,7 +309,7 @@ export const AgentRunFooter: React.FC<AgentRunFooterProps> = ({ run }) => {
                             iconClassName="mr-0 scale-12 -ml-1"
                         >
                             <span>
-                                {uniqueCitations.length} Source{uniqueCitations.length === 1 ? '' : 's'}
+                                {tn(uniqueCitations.length, '{count} Source', '{count} Sources')}
                             </span>
                         </Button>
                     ) : null}
@@ -318,11 +323,11 @@ export const AgentRunFooter: React.FC<AgentRunFooterProps> = ({ run }) => {
                         iconClassName="scale-12"
                         menuItems={getShareMenuItems()}
                         className="scale-11"
-                        ariaLabel="Share"
+                        ariaLabel={t('Share')}
                         variant="ghost"
                         positionAdjustment={{ x: 0, y: 0 }}
                         toggleCallback={handleMenuToggle}
-                        tooltipContent="More options"
+                        tooltipContent={t('More options')}
                     />
                     
                     {/* Usage display */}
@@ -346,7 +351,7 @@ export const AgentRunFooter: React.FC<AgentRunFooterProps> = ({ run }) => {
 
                     {/* Copy button */}
                     <Tooltip
-                        content="Copy"
+                        content={t('Copy')}
                         showArrow
                     >
                         <CopyButton

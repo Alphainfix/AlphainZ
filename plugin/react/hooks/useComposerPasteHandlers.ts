@@ -12,6 +12,7 @@ import {
     writePastedFileToTemp,
 } from '../../src/services/clipboardFiles';
 import { logger } from '@beaver/agent-core/platform/logger';
+import { t } from '../../src/utils/i18n';
 
 /**
  * Wires the composer's paste handling to the external-file attach path, so a
@@ -27,8 +28,8 @@ export function useComposerPasteHandlers(): ComposerPasteHandlers {
     return useMemo<ComposerPasteHandlers>(() => {
         const reportFailure = () => addPopupMessage({
             type: 'warning',
-            title: 'File not added',
-            text: 'The pasted content could not be read.',
+            title: t('File not added'),
+            text: t('The pasted content could not be read.'),
             expire: true,
         });
 

@@ -33,6 +33,7 @@ import { renderToHTML, renderToMarkdown } from '../../utils/citationRenderers';
 import { ToolDisplayFooter } from './ToolDisplayFooter';
 import { prepareCitationRenderContext } from '../../utils/citationRenderContext';
 import { getHost } from '@beaver/agent-ui/host';
+import { t } from '../../../src/utils/i18n';
 
 export interface StreamingNoteBlock {
     id: string;
@@ -139,10 +140,10 @@ const NoteHeader = React.memo(function NoteHeader(props: NoteHeaderProps) {
     const isApplied = status === 'applied';
     const isSaveDisabled = isSaving || !isComplete || isLibraryReadOnly;
     const actionTooltip = isApplied 
-            ? "Reveal in Zotero"
+            ? t("Reveal in Zotero")
             : isLibraryReadOnly 
-                ? "Library is read-only" 
-                : "Create Zotero Note";
+                ? t("Library is read-only") 
+                : t("Create Zotero Note");
 
     return (
         <div
@@ -160,7 +161,7 @@ const NoteHeader = React.memo(function NoteHeader(props: NoteHeaderProps) {
                         icon={HeaderIcon} 
                         className="font-color-secondary" 
                         size={12}
-                        aria-label="Toggle content"
+                        aria-label={t('Toggle content')}
                     />
                 </div>
                 <div
@@ -189,7 +190,7 @@ const NoteHeader = React.memo(function NoteHeader(props: NoteHeaderProps) {
                         disabled={isApplied ? false : isSaveDisabled}
                     />
                 </Tooltip>
-                <Tooltip content="Copy" showArrow singleLine>
+                <Tooltip content={t('Copy')} showArrow singleLine>
                     <IconButton
                         icon={showCopiedState ? TickIcon : CopyIcon}
                         className="mt-015"
@@ -236,7 +237,7 @@ const NoteBody = React.memo(function NoteBody(props: NoteBodyProps) {
             <div className="display-flex flex-col px-25 pt-2 gap-2">
                 <div className="markdown note-body">
                     <MarkdownRenderer 
-                        content={trimmedContent || '_No content yet._'} 
+                        content={trimmedContent || t('_No content yet._')} 
                         enableNoteBlocks={false}
                         exportRendering={exportRendering}
                     />
@@ -292,7 +293,7 @@ const NoteDisplay: React.FC<NoteDisplayProps> = ({ note, runId, messageId, expor
 
     const status: NoteStatus = noteAction ? noteAction.status : 'missing';
 
-    const noteTitle = note.title || noteAction?.proposed_data?.title || 'New note';
+    const noteTitle = note.title || noteAction?.proposed_data?.title || t('New note');
     const trimmedContent = note.content.replace(/^\n+/, '');
 
     // Toggle visibility of note content
@@ -351,7 +352,7 @@ const NoteDisplay: React.FC<NoteDisplayProps> = ({ note, runId, messageId, expor
                 ackAgentActions(runId, [{ action_id: noteAction.id, result_data: result }]);
             }
         } catch (error: any) {
-            const errorMessage = error?.message || 'Failed to save note';
+            const errorMessage = error?.message || t('Failed to save note');
             setAgentActionsToError([noteAction.id], errorMessage, {
                 stack_trace: error?.stack || '',
                 error_name: error?.name,

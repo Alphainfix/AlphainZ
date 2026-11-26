@@ -53,6 +53,7 @@ import {
     externalReferenceMappingAtom,
     externalReferenceItemMappingAtom,
 } from '@beaver/agent-core/citations/externalReferences';
+import { t } from '../../src/utils/i18n';
 
 /**
  * Snapshot the thread's external-reference state from the Jotai store so
@@ -956,7 +957,7 @@ function injectPreviewBanner(
         const closeBtn = doc.createElement('button');
         closeBtn.className = 'btn-close';
         closeBtn.textContent = '\u00D7';
-        closeBtn.title = 'Close preview';
+        closeBtn.title = t('Close preview');
         closeBtn.setAttribute('onclick', `window.${ACTION_PROP} = 'close'`);
 
         const title = doc.createElement('span');
@@ -965,19 +966,17 @@ function injectPreviewBanner(
         // disappears on approval. Name that in the banner rather than calling it
         // an ordinary edit preview.
         title.textContent = isRewrite
-            ? 'Preview: Replacing the Entire Note'
-            : 'Preview of Note Edits';
-
-        const suffix = multipleEdits ? ' All' : '';
+            ? t('Preview: Replacing the Entire Note')
+            : t('Preview of Note Edits');
 
         const rejectBtn = doc.createElement('button');
         rejectBtn.className = 'btn-reject';
-        rejectBtn.textContent = `Reject${suffix}`;
+        rejectBtn.textContent = multipleEdits ? t('Reject All') : t('Reject');
         rejectBtn.setAttribute('onclick', `window.${ACTION_PROP} = 'rejectAll'`);
 
         const approveBtn = doc.createElement('button');
         approveBtn.className = 'btn-approve';
-        approveBtn.textContent = `Apply${suffix}`;
+        approveBtn.textContent = multipleEdits ? t('Apply All') : t('Apply');
         approveBtn.setAttribute('onclick', `window.${ACTION_PROP} = 'approveAll'`);
 
         banner.appendChild(title);

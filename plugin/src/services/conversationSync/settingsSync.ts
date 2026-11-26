@@ -18,6 +18,7 @@
 import { logger } from '@beaver/agent-core/platform/logger';
 import { getPref, setPref } from '../../utils/prefs';
 import { normalizeTheme } from '../../utils/appearance';
+import { joinList, msg, normalizeUiLanguageSetting, t } from '../../utils/i18n';
 import { isWelcomeWizardComplete } from '../../utils/welcomeWizard';
 import { conversationSyncMode, getConversationBackend, machineId } from './index';
 import type { ConversationBackend } from './types';
@@ -40,8 +41,10 @@ export const SETTINGS_EXPORT_VERSION = 1;
  * font stacks resolve to different faces on macOS and Windows anyway.
  */
 export const PORTABLE_SETTINGS_PREFS = [
-    // Appearance: the palette only — uiFont, uiFontSize and uiLineHeight are per computer.
-    'uiTheme', 'uiColorScheme',
+    // Appearance: the palette and the interface language — uiFont, uiFontSize
+    // and uiLineHeight are per computer. A language left on "auto" follows each
+    // computer's own Zotero.
+    'uiTheme', 'uiColorScheme', 'uiLanguage',
     // Composition / UX
     'streamDisplay', 'conversationRail', 'keyboardShortcut', 'statefulChat',
     'addSelectedItemsOnOpen', 'addSelectedItemsOnNewThread',
@@ -122,7 +125,9 @@ function installDefaults(): ((key: string) => unknown) | null {
  * change here nor travels on.
  */
 function portableValue(key: string, value: unknown): unknown {
-    return key === 'uiTheme' && typeof value === 'string' ? normalizeTheme(value) : value;
+    if (key === 'uiTheme' && typeof value === 'string') return normalizeTheme(value);
+    if (key === 'uiLanguage') return normalizeUiLanguageSetting(value);
+    return value;
 }
 
 export function buildSettingsExport(
@@ -308,30 +313,30 @@ function announceSettingsTaken(taken: SettingsTaken): void {
 
 /** The groups of settings the announcement names, in the order it names them. */
 const TAKEN_GROUPS: ReadonlyArray<readonly [string, readonly string[]]> = [
-    ['custom instructions', ['customInstructions']],
-    ['Actions', ['actions']],
-    ['prompts', ['customPrompts', 'readerExplainPrompt']],
-    ['permissions', [
+    [msg('custom instructions'), ['customInstructions']],
+    [msg('Actions'), ['actions']],
+    [msg('prompts'), ['customPrompts', 'readerExplainPrompt']],
+    [msg('permissions'), [
         'allowAgentWrites', 'autoApplyAnnotations', 'autoCreateNotes', 'autoImportItems',
         'confirmExtractionCosts', 'confirmExternalSearchCosts', 'confirmCredits',
         'creditConfirmThreshold', 'deferredToolPreferences', 'requestPlusTools', 'accessRemoteFiles',
     ]],
-    ['the model', ['llmProvider', 'llmModel', 'reasoningEffort']],
-    ['the search index', ['embeddingProvider']],
-    ['the theme', ['uiTheme', 'uiColorScheme']],
-    ['citations', ['citationFormat', 'citationStyle', 'citationLocale', 'useTemporaryCitationAnnotations', 'usePageLabels']],
-    ['limits per question', ['maxOutputTokens', 'maxModelRequests', 'maxLibrarySearches', 'maxLiteratureLookups']],
+    [msg('the model'), ['llmProvider', 'llmModel', 'reasoningEffort']],
+    [msg('the search index'), ['embeddingProvider']],
+    [msg('the theme'), ['uiTheme', 'uiColorScheme']],
+    [msg('the language'), ['uiLanguage']],
+    [msg('citations'), ['citationFormat', 'citationStyle', 'citationLocale', 'useTemporaryCitationAnnotations', 'usePageLabels']],
+    [msg('limits per question'), ['maxOutputTokens', 'maxModelRequests', 'maxLibrarySearches', 'maxLiteratureLookups']],
 ];
 
 /** "custom instructions, the model and the theme": what a set of changed preferences amounts to. */
 export function describeSettingsTaken(changed: readonly string[]): string {
     const names = TAKEN_GROUPS
         .filter(([, keys]) => keys.some((key) => changed.includes(key)))
-        .map(([name]) => name);
+        .map(([name]) => t(name));
     const named = new Set(TAKEN_GROUPS.flatMap(([, keys]) => keys));
-    if (changed.some((key) => !named.has(key))) names.push(names.length > 0 ? 'other preferences' : 'preferences');
-    if (names.length <= 1) return names[0] ?? '';
-    return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+    if (changed.some((key) => !named.has(key))) names.push(names.length > 0 ? t('other preferences') : t('preferences'));
+    return joinList(names);
 }
 
 /**

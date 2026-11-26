@@ -17,6 +17,7 @@ import type {
     ComposerPasteHandlers,
     LexicalEditorInputHandle,
 } from './LexicalEditorInput';
+import { t } from '../i18n';
 
 /**
  * The composer on a native <textarea>.
@@ -396,7 +397,7 @@ export const TextareaComposer = forwardRef<LexicalEditorInputHandle, TextareaCom
                     rows={1}
                     value={value}
                     aria-placeholder={placeholder}
-                    aria-label={ariaLabel ?? 'Message'}
+                    aria-label={ariaLabel ?? t('Message')}
                     disabled={disabled}
                     spellCheck
                     onChange={(e) => {

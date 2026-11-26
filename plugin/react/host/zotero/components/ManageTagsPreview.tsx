@@ -4,6 +4,7 @@ import type { ManageTagsResultData } from '@beaver/agent-core/types/agentActions
 import { shortenActionError } from './agentActionViewHelpers';
 import { TagPill } from '../../../components/agentRuns/TagPill';
 import { resolveLibraryRef } from '../../../../src/utils/libraryIdentity';
+import { t, tn } from '../../../../src/utils/i18n';
 
 type ActionStatus = 'pending' | 'applied' | 'rejected' | 'undone' | 'error' | 'awaiting';
 
@@ -33,14 +34,19 @@ function buildTagErrorText(
     action: 'rename' | 'delete',
     errorMessage: string | undefined,
 ): string {
-    const verb = action === 'delete' ? 'delete' : 'rename';
-    const base = `Failed to ${verb} tag`;
-    if (!errorMessage) return `${base}.`;
+    const isDelete = action === 'delete';
+    if (!errorMessage) return isDelete ? t('Failed to delete tag.') : t('Failed to rename tag.');
+    // The error message is matched in English: it is the executor's own text.
     const m = errorMessage.toLowerCase();
     if (m.includes('safety cap') || m.includes('too many')) {
-        return `${base} because it is used on too many items.`;
+        return isDelete
+            ? t('Failed to delete tag because it is used on too many items.')
+            : t('Failed to rename tag because it is used on too many items.');
     }
-    return `${base}. ${shortenActionError(errorMessage)}.`;
+    const reason = shortenActionError(errorMessage);
+    return isDelete
+        ? t('Failed to delete tag. {reason}.', { reason })
+        : t('Failed to rename tag. {reason}.', { reason });
 }
 
 /**
@@ -104,7 +110,7 @@ export const ManageTagsPreview: React.FC<ManageTagsPreviewProps> = ({
                 <div className="display-flex flex-row items-center gap-2 flex-wrap">
                     {action === 'delete' && (
                         <span className="display-flex">
-                            {isApplied ? 'Deleted' : 'Delete'}
+                            {isApplied ? t('Deleted') : t('Delete')}
                         </span>
                     )}
                     <TagPill name={name} strike={isApplied && action === 'delete'} />
@@ -121,10 +127,10 @@ export const ManageTagsPreview: React.FC<ManageTagsPreviewProps> = ({
                 <div className="display-flex flex-col gap-1 text-sm font-color-secondary">
                     {libraryName && (
                         <div>
-                            <span className="font-color-primary">Library:</span> {libraryName}
+                            <span className="font-color-primary">{t('Library:')}</span> {libraryName}
                             {itemCount > 0 && (
                                 <span>
-                                    {' '}({itemCount} item{itemCount !== 1 ? 's' : ''} affected)
+                                    {' '}{tn(itemCount, '({count} item affected)', '({count} items affected)')}
                                 </span>
                             )}
                         </div>

@@ -9,6 +9,7 @@ import { fetchFileStatus } from "../hooks/useFileStatus";
 import { Icon, PuzzleIcon } from "../components/icons/icons";
 import { newThreadAtom, currentThreadIdAtom } from "../atoms/threads";
 import { showFileStatusDetailsAtom } from "../atoms/ui";
+import { t } from '../../src/utils/i18n';
 
 export const planTransitionMessage = async (profile: SafeProfileWithPlan) => {
 
@@ -42,7 +43,7 @@ export const planTransitionMessage = async (profile: SafeProfileWithPlan) => {
             showProgress: true,
             expire: false,
             button: {
-                text: "View File Status",
+                text: t("View File Status"),
                 onClick: () => {
                     const currentThreadId = store.get(currentThreadIdAtom);
                     if (currentThreadId !== null) {
@@ -59,7 +60,7 @@ export const planTransitionMessage = async (profile: SafeProfileWithPlan) => {
         setPref("showIndexingCompleteMessage", false);
         store.set(addPopupMessageAtom, { 
             title, 
-            text: "Your files are already fully indexed and ready to search.",
+            text: t("Your files are already fully indexed and ready to search."),
             fileStatusSummary: fileStatusSummary,
             type: "indexing_complete",
             expire: false,
@@ -71,7 +72,7 @@ export const planTransitionMessage = async (profile: SafeProfileWithPlan) => {
         setPref("showIndexingCompleteMessage", false);
         store.set(addPopupMessageAtom, { 
             title, 
-            text: "There are no files to process for full-text search. You can add files to your library to start indexing.",
+            text: t("There are no files to process for full-text search. You can add files to your library to start indexing."),
             type: "info",
             icon: React.createElement(Icon, { 
                 icon: PuzzleIcon, 

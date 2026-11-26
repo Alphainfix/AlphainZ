@@ -8,6 +8,7 @@ import { useRemoveContextMenu } from '../../hooks/useRemoveContextMenu';
 import { ChipWithPopup, type ChipPopupContent } from '@beaver/agent-ui/chat/ChipPopup';
 import { ChipButton } from '../agentRuns/requestChips/ChipButton';
 import { ChipRemovableIcon } from '../agentRuns/requestChips/ChipRemovableIcon';
+import { t } from '../../../src/utils/i18n';
 
 const MAX_TAGBUTTON_TEXT_LENGTH = 20;
 
@@ -69,7 +70,7 @@ export const TagButton: React.FC<TagButtonProps> = ({
         canEdit,
         disabled,
         extraMenuItems: [{
-            label: 'Filter Library by Tag',
+            label: t('Filter Library by Tag'),
             icon: TagIcon,
             onClick: filterByTag,
         }],
@@ -100,8 +101,8 @@ export const TagButton: React.FC<TagButtonProps> = ({
             />
         ),
         title: tag.tag,
-        subtitle: { text: 'Search filter' },
-        action: { icon: TagIcon, label: 'Filter library by tag' },
+        subtitle: { text: t('Search filter') },
+        action: { icon: TagIcon, label: t('Filter library by tag') },
     };
 
     return (

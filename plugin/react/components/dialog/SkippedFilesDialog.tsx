@@ -6,6 +6,7 @@ import { CancelIcon, InformationCircleIcon } from '../icons/icons';
 import IconButton from '@beaver/agent-ui/primitives/IconButton';
 import PaginatedFailedProcessingList from '../status/PaginatedFailedProcessingList';
 import { getDocumentFromElement } from '@beaver/agent-ui/utils/windowContext';
+import { t } from '../../../src/utils/i18n';
 
 /**
  * Skipped files dialog component
@@ -51,12 +52,12 @@ const SkippedFilesDialog: React.FC = () => {
         >
             {/* Header */}
             <div className="display-flex flex-row items-center justify-between p-4 pb-3">
-                <div className="text-lg font-semibold">{skippedFilesCount > 0 ? `${skippedFilesCount} Skipped Files` : 'Skipped Files'}</div>
+                <div className="text-lg font-semibold">{skippedFilesCount > 0 ? t('{skippedFilesCount} Skipped Files', { skippedFilesCount }) : t('Skipped Files')}</div>
                 <IconButton
                     icon={CancelIcon}
                     onClick={handleClose}
                     className="scale-12"
-                    ariaLabel="Close dialog"
+                    ariaLabel={t('Close dialog')}
                 />
             </div>
 
@@ -65,8 +66,8 @@ const SkippedFilesDialog: React.FC = () => {
                 <PaginatedFailedProcessingList
                     statuses={['plan_limit', "failed_user"]}
                     count={skippedFilesCount}
-                    title="Skipped files"
-                    tooltipTitle="Reasons for skipping files"
+                    title={t('Skipped files')}
+                    tooltipTitle={t('Reasons for skipping files')}
                     icon={InformationCircleIcon}
                     collapseable={false}
                     maxHeight="250px"

@@ -66,7 +66,7 @@ export function attachmentImageToToolResult(raw: any): ToolImagesResult {
     const size = image?.width && image?.height ? ` (${image.width}×${image.height})` : '';
     return {
         kind: 'tool-images',
-        text: `Rendered the attached image${size}.`,
+        text: `Rendered the image attachment${size}.`,
         images: [{
             mimeType: image?.format === 'png' ? 'image/png' : 'image/jpeg',
             base64,

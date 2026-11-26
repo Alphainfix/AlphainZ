@@ -7,6 +7,7 @@ import { AlertIcon, SyncIcon } from "../../icons/icons";
 import { syncedLibraryIdsAtom } from "../../../atoms/profile";
 import { logger } from '@beaver/agent-core/platform/logger';
 import Tooltip from "@beaver/agent-ui/primitives/Tooltip";
+import { t } from '../../../../src/utils/i18n';
 
 
 const DatabaseStatusButton: React.FC = () => {
@@ -35,8 +36,8 @@ const DatabaseStatusButton: React.FC = () => {
     
     return (
         <Tooltip
-            content={isSyncing ? "Syncing..." : hasError ? "Sync Error" : "Sync Database"}
-            secondaryContent={hasError && !isSyncing ? "Click to retry sync" : undefined}
+            content={isSyncing ? t('Syncing...') : hasError ? t('Sync Error') : t('Sync Database')}
+            secondaryContent={hasError && !isSyncing ? t('Click to retry sync') : undefined}
             showArrow
         >
             <div
@@ -48,7 +49,7 @@ const DatabaseStatusButton: React.FC = () => {
                     onClick={handleSyncClick}
                     className="scale-13"
                     iconClassName={iconClassName}
-                    ariaLabel={isSyncing ? "Syncing..." : "Sync Database"}
+                    ariaLabel={isSyncing ? t('Syncing...') : t('Sync Database')}
                     disabled={isSyncing}
                 />
             </div>

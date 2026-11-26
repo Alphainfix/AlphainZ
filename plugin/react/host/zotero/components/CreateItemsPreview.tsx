@@ -22,6 +22,7 @@ import {
     resolveImportDestination,
 } from '../../../atoms/importDestination';
 import { searchableLibraryIdsAtom } from '../../../atoms/profile';
+import { t } from '../../../../src/utils/i18n';
 
 type ActionStatus = 'pending' | 'applied' | 'rejected' | 'undone' | 'error' | 'awaiting';
 
@@ -98,7 +99,7 @@ const CreateItemPreviewRow: React.FC<{
     const item = proposedData?.item;
     const actionStatus = action.status as ActionStatus;
     const statusIndicator = getStatusIndicator(actionStatus);
-    const paperName = item?.title ? `“${item.title}”` : 'this paper';
+    const paperName = item?.title ? `“${item.title}”` : t('this paper');
     const canReject = !!onDecide && actionStatus === 'pending';
     const canAdd = !!onDecide
         && (actionStatus === 'pending' || actionStatus === 'rejected' || actionStatus === 'undone');
@@ -112,7 +113,7 @@ const CreateItemPreviewRow: React.FC<{
     if (!item) {
         return (
             <div className="text-sm font-color-secondary">
-                No item data available
+                {t('No item data available')}
             </div>
         );
     }
@@ -141,7 +142,7 @@ const CreateItemPreviewRow: React.FC<{
                 {/* Where it landed — the question "applied" leaves open. */}
                 {actionStatus === 'applied' && (resultData as any)?.location && (
                     <div className="font-color-secondary text-sm">
-                        Added to {(resultData as any).location}
+                        {t('Added to {location}', { location: (resultData as any).location })}
                     </div>
                 )}
 
@@ -149,19 +150,19 @@ const CreateItemPreviewRow: React.FC<{
                 {pdfStatus.isLoading && (
                     <div className="display-flex items-center gap-1 font-color-secondary text-sm">
                         <Spinner size={12} />
-                        <span>Fetching PDF…</span>
+                        <span>{t('Fetching PDF…')}</span>
                     </div>
                 )}
             </div>
 
             {/* Reveal button (only for applied items) */}
             {actionStatus === 'applied' && resultData?.library_id && resultData?.zotero_key && (
-                <Tooltip content="Reveal in Zotero" singleLine>
+                <Tooltip content={t('Reveal in Zotero')} singleLine>
                     <IconButton
                         variant="ghost-secondary"
                         icon={ArrowUpRightIcon}
                         className="font-color-secondary scale-11 flex-shrink-0"
-                        ariaLabel={`Reveal ${paperName} in Zotero`}
+                        ariaLabel={t('Reveal {paper} in Zotero', { paper: paperName })}
                         onClick={() => revealSource(
                             {
                                 library_id: resultData.library_id,
@@ -178,24 +179,24 @@ const CreateItemPreviewRow: React.FC<{
             {(canReject || canAdd) && (
                 <div className="display-flex flex-row items-center gap-1 flex-shrink-0">
                     {canReject && (
-                        <Tooltip content="Don't add" showArrow singleLine>
+                        <Tooltip content={t('Don\'t add')} showArrow singleLine>
                             <IconButton
                                 icon={CancelIcon}
                                 variant="ghost-secondary"
                                 iconClassName="font-color-red"
-                                ariaLabel={`Don't add ${paperName}`}
+                                ariaLabel={t('Don\'t add {paper}', { paper: paperName })}
                                 onClick={() => onDecide!(action, false)}
                                 disabled={isBusy}
                             />
                         </Tooltip>
                     )}
                     {canAdd && (
-                        <Tooltip content="Add" showArrow singleLine>
+                        <Tooltip content={t('Add')} showArrow singleLine>
                             <IconButton
                                 icon={TickIcon}
                                 variant="ghost-secondary"
                                 iconClassName="font-color-green scale-14"
-                                ariaLabel={`Add ${paperName}`}
+                                ariaLabel={t('Add {paper}', { paper: paperName })}
                                 onClick={() => onDecide!(action, true)}
                                 loading={isBusy}
                                 disabled={isBusy}
@@ -241,7 +242,7 @@ const ImportDestinationPicker: React.FC<{ actions: AgentAction[]; runId?: string
 
     return (
         <label className="display-flex flex-row items-center gap-2 text-sm font-color-secondary">
-            <span className="flex-shrink-0">{isSuggestion ? 'Add to (suggested)' : 'Add to'}</span>
+            <span className="flex-shrink-0">{isSuggestion ? t('Add to (suggested)') : t('Add to')}</span>
             <select
                 className="p-1 m-0 preference-input text-sm flex-1 min-w-0"
                 value={destinationValue(effective)}
@@ -252,7 +253,7 @@ const ImportDestinationPicker: React.FC<{ actions: AgentAction[]; runId?: string
                         destination: parseDestinationValue(event.target.value),
                     });
                 }}
-                aria-label="Collection to add these papers to"
+                aria-label={t('Collection to add these papers to')}
             >
                 {choices.map((choice) => (
                     <option key={destinationValue(choice)} value={destinationValue(choice)}>

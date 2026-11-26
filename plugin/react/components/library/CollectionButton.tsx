@@ -8,6 +8,7 @@ import { useRemoveContextMenu } from '../../hooks/useRemoveContextMenu';
 import { ChipWithPopup, type ChipPopupContent } from '@beaver/agent-ui/chat/ChipPopup';
 import { ChipButton } from '../agentRuns/requestChips/ChipButton';
 import { ChipRemovableIcon } from '../agentRuns/requestChips/ChipRemovableIcon';
+import { t } from '../../../src/utils/i18n';
 
 const MAX_COLLECTIONBUTTON_TEXT_LENGTH = 20;
 
@@ -36,7 +37,7 @@ export const CollectionButton: React.FC<CollectionButtonProps> = ({
         disabled,
         // Mirror the button click: select (reveal) the collection in the library.
         extraMenuItems: [{
-            label: 'Reveal Collection',
+            label: t('Reveal Collection'),
             icon: LibraryIcon,
             onClick: () => selectCollection(collection),
         }],
@@ -61,8 +62,8 @@ export const CollectionButton: React.FC<CollectionButtonProps> = ({
             </span>
         ),
         title: collection.name,
-        subtitle: { text: 'Search filter' },
-        action: { icon: LibraryIcon, label: 'Reveal in library' },
+        subtitle: { text: t('Search filter') },
+        action: { icon: LibraryIcon, label: t('Reveal in library') },
     };
 
     return (

@@ -4,6 +4,7 @@ import { $getNodeByKey, NodeKey } from 'lexical';
 import { CancelIcon, FileIcon, Icon } from '../icons';
 import { getHost } from '../host';
 import { $isMentionNode, type MentionDescriptor } from './MentionNode';
+import { t } from '../i18n';
 
 /**
  * Visual for a MentionNode.
@@ -43,7 +44,7 @@ export const MentionPill: React.FC<{
             data-lexical-decorator="true"
             className="variant-outline source-button alphainz-mention-pill"
             style={{ height: '22px', verticalAlign: 'middle' }}
-            aria-label={sublabel ? `Mention: ${label}, ${sublabel}` : `Mention: ${label}`}
+            aria-label={sublabel ? t('Mention: {label}, {sublabel}', { label, sublabel }) : t('Mention: {label}', { label })}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onMouseDown={(e) => {
@@ -61,7 +62,7 @@ export const MentionPill: React.FC<{
             {isHovered ? (
                 <span
                     role="button"
-                    aria-label="Remove mention"
+                    aria-label={t('Remove mention')}
                     className="source-remove"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={handleRemove}

@@ -11,6 +11,7 @@ import { syncZoteroDatabase } from "../../../src/utils/sync";
 import { LibrarySyncStatus } from "../../atoms/sync";
 import { syncedLibraryIdsAtom } from "../../atoms/profile";
 import { isErrorReportDialogVisibleAtom } from '../../atoms/ui';
+import { t } from '../../../src/utils/i18n';
 
 
 export const DatabaseSyncStatus: React.FC = () => {
@@ -103,11 +104,11 @@ export const DatabaseSyncStatus: React.FC = () => {
                 </div>
                 <div className="display-flex flex-col gap-3 items-start flex-1">
                     <div className="display-flex flex-row items-center gap-3 w-full min-w-0">
-                        <div className={`text-lg ${getTitleColor()}`}>Syncing Zotero Library</div>
+                        <div className={`text-lg ${getTitleColor()}`}>{t('Syncing Zotero Library')}</div>
                         <div className="flex-1"/>
                         {(syncStatus === 'partially_completed' || syncStatus === 'failed') && (
                             <div className="display-flex flex-row items-center gap-4">
-                                <Tooltip content="Report issue" showArrow singleLine>
+                                <Tooltip content={t('Report issue')} showArrow singleLine>
                                     <IconButton
                                         icon={BugIcon}
                                         onClick={() => setErrorReportDialogVisible(true)}
@@ -115,7 +116,7 @@ export const DatabaseSyncStatus: React.FC = () => {
                                         className="scale-12"
                                     />
                                 </Tooltip>
-                                <Tooltip content="Retry syncing" showArrow singleLine>
+                                <Tooltip content={t('Retry syncing')} showArrow singleLine>
                                     <IconButton icon={RepeatIcon} onClick={handleSyncRetryClick} variant="ghost-secondary" className="scale-12" />
                                 </Tooltip>
                             </div>

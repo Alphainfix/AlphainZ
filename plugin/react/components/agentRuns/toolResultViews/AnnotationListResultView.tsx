@@ -4,6 +4,7 @@ import {
     AnnotationRowView,
 } from '@beaver/agent-core/run-state/toolResultViews';
 import { AnnotationResultRow } from './AnnotationResultRow';
+import { t } from '../../../../src/utils/i18n';
 
 /**
  * The annotation rows shared by tool results and annotation action previews.
@@ -12,7 +13,7 @@ export const AnnotationResultList: React.FC<{
     annotations: AnnotationRowView[];
     variant: AnnotationListView['variant'];
     emptyMessage?: string | null;
-}> = ({ annotations, variant, emptyMessage = 'No annotations found' }) => {
+}> = ({ annotations, variant, emptyMessage = t('No annotations found') }) => {
     const [hoveredKey, setHoveredKey] = useState<string | null>(null);
 
     if (annotations.length === 0) {

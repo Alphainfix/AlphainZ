@@ -320,7 +320,7 @@ describe('parseSseStream / openai', () => {
     });
 
     it('surfaces a JSON error body served with a 200 and a stream content type', async () => {
-        // Exactly what a gateway behind Apigee returned for an unknown model: HTTP
+        // Exactly what an API gateway returned for an unknown model: HTTP
         // 200, `content-type: text/event-stream`, and a plain JSON error. The
         // message has to reach the user, or a typo in the model name looks like
         // a model that simply had nothing to say.

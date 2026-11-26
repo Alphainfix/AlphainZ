@@ -39,6 +39,7 @@ import { getActionCommand, toSlashToken, type SlashCommandDescriptor } from '@be
 import type { PromptAction } from '@beaver/agent-core/agents/types';
 import { MessageAttachment, messageAttachmentKey, messageAttachmentLookupKeys } from '@beaver/agent-core/types/attachments/apiTypes';
 import { toMessageAttachment } from '../types/attachments/converters';
+import { t } from '../../src/utils/i18n';
 
 // ---------------------------------------------------------------------------
 // Base atom — initialised once from prefs + built-ins
@@ -366,8 +367,8 @@ export const resolveActionForStagingAtom = atom(
             // An empty searchable set before the libraries load is not an exclusion.
             set(addPopupMessageAtom, {
                 type: 'warning',
-                title: 'Libraries still loading',
-                text: 'AlphainZ is still reading your Zotero libraries. Try again in a moment.',
+                title: t('Libraries still loading'),
+                text: t('AlphainZ is still reading your Zotero libraries. Try again in a moment.'),
                 expire: true,
                 duration: 4000,
             });
@@ -376,10 +377,10 @@ export const resolveActionForStagingAtom = atom(
         if (itemsExcluded || collectionsExcluded) {
             set(addPopupMessageAtom, {
                 type: 'error',
-                title: 'Action skipped',
+                title: t('Action skipped'),
                 text: itemsExcluded
-                    ? 'This action targets an item in a library you excluded from AlphainZ. You can change excluded libraries in AlphainZ Settings.'
-                    : 'This action targets a collection in a library you excluded from AlphainZ. You can change excluded libraries in AlphainZ Settings.',
+                    ? t('This action targets an item in a library you excluded from AlphainZ. You can change excluded libraries in AlphainZ Settings.')
+                    : t('This action targets a collection in a library you excluded from AlphainZ. You can change excluded libraries in AlphainZ Settings.'),
                 expire: true,
                 duration: 5000,
             });
@@ -393,8 +394,8 @@ export const resolveActionForStagingAtom = atom(
             const validation = validationResults.get(`${rejected.libraryID}-${rejected.key}`);
             set(addPopupMessageAtom, {
                 type: 'error',
-                title: 'Action skipped',
-                text: validation?.reason || 'One or more items failed validation.',
+                title: t('Action skipped'),
+                text: validation?.reason || t('One or more items failed validation.'),
                 expire: true,
                 duration: 4000,
             });
@@ -558,8 +559,8 @@ export const resolvePillsToPromptActionsAtom = atom(
             if (targetContextExcluded) {
                 set(addPopupMessageAtom, {
                     type: 'error',
-                    title: 'Action skipped',
-                    text: 'This action targets an item in a library you excluded from AlphainZ. You can change excluded libraries in AlphainZ Settings.',
+                    title: t('Action skipped'),
+                    text: t('This action targets an item in a library you excluded from AlphainZ. You can change excluded libraries in AlphainZ Settings.'),
                     expire: true,
                     duration: 5000,
                 });
@@ -567,10 +568,10 @@ export const resolvePillsToPromptActionsAtom = atom(
             }
 
             if (emptyItemVariables.length > 0) {
-                const hint = EMPTY_VARIABLE_HINTS[emptyItemVariables[0]] ?? 'No items found for this prompt.';
+                const hint = t(EMPTY_VARIABLE_HINTS[emptyItemVariables[0]] ?? 'No items found for this prompt.');
                 set(addPopupMessageAtom, {
                     type: 'warning',
-                    title: 'Action skipped',
+                    title: t('Action skipped'),
                     text: hint,
                     expire: true,
                     duration: 4000,
@@ -585,8 +586,8 @@ export const resolvePillsToPromptActionsAtom = atom(
                     if (!get(isLibraryAccessReadyAtom)) {
                         set(addPopupMessageAtom, {
                         type: 'warning',
-                        title: 'Libraries still loading',
-                        text: 'AlphainZ is still reading your Zotero libraries. Try again in a moment.',
+                        title: t('Libraries still loading'),
+                        text: t('AlphainZ is still reading your Zotero libraries. Try again in a moment.'),
                         expire: true,
                         duration: 4000,
                     });
@@ -594,8 +595,8 @@ export const resolvePillsToPromptActionsAtom = atom(
                     }
                     set(addPopupMessageAtom, {
                         type: 'error',
-                        title: 'Action skipped',
-                        text: 'This action references an item in a library you excluded from AlphainZ. You can change excluded libraries in AlphainZ Settings.',
+                        title: t('Action skipped'),
+                        text: t('This action references an item in a library you excluded from AlphainZ. You can change excluded libraries in AlphainZ Settings.'),
                         expire: true,
                         duration: 5000,
                     });
@@ -605,8 +606,8 @@ export const resolvePillsToPromptActionsAtom = atom(
                 if (isRejectedItemValidation(item, cached)) {
                     set(addPopupMessageAtom, {
                         type: 'error',
-                        title: 'Action skipped',
-                        text: cached?.reason || 'One or more items failed validation.',
+                        title: t('Action skipped'),
+                        text: cached?.reason || t('One or more items failed validation.'),
                         expire: true,
                         duration: 4000,
                     });
@@ -625,8 +626,8 @@ export const resolvePillsToPromptActionsAtom = atom(
                     if (!get(isLibraryAccessReadyAtom)) {
                         set(addPopupMessageAtom, {
                         type: 'warning',
-                        title: 'Libraries still loading',
-                        text: 'AlphainZ is still reading your Zotero libraries. Try again in a moment.',
+                        title: t('Libraries still loading'),
+                        text: t('AlphainZ is still reading your Zotero libraries. Try again in a moment.'),
                         expire: true,
                         duration: 4000,
                     });
@@ -634,8 +635,8 @@ export const resolvePillsToPromptActionsAtom = atom(
                     }
                     set(addPopupMessageAtom, {
                         type: 'error',
-                        title: 'Action skipped',
-                        text: 'This action targets a collection in a library you excluded from AlphainZ. You can change excluded libraries in AlphainZ Settings.',
+                        title: t('Action skipped'),
+                        text: t('This action targets a collection in a library you excluded from AlphainZ. You can change excluded libraries in AlphainZ Settings.'),
                         expire: true,
                         duration: 5000,
                     });

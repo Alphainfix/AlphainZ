@@ -14,6 +14,7 @@ import Button from "@beaver/agent-ui/primitives/Button";
 import PopupMessageHeader from './PopupMessageHeader';
 import { getWindowFromElement } from '@beaver/agent-ui/utils/windowContext';
 import { parseTextWithLinksAndNewlines } from '../../../utils/parseTextWithLinksAndNewlines';
+import { t } from '../../../../src/utils/i18n';
 
 interface PopupMessageItemProps {
     message: PopupMessage;
@@ -162,7 +163,7 @@ const PopupMessageItem: React.FC<PopupMessageItemProps> = ({ message, onRemove, 
                                             Zotero.launchURL(message.learnMoreUrl!);
                                         }}
                                     >
-                                        {message.learnMoreLabel || 'Learn more'}
+                                        {message.learnMoreLabel || t('Learn more')}
                                     </a>
                                 </>
                             )}

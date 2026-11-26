@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ExternalReferenceListView } from '@beaver/agent-core/run-state/toolResultViews';
 import ExternalReferenceListItem from '../../externalReferences/ExternalReferenceListItem';
+import { t } from '../../../../src/utils/i18n';
+import { tr } from '../../../utils/i18nNodes';
 
 /**
  * Shared renderer for the {@link ExternalReferenceListView} view model
@@ -21,7 +23,7 @@ export const ExternalReferenceListResultView: React.FC<{ view: ExternalReference
     const isLookupWork = view.tool_name === 'lookup_work';
 
     if (references.length === 0 && notFoundQueries.length === 0 && unavailableQueries.length === 0) {
-        const emptyText = view.message || (isLookupWork ? 'No works found' : 'No external references found');
+        const emptyText = view.message || (isLookupWork ? t('No works found') : t('No external references found'));
         return (
             <div className="p-3 text-sm font-color-tertiary">
                 {emptyText}
@@ -46,8 +48,7 @@ export const ExternalReferenceListResultView: React.FC<{ view: ExternalReference
                     key={`not-found-${index}`}
                     className="px-3 py-2 text-sm font-color-tertiary border-t border-color-quinary"
                 >
-                    <span className="font-color-secondary">{query}</span>
-                    <span> — not found</span>
+                    {tr('{query} — not found', { query: <span className="font-color-secondary">{query}</span> })}
                 </div>
             ))}
 
@@ -56,8 +57,7 @@ export const ExternalReferenceListResultView: React.FC<{ view: ExternalReference
                     key={`unchecked-${index}`}
                     className="px-3 py-2 text-sm font-color-tertiary border-t border-color-quinary"
                 >
-                    <span className="font-color-secondary">{query}</span>
-                    <span> — lookup unavailable</span>
+                    {tr('{query} — lookup unavailable', { query: <span className="font-color-secondary">{query}</span> })}
                 </div>
             ))}
         </div>

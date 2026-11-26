@@ -233,8 +233,8 @@ function fastApiDetail(detail: unknown): string | undefined {
 /**
  * The useful parts of a provider's error object, in any of the shapes seen:
  * OpenAI's `{error: {message, code}}` (DeepSeek, Zhipu and OpenRouter follow
- * it, OpenRouter with a numeric code), a bare `{message}`, the Apigee
- * `{fault: {faultstring, detail: {errorcode}}}` of gateways behind Apigee, and
+ * it, OpenRouter with a numeric code), a bare `{message}`, the
+ * `{fault: {faultstring, detail: {errorcode}}}` some API gateways return, and
  * the `{detail}` of servers built on FastAPI.
  */
 export function describeErrorObject(parsed: unknown): { detail?: string; code?: string; status?: number } {
@@ -302,7 +302,7 @@ export function describeErrorBody(raw: string): { detail?: string; code?: string
 /**
  * Explain a 200 response whose body was never an event stream.
  *
- * A gateway behind Apigee was seen to answer an invalid model with HTTP 200,
+ * An API gateway was seen to answer an invalid model with HTTP 200,
  * `content-type: text/event-stream`, and a plain JSON error object — no frames
  * at all. Read as a stream that simply produced nothing, that becomes a blank
  * answer with no error anywhere, so the body has to be surfaced instead.

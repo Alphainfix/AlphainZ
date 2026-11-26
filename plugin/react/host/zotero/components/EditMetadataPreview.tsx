@@ -1,6 +1,7 @@
 import React from 'react';
 import type { MetadataEdit, AppliedMetadataEdit, CreatorJSON } from '@beaver/agent-core/types/agentActions/base';
 import { resolveFieldForItemType } from '../../../../src/utils/zoteroUtils';
+import { msg, t } from '../../../../src/utils/i18n';
 
 type ActionStatus = 'pending' | 'applied' | 'rejected' | 'undone' | 'error' | 'awaiting';
 
@@ -74,13 +75,13 @@ export const EditMetadataPreview: React.FC<EditMetadataPreviewProps> = ({
                                 {/* Old value - deletion style (show crossed out for applied, normal for others) */}
                                 <div className={`diff-line ${isApplied ? 'diff-deletion' : isRejectedOrUndone ? 'diff-neutral' : 'diff-deletion'}`}>
                                     <span className={`diff-content`}>
-                                        {currentValue ? truncateValue(currentValue) : <span className="italic opacity-60">(empty)</span>}
+                                        {currentValue ? truncateValue(currentValue) : <span className="italic opacity-60">{t('(empty)')}</span>}
                                     </span>
                                 </div>
                                 {/* New value - addition style (highlighted for applied, ghosted for rejected) */}
                                 <div className={`diff-line ${isApplied ? 'diff-addition-applied' : isRejectedOrUndone ? 'diff-ghosted' : isError ? 'diff-error' : 'diff-addition'}`}>
                                     <span className="diff-content">
-                                        {displayValue ? truncateValue(displayValue) : <span className="italic opacity-60">(empty)</span>}
+                                        {displayValue ? truncateValue(displayValue) : <span className="italic opacity-60">{t('(empty)')}</span>}
                                     </span>
                                 </div>
                             </div>
@@ -91,7 +92,7 @@ export const EditMetadataPreview: React.FC<EditMetadataPreviewProps> = ({
                 {hasCreatorChanges && (
                     <div className="flex flex-col gap-1">
                         <div className="text-sm font-color-primary font-medium px-3 py-1">
-                            Creators
+                            {t('Creators')}
                         </div>
                         <div className="diff-container">
                             {/* Old creators */}
@@ -99,7 +100,7 @@ export const EditMetadataPreview: React.FC<EditMetadataPreviewProps> = ({
                                 <span className="diff-content">
                                     {oldCreators && oldCreators.length > 0
                                         ? truncateValue(formatCreatorList(oldCreators))
-                                        : <span className="italic opacity-60">(empty)</span>
+                                        : <span className="italic opacity-60">{t('(empty)')}</span>
                                     }
                                 </span>
                             </div>
@@ -118,26 +119,53 @@ export const EditMetadataPreview: React.FC<EditMetadataPreviewProps> = ({
 };
 
 /**
+ * Display names for common Zotero fields, in English (shown through `t`).
+ * Each is what the camelCase fallback below would produce, except where the
+ * fallback reads badly ("Abstract Note", "D O I").
+ */
+const FIELD_NAMES: Record<string, string> = {
+    title: msg('Title'),
+    abstractNote: msg('Abstract'),
+    publicationTitle: msg('Publication'),
+    date: msg('Date'),
+    accessDate: msg('Access Date'),
+    volume: msg('Volume'),
+    issue: msg('Issue'),
+    pages: msg('Pages'),
+    series: msg('Series'),
+    seriesNumber: msg('Series Number'),
+    seriesTitle: msg('Series Title'),
+    journalAbbreviation: msg('Journal Abbreviation'),
+    publisher: msg('Publisher'),
+    place: msg('Place'),
+    edition: msg('Edition'),
+    bookTitle: msg('Book Title'),
+    proceedingsTitle: msg('Proceedings Title'),
+    conferenceName: msg('Conference Name'),
+    university: msg('University'),
+    institution: msg('Institution'),
+    websiteTitle: msg('Website Title'),
+    language: msg('Language'),
+    shortTitle: msg('Short Title'),
+    url: 'URL',
+    DOI: 'DOI',
+    ISBN: 'ISBN',
+    ISSN: 'ISSN',
+    archive: msg('Archive@@zotero field'),
+    archiveLocation: msg('Archive Location'),
+    libraryCatalog: msg('Library Catalog'),
+    callNumber: msg('Call Number'),
+    rights: msg('Rights'),
+    extra: msg('Extra'),
+    citationKey: msg('Citation Key'),
+};
+
+/**
  * Format field names for display (camelCase -> Title Case)
  */
 function formatFieldName(field: string): string {
-    // Common field name mappings
-    const fieldNames: Record<string, string> = {
-        abstractNote: 'Abstract',
-        publicationTitle: 'Publication',
-        DOI: 'DOI',
-        ISBN: 'ISBN',
-        ISSN: 'ISSN',
-        url: 'URL',
-        shortTitle: 'Short Title',
-        seriesNumber: 'Series Number',
-        seriesTitle: 'Series Title',
-        archiveLocation: 'Archive Location',
-        callNumber: 'Call Number',
-    };
-
-    if (fieldNames[field]) {
-        return fieldNames[field];
+    if (Object.prototype.hasOwnProperty.call(FIELD_NAMES, field)) {
+        return t(FIELD_NAMES[field]);
     }
 
     // Convert camelCase to Title Case

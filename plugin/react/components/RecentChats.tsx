@@ -18,6 +18,7 @@ import { buildRecentChatsCacheKey, buildRecentChatsItemLookup } from '../utils/r
 import Spinner from '@beaver/agent-ui/icons/Spinner';
 import { logger } from '@beaver/agent-core/platform/logger';
 import Button from '@beaver/agent-ui/primitives/Button';
+import { t } from '../../src/utils/i18n';
 
 const MAX_RECENT = 3;
 const CACHE_TTL = 60_000; // 1 minute
@@ -77,12 +78,12 @@ function formatCompactTime(utcDateString: string): string {
     const diffDays = Math.floor(diffMs / 86_400_000);
     const diffWeeks = Math.floor(diffDays / 7);
 
-    if (diffMin < 1) return 'now';
-    if (diffMin < 60) return `${diffMin}m`;
-    if (diffHours < 24) return `${diffHours}h`;
-    if (diffDays < 7) return `${diffDays}d`;
-    if (diffWeeks < 5) return `${diffWeeks}w`;
-    return `${Math.floor(diffDays / 30)}mo`;
+    if (diffMin < 1) return t('now');
+    if (diffMin < 60) return t('{count}m', { count: diffMin });
+    if (diffHours < 24) return t('{count}h', { count: diffHours });
+    if (diffDays < 7) return t('{count}d', { count: diffDays });
+    if (diffWeeks < 5) return t('{count}w', { count: diffWeeks });
+    return t('{count}mo', { count: Math.floor(diffDays / 30) });
 }
 
 const RecentChats: React.FC = () => {
@@ -205,9 +206,9 @@ const RecentChats: React.FC = () => {
                     // identity columns (bounded set; no server-side by-item
                     // scoping).
                     const ownAgent = matches.filter(m => !isThreadAgentMismatch(m));
-                    const deduped = deduplicateByThread(ownAgent).filter(t =>
+                    const deduped = deduplicateByThread(ownAgent).filter(th =>
                         !isThreadInstanceMismatch(instanceScope ?? null, {
-                            zoteroUserId: t.zoteroUserId, zoteroLocalId: t.zoteroLocalId,
+                            zoteroUserId: th.zoteroUserId, zoteroLocalId: th.zoteroLocalId,
                         })
                     );
                     if (deduped.length > 0) {
@@ -263,7 +264,7 @@ const RecentChats: React.FC = () => {
     // remove a deleted thread from our local state without a full re-fetch.
     useEffect(() => {
         const unregister = registerRecentChatsRemover((id: string) => {
-            setThreads(prev => prev.filter(t => t.id !== id));
+            setThreads(prev => prev.filter(th => th.id !== id));
         });
         return unregister;
     }, []);
@@ -304,9 +305,9 @@ const RecentChats: React.FC = () => {
     // Loaded but no threads exist
     if (isLoaded && threads.length === 0 && !isFetching) return null;
 
-    const headerLabel = contextType === 'file' ? 'Related to this file'
-        : contextType === 'note' ? 'Related to this note'
-        : 'Recent';
+    const headerLabel = contextType === 'file' ? t('Related to this file')
+        : contextType === 'note' ? t('Related to this note')
+        : t('Recent');
 
     return (
         <div className={`pt-2 recent-chats${hasPopupMessages ? ' recent-chats-faded' : ''}`}>
@@ -322,7 +323,7 @@ const RecentChats: React.FC = () => {
                     onClick={handleViewAll}
                     style={{ padding: '0px' }}
                 >
-                    View All
+                    {t('View All')}
                 </Button>
             </div>
             {threads.map(thread => (
@@ -331,7 +332,7 @@ const RecentChats: React.FC = () => {
                     className="recent-chats-item"
                     role="button"
                     tabIndex={0}
-                    aria-label={`${thread.name || 'Unnamed conversation'}, ${formatCompactTime(thread.updatedAt)}`}
+                    aria-label={`${thread.name || t('Unnamed conversation')}, ${formatCompactTime(thread.updatedAt)}`}
                     onClick={() => handleSelectThread(thread)}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
@@ -341,7 +342,7 @@ const RecentChats: React.FC = () => {
                     }}
                 >
                     <span className="recent-chats-item-name truncate">
-                        {thread.name || 'Unnamed conversation'}
+                        {thread.name || t('Unnamed conversation')}
                     </span>
                     <span className="recent-chats-item-time">
                         {formatCompactTime(thread.updatedAt)}

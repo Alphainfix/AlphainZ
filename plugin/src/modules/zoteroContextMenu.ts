@@ -28,6 +28,7 @@ import { getPref } from '../utils/prefs';
 import { openPreferencesWindow } from '../ui/openPreferencesWindow';
 import { agentItemFilter, isAgentSupportedItem } from '../utils/agentItemSupport';
 import config from '../../package.json';
+import { t, tn } from '../utils/i18n';
 
 // ---------------------------------------------------------------------------
 // Item gating uses the React-free agentItemSupport predicates (safe to import
@@ -118,10 +119,10 @@ function compositionTotal(c: SelectionComposition): number {
 /** Human-readable composition label (e.g. "3 items, 1 note"). */
 function compositionLabel(c: SelectionComposition): string {
     const parts: string[] = [];
-    if (c.items > 0) parts.push(`${c.items} item${c.items !== 1 ? 's' : ''}`);
-    if (c.attachment > 0) parts.push(`${c.attachment} attachment${c.attachment !== 1 ? 's' : ''}`);
-    if (c.note > 0) parts.push(`${c.note} note${c.note !== 1 ? 's' : ''}`);
-    return parts.join(', ');
+    if (c.items > 0) parts.push(tn(c.items, '{count} item', '{count} items'));
+    if (c.attachment > 0) parts.push(tn(c.attachment, '{count} attachment', '{count} attachments'));
+    if (c.note > 0) parts.push(tn(c.note, '{count} note', '{count} notes'));
+    return parts.join(t(', '));
 }
 
 /** Selected-item kinds an action accepts (item context menu only). */
@@ -145,6 +146,7 @@ const PLUGIN_ID = config.config.addonID;
 let registeredItemKey: string | null = null;
 let registeredCollectionKey: string | null = null;
 let prefObserverSymbol: symbol | null = null;
+let languageObserverSymbol: symbol | null = null;
 
 // ---------------------------------------------------------------------------
 // Minimal action merge (avoids importing actionStorage → settings → store)
@@ -299,6 +301,7 @@ function registerMenus(): void {
         menus: [{
             menuType: 'submenu' as const,
             l10nID: 'alphainz-context-menu-submenu',
+            l10nArgs: JSON.stringify({ label: t('AlphainZ Actions') }),
             onShowing: safeOnShowing('item-submenu', (_event: any, context: any) => {
                 const { items, setVisible } = context;
 
@@ -340,6 +343,7 @@ function registerMenus(): void {
         menus: [{
             menuType: 'submenu' as const,
             l10nID: 'alphainz-context-menu-submenu',
+            l10nArgs: JSON.stringify({ label: t('AlphainZ Actions') }),
             onShowing: safeOnShowing('collection-submenu', (_event: any, context: any) => {
                 const { setVisible } = context;
                 setVisible(pureCollectionRows(context).length > 0);
@@ -383,7 +387,7 @@ function buildItemMenuItems(itemActions: Action[]): any[] {
         menus.push({
             menuType: 'menuitem' as const,
             l10nID: 'alphainz-context-menu-action',
-            l10nArgs: JSON.stringify({ title: action.title }),
+            l10nArgs: JSON.stringify({ title: t(action.title) }),
             onShowing: safeOnShowing(`item-action:${action.id}`, (_event: any, context: any) => {
                 filterItemAction(action, context);
             }),
@@ -400,6 +404,7 @@ function buildItemMenuItems(itemActions: Action[]): any[] {
     menus.push({
         menuType: 'menuitem' as const,
         l10nID: 'alphainz-context-menu-add-action',
+        l10nArgs: JSON.stringify({ label: t('Add custom action…') }),
         onCommand: () => {
             openPreferencesWindow('actions');
         },
@@ -412,7 +417,7 @@ function buildCollectionMenuItems(collectionActions: Action[]): any[] {
     const items: any[] = collectionActions.map(action => ({
         menuType: 'menuitem' as const,
         l10nID: 'alphainz-context-menu-action',
-        l10nArgs: JSON.stringify({ title: action.title }),
+        l10nArgs: JSON.stringify({ title: t(action.title) }),
         onShowing: safeOnShowing(`collection-action:${action.id}`, (_event: any, context: any) => {
             filterCollectionAction(action, context);
         }),
@@ -428,6 +433,7 @@ function buildCollectionMenuItems(collectionActions: Action[]): any[] {
     items.push({
         menuType: 'menuitem' as const,
         l10nID: 'alphainz-context-menu-add-action',
+        l10nArgs: JSON.stringify({ label: t('Add custom action…') }),
         onCommand: () => {
             openPreferencesWindow('actions');
         },
@@ -549,6 +555,12 @@ function removeStaleMenuDOM(): void {
 
 function startPrefObserver(): void {
     if (prefObserverSymbol) return;
+    // The labels are written in the plugin's language when the menus are built.
+    languageObserverSymbol = Zotero.Prefs.registerObserver(
+        `${config.config.prefsPrefix}.uiLanguage`,
+        () => registerMenus(),
+        true, // global pref name
+    );
     // The prefix comes from the plugin config rather than a literal: this read
     // `extensions.zotero.beaver.actions` after the rename, so editing a custom
     // action never rebuilt the menu — it silently kept the old set until the
@@ -567,5 +579,9 @@ function stopPrefObserver(): void {
     if (prefObserverSymbol) {
         Zotero.Prefs.unregisterObserver(prefObserverSymbol);
         prefObserverSymbol = null;
+    }
+    if (languageObserverSymbol) {
+        Zotero.Prefs.unregisterObserver(languageObserverSymbol);
+        languageObserverSymbol = null;
     }
 }

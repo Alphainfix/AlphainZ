@@ -18,6 +18,7 @@ import {
 
 import { getPref, setPref } from '../../src/utils/prefs';
 import { WIZARD_VERSION, isWelcomeWizardComplete, markWelcomeWizardComplete } from '../../src/utils/welcomeWizard';
+import { joinSentences, t } from '../../src/utils/i18n';
 
 /**
  * When the model just taken from another computer cannot run here, what to
@@ -31,10 +32,10 @@ async function missingModelHint(): Promise<string | null> {
     const provider = String(getPref('llmProvider') ?? '').trim();
     const label = (PROVIDER_PRESETS as Record<string, { label?: string } | undefined>)[provider]?.label;
     return label
-        ? `Its model needs a ${label} key, and API keys stay on each computer: paste one in `
-            + 'Settings → Model, or pick another model.'
-        : 'Its model\'s provider is not set up on this computer: add it in Settings → Model, '
-            + 'or pick another model.';
+        ? t('Its model needs a {provider} key, and API keys stay on each computer: paste one in '
+            + 'Settings → Model, or pick another model.', { provider: t(label) })
+        : t('Its model\'s provider is not set up on this computer: add it in Settings → Model, '
+            + 'or pick another model.');
 }
 
 /**
@@ -48,16 +49,18 @@ async function announceSettingsTaken(taken: SettingsTaken): Promise<void> {
             ? await missingModelHint()
             : null;
         const kept = taken.kept.length > 0
-            ? `Kept from this computer, and sent to the other one: ${describeSettingsTaken(taken.kept)}. `
-            : '';
+            ? t('Kept from this computer, and sent to the other one: {settings}.', { settings: describeSettingsTaken(taken.kept) })
+            : null;
         const { store } = await import('../store');
         const { addPopupMessageAtom } = await import('../utils/popupMessageUtils');
         store.set(addPopupMessageAtom, {
             type: 'info',
-            title: 'Using your other computer\'s settings',
-            text: `Taken from the computer that already syncs here: ${describeSettingsTaken(taken.changed)}. `
-                + kept
-                + (modelHint ?? 'API keys stay on each computer.'),
+            title: t('Using your other computer\'s settings'),
+            text: joinSentences([
+                t('Taken from the computer that already syncs here: {settings}.', { settings: describeSettingsTaken(taken.changed) }),
+                kept,
+                modelHint ?? t('API keys stay on each computer.'),
+            ]),
             expire: true,
             duration: modelHint || kept ? 15000 : 8000,
         });

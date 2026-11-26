@@ -20,7 +20,8 @@ import {
     NoteChip,
     TagChip,
 } from './RequestChipPrimitives';
-import type { ChipPopupSubtitle } from '@beaver/agent-ui/chat/ChipPopup';
+import { attachedToSubtitle, type ChipPopupSubtitle } from '@beaver/agent-ui/chat/ChipPopup';
+import { t } from '../../../../src/utils/i18n';
 
 const EMPTY_ATTACHMENTS: NonNullable<BeaverAgentPrompt['attachments']> = [];
 
@@ -75,9 +76,9 @@ function itemStubSubtitle(att: ItemMetadataAttachment): ChipPopupSubtitle | null
  */
 function sourceSubtitle(att: SourceAttachment): ChipPopupSubtitle | null {
     const parent = att.parent_item ? itemStubDisplayLabel(att.parent_item) : null;
-    if (parent) return { prefix: 'Attached to ', text: parent, italic: true };
-    if (att.library_id === EXTERNAL_LIBRARY_ID) return { text: 'External file' };
-    return { text: 'Standalone attachment' };
+    if (parent) return attachedToSubtitle(parent);
+    if (att.library_id === EXTERNAL_LIBRARY_ID) return { text: t('External file') };
+    return { text: t('Standalone attachment') };
 }
 
 /**
@@ -85,7 +86,7 @@ function sourceSubtitle(att: SourceAttachment): ChipPopupSubtitle | null {
  * parent key (no parent bib), so a child note shows a generic "Attached note".
  */
 function noteSubtitle(att: NoteAttachment): ChipPopupSubtitle {
-    return att.parent_key ? { text: 'Attached note' } : { text: 'Standalone note' };
+    return att.parent_key ? { text: t('Attached note') } : { text: t('Standalone note') };
 }
 
 /**

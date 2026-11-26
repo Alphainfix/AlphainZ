@@ -106,17 +106,17 @@ describe('the start of the answer', () => {
     });
 
     it('writes formulas as characters, not LaTeX', () => {
-        expect(plainAnswerText('The switch toggles $|0\\rangle\\leftrightarrow|1\\rangle$ in ${}^{13}\\mathrm{C}^0$.'))
-            .toBe('The switch toggles |0⟩ ↔ |1⟩ in ¹³C⁰.');
-        // The markdown stripping leaves the formula alone: t₂* keeps its asterisk.
-        expect(plainAnswerText('**Latency**: $t_2^*$ is 2 µs, $$t_2 = \\frac{1}{\\gamma}$$')).toBe('Latency: t₂* is 2 µs, t₂ = 1/γ');
+        expect(plainAnswerText('The model maps $\\langle x\\rangle\\leftrightarrow\\langle y\\rangle$ in ${}^{14}\\mathrm{C}^0$.'))
+            .toBe('The model maps ⟨x⟩ ↔ ⟨y⟩ in ¹⁴C⁰.');
+        // The markdown stripping leaves the formula alone: x₂* keeps its asterisk.
+        expect(plainAnswerText('**Latency**: $x_2^*$ is 2 µs, $$x_2 = \\frac{1}{\\gamma}$$')).toBe('Latency: x₂* is 2 µs, x₂ = 1/γ');
         // Prices are not formulas.
         expect(plainAnswerText('It costs $5 and $10.')).toBe('It costs $5 and $10.');
     });
 
     it('writes formulas in the question as characters too', () => {
-        const [turn] = buildConversationTurns([makeRun('a', { user_prompt: { content: 'Why is $t_2^*$ shorter than\n$t_2$?' } } as Partial<AgentRun>)]);
-        expect(turn.question).toBe('Why is t₂* shorter than t₂?');
+        const [turn] = buildConversationTurns([makeRun('a', { user_prompt: { content: 'Why is $x_2^*$ shorter than\n$x_2$?' } } as Partial<AgentRun>)]);
+        expect(turn.question).toBe('Why is x₂* shorter than x₂?');
     });
 
     it('names the library changes the answer proposed', () => {

@@ -6,6 +6,7 @@ import { showFileStatusDetailsAtom } from '../../../atoms/ui';
 import { useSetAtom, useAtomValue } from 'jotai';
 import { newThreadAtom, currentThreadIdAtom } from '../../../atoms/threads';
 import { updatePopupMessageAtom } from '../../../utils/popupMessageUtils';
+import { t } from '../../../../src/utils/i18n';
 
 interface IndexingCompleteMessageContentProps {
     message: PopupMessage;
@@ -83,17 +84,17 @@ const IndexingCompleteMessageContent: React.FC<IndexingCompleteMessageContentPro
 
             {message.planName === "free" && skippedFiles > 0 && (
                 <div className="font-color-secondary text-base">
-                    {`You can upgrade your plan to process more files.`}
+                    {t('You can upgrade your plan to process more files.')}
                 </div>
             )}
 
             <div className="display-flex flex-row gap-3 items-center">
                 <div className="flex-1" />
                 {message.planName === "free" && skippedFiles > 0 && (
-                    <Button variant="surface">Upgrade</Button>
+                    <Button variant="surface">{t('Upgrade')}</Button>
                 )}
                 {(skippedFiles > 0 || failedFiles > 0) && (
-                    <Button onClick={handleShowDetails} variant="outline">View Details</Button>
+                    <Button onClick={handleShowDetails} variant="outline">{t('View Details')}</Button>
                 )}
             </div>
 

@@ -10,6 +10,7 @@ import { getPref } from '../../src/utils/prefs';
 import { createProvenanceNote } from './noteActions';
 import { libraryRefForLibraryID, resolveLibraryRef } from '../../src/utils/libraryIdentity';
 import { getSelectedLibraryId, getSelectedCollection } from '../../src/utils/zoteroSelection';
+import { t } from '../../src/utils/i18n';
 
 const SAVE_ATTACHMENTS_WITH_TRANSLATORS = false;
 /**
@@ -233,7 +234,7 @@ async function attachPdfFromUrl(
                 libraryID: libraryId,
                 url: url,
                 parentItemID: parentItem.id,
-                title: "Full Text PDF",
+                title: t("Full Text PDF"),
                 contentType: "application/pdf",
                 saveOptions: {
                     skipSelect: true // Don't select the new attachment in the UI
@@ -827,7 +828,7 @@ function schedulePdfFetchTask(
         {
             itemKey,
             libraryId,
-            progressMessage: 'Finding PDF...',
+            progressMessage: t('Finding PDF...'),
         }
     );
 }
@@ -923,7 +924,7 @@ function schedulePdfFetchRecheckTask(
         {
             itemKey,
             libraryId,
-            progressMessage: 'Re-checking PDF...',
+            progressMessage: t('Re-checking PDF...'),
         },
     );
 }

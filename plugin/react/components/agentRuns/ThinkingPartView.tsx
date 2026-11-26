@@ -4,6 +4,7 @@ import { ThinkingPart } from '@beaver/agent-core/agents/types';
 import MarkdownRenderer from '../messages/MarkdownRenderer';
 import { Spinner, Icon, BrainIcon, ArrowRightIcon, ArrowDownIcon } from '../icons/icons';
 import { thinkingVisibilityAtom, toggleThinkingVisibilityAtom } from '../../atoms/messageUIState';
+import { t } from '../../../src/utils/i18n';
 
 interface ThinkingPartViewProps {
     parts: ThinkingPart[];
@@ -89,7 +90,7 @@ export const ThinkingPartView: React.FC<ThinkingPartViewProps> = ({
                         </div>
                         
                         <div className={`display-flex flex-shrink-0 ${isExpanded ? 'font-color-primary' : ''} ${isThinking ? 'shimmer-text' : ''}`}>
-                            {isThinking ? 'Thinking' : 'Thoughts'}
+                            {isThinking ? t('Thinking') : t('Thoughts')}
                         </div>
                         {preview && (
                             <div className="display-flex truncate font-color-tertiary min-w-0">

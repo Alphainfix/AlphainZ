@@ -15,6 +15,8 @@ import ActionCard from "./ActionCard";
 import MenuButton from "@beaver/agent-ui/primitives/MenuButton";
 import { MenuItem } from "@beaver/agent-ui/primitives/ContextMenu";
 import {SectionLabel, DocLink, SectionHeader} from "./components/SettingsElements";
+import { t } from '../../../src/utils/i18n';
+import { tr } from '../../utils/i18nNodes';
 
 // Filter dimensions. `targets` is what an action binds to (the filter matches
 // any action accepting the kind); `category` is the kind of work it is (both
@@ -123,22 +125,22 @@ const ActionsPreferenceSection: React.FC = () => {
             const result = await importActionFromFile();
             if (!result) return; // user cancelled the file picker
             if (!result.ok) {
-                addPopupMessage({ type: 'error', title: 'Import failed', text: result.error, expire: true });
+                addPopupMessage({ type: 'error', title: t('Import failed'), text: result.error, expire: true });
                 return;
             }
             const { action, command, commandRenamed } = importAction(result.action);
             if (commandRenamed) {
                 addPopupMessage({
                     type: 'info',
-                    title: 'Action imported',
-                    text: `A /${getActionCommand(result.action)} command already existed, so this one was added as /${command}.`,
+                    title: t('Action imported'),
+                    text: t('A /{existing} command already existed, so this one was added as /{command}.', { existing: getActionCommand(result.action), command }),
                     expire: true,
                 });
             }
             // Reveal the new card and open it in edit mode.
             setPendingActionEdit({ actionId: action.id, requestId: Date.now() });
         })().catch(() => {
-            addPopupMessage({ type: 'error', title: 'Import failed', text: 'Could not import the action.', expire: true });
+            addPopupMessage({ type: 'error', title: t('Import failed'), text: t('Could not import the action.'), expire: true });
         });
     }, [importAction, addPopupMessage, setPendingActionEdit]);
 
@@ -154,7 +156,7 @@ const ActionsPreferenceSection: React.FC = () => {
     const handleDuplicateAction = useCallback((action: Action) => {
         const { action: copy } = importAction({
             ...action,
-            title: `${action.title} (copy)`,
+            title: t('{title} (copy)', { title: t(action.title) }),
         });
         setPendingActionEdit({ actionId: copy.id, requestId: Date.now() });
     }, [importAction, setPendingActionEdit]);
@@ -168,27 +170,27 @@ const ActionsPreferenceSection: React.FC = () => {
 
     // --- Filter menu items ---
     const targetFilterItems: MenuItem[] = useMemo(() => [
-        filterMenuItem('All targets', targetFilter === null, () => setTargetFilter(null)),
+        filterMenuItem(t('All targets'), targetFilter === null, () => setTargetFilter(null)),
         { label: '', isDivider: true, onClick: () => {} },
         ...TARGET_FILTER_OPTIONS.map(tt =>
-            filterMenuItem(TARGET_TYPE_LABELS[tt], targetFilter === tt, () => setTargetFilter(tt))
+            filterMenuItem(t(TARGET_TYPE_LABELS[tt]), targetFilter === tt, () => setTargetFilter(tt))
         ),
     ], [targetFilter]);
 
     const categoryFilterItems: MenuItem[] = useMemo(() => [
-        filterMenuItem('All categories', categoryFilter === null, () => setCategoryFilter(null)),
+        filterMenuItem(t('All categories'), categoryFilter === null, () => setCategoryFilter(null)),
         { label: '', isDivider: true, onClick: () => {} },
         ...CATEGORY_FILTER_OPTIONS.map(cat =>
             filterMenuItem(categoryLabel(cat), categoryFilter === cat, () => setCategoryFilter(cat))
         ),
-        filterMenuItem('Uncategorized', categoryFilter === UNCATEGORIZED_FILTER, () => setCategoryFilter(UNCATEGORIZED_FILTER)),
+        filterMenuItem(t('Uncategorized'), categoryFilter === UNCATEGORIZED_FILTER, () => setCategoryFilter(UNCATEGORIZED_FILTER)),
     ], [categoryFilter]);
 
-    const targetButtonLabel = targetFilter ? TARGET_TYPE_LABELS[targetFilter] : 'All targets';
+    const targetButtonLabel = targetFilter ? t(TARGET_TYPE_LABELS[targetFilter]) : t('All targets');
     const categoryButtonLabel = categoryFilter === null
-        ? 'All categories'
+        ? t('All categories')
         : categoryFilter === UNCATEGORIZED_FILTER
-            ? 'Uncategorized'
+            ? t('Uncategorized')
             : categoryLabel(categoryFilter);
 
     // No background when a filter dimension is unset ("All ..."); a filled, bordered
@@ -214,7 +216,7 @@ const ActionsPreferenceSection: React.FC = () => {
     return (
         <>
             <div className="display-flex flex-row items-end justify-between">
-                <SectionHeader>Actions</SectionHeader>
+                <SectionHeader>{t('Actions')}</SectionHeader>
                 <div className="display-flex flex-row items-center gap-4 mb-15">
                     <Button
                         variant="outline"
@@ -222,9 +224,9 @@ const ActionsPreferenceSection: React.FC = () => {
                         icon={ImportIcon}
                         style={{ padding: '4px 6px' }}
                         onClick={handleImportAction}
-                        title="Import an action from a .beaveraction file"
+                        title={t('Import an action from a .beaveraction file')}
                     >
-                        Import
+                        {t('Import')}
                     </Button>
                     <Button
                         variant="solid"
@@ -233,29 +235,27 @@ const ActionsPreferenceSection: React.FC = () => {
                         style={{ padding: '4px 6px' }}
                         onClick={handleAddAction}
                     >
-                        Add Action
+                        {t('Add Action')}
                     </Button>
                 </div>
             </div>
             <div className="text-base font-color-secondary mb-2" style={{ paddingLeft: '2px' }}>
-                Actions are reusable prompts for common research tasks.
-                They appear based on what you're doing in Zotero: on the home page, in the slash menu, and Zotero's right-click menu.
-                Each action targets items, collections, or your whole library, and AlphainZ shows the relevant ones automatically.
-                {' '}<DocLink path="actions">Learn more</DocLink>.
+                {t('Actions are reusable prompts for common research tasks. They appear based on what you\'re doing in Zotero: on the home page, in the slash menu, and Zotero\'s right-click menu. Each action targets items, collections, or your whole library, and AlphainZ shows the relevant ones automatically.')}
+                {' '}{tr('{link}.', { link: <DocLink path="actions">{t('Learn more')}</DocLink> })}
             </div>
 
             {/* Filter toolbar — narrow the list by target and/or category */}
             <div className="display-flex flex-row flex-1 items-center gap-3 flex-wrap mb-15 mt-4" style={{ paddingLeft: '2px' }}>
                 <div className="display-flex flex-row items-center gap-1 p-1">
                     {/* <Icon icon={FilterIcon} size={14} className="font-color-primary flex-shrink-0" /> */}
-                    <span className="text-base font-color-secondary">Show:</span>
+                    <span className="text-base font-color-secondary">{t('Show:')}</span>
                 </div>
                 <MenuButton
                     menuItems={targetFilterItems}
                     buttonLabel={targetButtonLabel}
                     variant={targetButtonVariant}
                     rightIcon={ArrowDownIcon}
-                    ariaLabel="Filter by target"
+                    ariaLabel={t('Filter by target')}
                     className="text-sm"
                     style={{ padding: '3px 8px' }}
                     maxWidth="200px"
@@ -265,7 +265,7 @@ const ActionsPreferenceSection: React.FC = () => {
                     buttonLabel={categoryButtonLabel}
                     variant={categoryButtonVariant}
                     rightIcon={ArrowDownIcon}
-                    ariaLabel="Filter by category"
+                    ariaLabel={t('Filter by category')}
                     className="text-sm"
                     style={{ padding: '3px 8px' }}
                     maxWidth="200px"
@@ -277,11 +277,11 @@ const ActionsPreferenceSection: React.FC = () => {
                             style={{ padding: "3px 8px" }}
                             onClick={clearFilters}
                         >
-                            Clear
+                            {t('Clear')}
                         </Button>
                         <div className="flex-1"></div>
                         <span className="text-base font-color-secondary px-15">
-                            {filteredActions.length} of {actions.length}
+                            {t('{shown} of {total}', { shown: filteredActions.length, total: actions.length })}
                         </span>
                     </>
                 )}
@@ -289,7 +289,7 @@ const ActionsPreferenceSection: React.FC = () => {
 
             {filteredActions.length === 0 ? (
                 <div className="text-base font-color-tertiary" style={{ padding: '12px 4px' }}>
-                    No actions match the selected filters.
+                    {t('No actions match the selected filters.')}
                 </div>
             ) : (
                 <div className="display-flex flex-col" style={{ gap: '8px' }}>
@@ -320,18 +320,18 @@ const ActionsPreferenceSection: React.FC = () => {
             {hiddenBuiltins.length > 0 && (
                 <details className="mt-4">
                     <summary className="text-sm font-color-secondary cursor-pointer">
-                        Deleted actions ({hiddenBuiltins.length})
+                        {t('Deleted actions ({count})', { count: hiddenBuiltins.length })}
                     </summary>
                     <div className="display-flex flex-col gap-2 mt-2">
                         {hiddenBuiltins.map(action => (
                             <div key={action.id} className="display-flex flex-row items-center justify-between px-2 py-1">
-                                <span className="text-sm font-color-secondary">{action.title}</span>
+                                <span className="text-sm font-color-secondary">{t(action.title)}</span>
                                 <Button
                                     variant="outline"
                                     style={{ padding: "2px 8px" }}
                                     onClick={() => restoreAction(action.id)}
                                 >
-                                    <span className="text-xs">Restore</span>
+                                    <span className="text-xs">{t('Restore')}</span>
                                 </Button>
                             </div>
                         ))}

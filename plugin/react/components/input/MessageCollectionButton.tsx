@@ -10,6 +10,7 @@ import { useRemoveContextMenu } from '../../hooks/useRemoveContextMenu';
 import { ChipWithPopup, type ChipPopupContent } from '@beaver/agent-ui/chat/ChipPopup';
 import { ChipButton } from '../agentRuns/requestChips/ChipButton';
 import { ChipRemovableIcon } from '../agentRuns/requestChips/ChipRemovableIcon';
+import { t } from '../../../src/utils/i18n';
 
 const MAX_TEXT_LENGTH = 20;
 
@@ -53,7 +54,7 @@ export const MessageCollectionButton: React.FC<MessageCollectionButtonProps> = (
         canEdit,
         disabled,
         extraMenuItems: [{
-            label: 'Reveal Collection',
+            label: t('Reveal Collection'),
             icon: LibraryIcon,
             onClick: revealCollection,
         }],
@@ -72,8 +73,8 @@ export const MessageCollectionButton: React.FC<MessageCollectionButtonProps> = (
             </span>
         ),
         title: collection.name,
-        subtitle: { text: 'Collection' },
-        action: { icon: LibraryIcon, label: 'Reveal in library' },
+        subtitle: { text: t('Collection') },
+        action: { icon: LibraryIcon, label: t('Reveal in library') },
     };
 
     return (

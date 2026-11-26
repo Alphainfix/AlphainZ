@@ -1,6 +1,7 @@
 import React from 'react';
 import { ToolCallPart, AgentRunStatus } from '@beaver/agent-core/agents/types';
-import { TOOL_BASE_LABELS, parseArgs } from '@beaver/agent-core/run-state/toolCallRequest';
+import { parseArgs, toolBaseLabel } from '@beaver/agent-core/run-state/toolCallRequest';
+import { t, tn } from '../../../src/utils/i18n';
 
 /**
  * Client-agnostic fallback for agent-action tool calls.
@@ -31,11 +32,11 @@ interface GenericAgentActionViewProps {
 /** Humanize an unknown tool name ("create_note" → "Create note"). */
 function humanizeToolName(toolName: string): string {
     const spaced = toolName.replace(/[_-]+/g, ' ').trim();
-    return spaced ? spaced.charAt(0).toUpperCase() + spaced.slice(1) : 'Action';
+    return spaced ? spaced.charAt(0).toUpperCase() + spaced.slice(1) : t('Action');
 }
 
 function baseLabel(toolName: string): string {
-    return TOOL_BASE_LABELS[toolName] ?? humanizeToolName(toolName);
+    return toolBaseLabel(toolName) ?? humanizeToolName(toolName);
 }
 
 /**
@@ -72,7 +73,7 @@ export function summarizeArgs(toolName: string, args: Record<string, unknown>): 
         case 'add_highlight_annotations':
         case 'add_note_annotations': {
             const n = countOf(args.annotations);
-            return n != null ? `${n} ${n === 1 ? 'annotation' : 'annotations'}` : null;
+            return n != null ? tn(n, '{count} annotation', '{count} annotations') : null;
         }
         case 'edit_annotations': {
             // Targets live inside the per-group `edits` entries.
@@ -82,16 +83,16 @@ export function summarizeArgs(toolName: string, args: Record<string, unknown>): 
                 (sum: number, group: any) => sum + (countOf(group?.annotation_ids) ?? 0),
                 0,
             );
-            return `${n} ${n === 1 ? 'annotation' : 'annotations'}`;
+            return tn(n, '{count} annotation', '{count} annotations');
         }
         case 'delete_annotations': {
             const n = countOf(args.annotation_ids);
-            return n != null ? `${n} ${n === 1 ? 'annotation' : 'annotations'}` : null;
+            return n != null ? tn(n, '{count} annotation', '{count} annotations') : null;
         }
         case 'create_items':
         case 'create_item': {
             const n = countOf(args.items);
-            if (n != null) return `${n} ${n === 1 ? 'item' : 'items'}`;
+            if (n != null) return tn(n, '{count} item', '{count} items');
             const title = typeof args.title === 'string' ? args.title : null;
             return title || null;
         }
@@ -119,7 +120,7 @@ export function summarizeArgs(toolName: string, args: Record<string, unknown>): 
                 const firstOp = first && typeof first.operation === 'string'
                     ? first.operation.replace(/_/g, ' ')
                     : null;
-                const countLabel = `${n} ${n === 1 ? 'edit' : 'edits'}`;
+                const countLabel = tn(n, '{count} edit', '{count} edits');
                 return firstOp ? `${countLabel} (${firstOp})` : countLabel;
             }
             const op = typeof args.operation === 'string' ? args.operation : null;

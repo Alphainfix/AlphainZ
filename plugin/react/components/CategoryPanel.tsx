@@ -11,6 +11,7 @@ import { useActionRunner } from "../hooks/useActionRunner";
 import { openPreferencesWindow } from "../../src/ui/openPreferencesWindow";
 import { buildActionPopup } from "@beaver/agent-ui/chat/actionPopup";
 import { ChipPopupCard } from "@beaver/agent-ui/chat/ChipPopup";
+import { t } from '../../src/utils/i18n';
 
 interface CategoryPanelProps {
     /** A skill category, or `null` for the uncategorized "Actions" bucket. */
@@ -55,14 +56,14 @@ const CategoryPanel: React.FC<CategoryPanelProps> = ({ category, style }) => {
 
     const renderAction = (action: Action) => {
         const popup = buildActionPopup({
-            title: action.title,
-            description: action.description,
+            title: t(action.title),
+            description: action.description && t(action.description),
             prompt: action.text,
             category: action.category ?? category ?? undefined,
         });
         popup.action = {
             icon: ArrowUpRightIcon,
-            label: "Click to run action",
+            label: t("Click to run action"),
         };
 
         return (
@@ -71,7 +72,7 @@ const CategoryPanel: React.FC<CategoryPanelProps> = ({ category, style }) => {
                 // The card opens on hover and on keyboard focus; for a screen
                 // reader the button is described by the card's second line.
                 // The title is the button's own text already.
-                content={popup.subtitle?.text || action.title}
+                content={popup.subtitle?.text || t(action.title)}
                 customContent={<ChipPopupCard {...popup} />}
                 width="260px"
                 padding={false}
@@ -86,7 +87,7 @@ const CategoryPanel: React.FC<CategoryPanelProps> = ({ category, style }) => {
                     style={{ padding: '6px 6px' }}
                     rightIcon={ArrowUpRightIcon}
                 >
-                    <span className="text-base truncate">{action.title}</span>
+                    <span className="text-base truncate">{t(action.title)}</span>
                 </Button>
             </Tooltip>
         );
@@ -98,7 +99,7 @@ const CategoryPanel: React.FC<CategoryPanelProps> = ({ category, style }) => {
         <div className="display-flex flex-col gap-4 p-1" style={style}>
             {!hasAny && (
                 <div className="font-color-secondary text-sm px-2 py-2">
-                    Create repeatable workflows for common research tasks
+                    {t('Create repeatable workflows for common research tasks')}
                 </div>
             )}
 
@@ -112,7 +113,7 @@ const CategoryPanel: React.FC<CategoryPanelProps> = ({ category, style }) => {
             {targetActions.length > 0 && (
                 <div className={`display-flex flex-col gap-0 ${globalActions.length > 0 ? 'border-top-quinary' : ''}`}>
                     <SectionHeader
-                        label={active?.label ?? (active ? TARGET_TYPE_LABELS[active.targetType] : '')}
+                        label={active?.label ?? (active ? t(TARGET_TYPE_LABELS[active.targetType]) : '')}
                         iconInfo={active?.iconInfo}
                     />
                     {targetActions.map(renderAction)}
@@ -127,11 +128,11 @@ const CategoryPanel: React.FC<CategoryPanelProps> = ({ category, style }) => {
                     onClick={() => openPreferencesWindow('actions', categoryFilter)}
                     rightIcon={ArrowRightIcon}
                     iconClassName="mt-010"
-                    ariaLabel="Add custom action"
-                    title="Add custom action"
+                    ariaLabel={t('Add custom action')}
+                    title={t('Add custom action')}
                     style={{ padding: '4px 6px', gap: '4px' }}
                 >
-                    Add Custom Action
+                    {t('Add Custom Action')}
                 </Button>
             </div>
         </div>

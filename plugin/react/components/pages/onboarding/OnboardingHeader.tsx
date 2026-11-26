@@ -1,5 +1,6 @@
 import { config } from '../../../../package.json';
 import React from "react";
+import { t } from '../../../../src/utils/i18n';
 
 interface OnboardingHeaderProps {
     title?: string;
@@ -12,7 +13,7 @@ interface OnboardingHeaderProps {
  * Displays the Beaver logo, welcome title, and a descriptive message
  */
 const OnboardingHeader: React.FC<OnboardingHeaderProps> = ({
-    title = "Welcome to AlphainZ",
+    title = t("Welcome to AlphainZ"),
     message,
     tag
 }) => {
@@ -26,7 +27,7 @@ const OnboardingHeader: React.FC<OnboardingHeaderProps> = ({
                 <img
                     src={`chrome://${config.addonRef}/content/icons/alphain-128.png`}
                     style={{ width: '4rem', height: '4rem' }}
-                    alt="AlphainZ logo"
+                    alt={t('AlphainZ logo')}
                 />
                 <div className="display-flex flex-row gap-1 items-center">
                 <div className="text-2xl font-semibold mb-2">{title}</div>

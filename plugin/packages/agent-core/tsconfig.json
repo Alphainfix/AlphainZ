@@ -115,6 +115,7 @@
     "./src/run-state/pendingCreditConfirmations.ts",
     "./src/run-state/pendingBatchApprovals.ts",
     "./src/run-state/toolLabels.ts",
+    "./src/i18n/translate.ts",
     "./src/run-state/runErrorCopy.ts",
     "./src/run-state/runStatusCopy.ts",
     "./src/run-state/runStatusVisibility.ts",

@@ -6,6 +6,7 @@ import Button from '@beaver/agent-ui/primitives/Button';
 import { eventManager } from '../../../events/eventManager';
 import { stageActionPillAtom } from '../../../atoms/actions';
 import { useActionRunner } from '../../../hooks/useActionRunner';
+import { msg, t } from '../../../../src/utils/i18n';
 
 interface ReaderTipContentProps {
     onDismiss: () => void;
@@ -22,24 +23,24 @@ interface ReaderTipFeature {
 const features: ReaderTipFeature[] = [
     {
         icon: ChattingIcon,
-        title: 'Ask about this paper',
-        description: 'Answers grounded in the open PDF, with sentence-level citations.',
+        title: msg('Ask about this paper'),
+        description: msg('Answers grounded in the open PDF, with sentence-level citations.'),
     },
     {
         icon: ChartIcon,
-        title: 'Understand text, figures & tables',
-        description: 'Select a passage in the PDF and choose Explain, or attach a figure with an area annotation, for an instant explanation.',
+        title: msg('Understand text, figures & tables'),
+        description: msg('Select a passage in the PDF and choose Explain, or attach a figure with an area annotation, for an instant explanation.'),
     },
     {
         icon: HighlighterIcon,
-        title: 'Annotate the PDF',
-        description: 'Ask AlphainZ to highlight key findings or anything relevant to your work.',
+        title: msg('Annotate the PDF'),
+        description: msg('Ask AlphainZ to highlight key findings or anything relevant to your work.'),
         actionId: 'builtin-color-code',
     },
     {
         icon: LibraryIcon,
-        title: 'Connect it to your library',
-        description: 'Ask whether the rest of your library confirms, contradicts, or extends this paper.',
+        title: msg('Connect it to your library'),
+        description: msg('Ask whether the rest of your library confirms, contradicts, or extends this paper.'),
         actionId: 'builtin-fit-research',
     },
 ];
@@ -80,7 +81,7 @@ const ReaderTipContent: React.FC<ReaderTipContentProps> = ({ onDismiss }) => {
                 </div>
 
                 <div className="font-color-primary text-xl font-semibold">
-                    Reading assistant
+                    {t('Reading assistant')}
                 </div>
             </div>
 
@@ -92,10 +93,10 @@ const ReaderTipContent: React.FC<ReaderTipContentProps> = ({ onDismiss }) => {
                         </div>
                         <div className="display-flex flex-col gap-05">
                             <span className="font-color-primary text-base font-medium">
-                                {feature.title}
+                                {t(feature.title)}
                             </span>
                             <span className="font-color-secondary text-sm">
-                                {feature.description}
+                                {t(feature.description)}
                                 {feature.actionId && (
                                     <>
                                         {' '}
@@ -106,7 +107,7 @@ const ReaderTipContent: React.FC<ReaderTipContentProps> = ({ onDismiss }) => {
                                             onClick={() => handleTryAction(feature.actionId!)}
                                             disabled={isBusy}
                                         >
-                                            Try it &rarr;
+                                            {t('Try it →')}
                                         </button>
                                     </>
                                 )}
@@ -126,7 +127,7 @@ const ReaderTipContent: React.FC<ReaderTipContentProps> = ({ onDismiss }) => {
                     className="items-center"
                     style={{ padding: '4px 10px', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem' }}
                 >
-                    Open AlphainZ
+                    {t('Open AlphainZ')}
                 </Button>
             </div>
         </div>

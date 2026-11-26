@@ -16,6 +16,7 @@ import { stageActionPillAtom } from '../atoms/actions';
 import { eventManager } from '../events/eventManager';
 import { useEventSubscription } from './useEventSubscription';
 import { logger } from '@beaver/agent-core/platform/logger';
+import { t } from '../../src/utils/i18n';
 
 export function useContextMenuActionHandler() {
     const user = useAtomValue(userAtom);
@@ -36,8 +37,8 @@ export function useContextMenuActionHandler() {
         if (targetType === 'collection' && collections.length > 0 && allowedCollections.length === 0) {
             addPopupMessage({
                 type: 'error',
-                title: 'Action skipped',
-                text: 'This action targets a collection in a library you excluded from AlphainZ. You can change excluded libraries in AlphainZ Settings.',
+                title: t('Action skipped'),
+                text: t('This action targets a collection in a library you excluded from AlphainZ. You can change excluded libraries in AlphainZ Settings.'),
                 expire: true,
                 duration: 5000,
             });

@@ -1,4 +1,5 @@
 import type { ContentKind } from '@beaver/agent-core/types/citations';
+import { t } from '../i18n';
 
 function cleanLabel(label: string | null | undefined): string {
     return (label ?? '').trim();
@@ -23,5 +24,5 @@ export function formatLocationChip(
     const cleaned = cleanLabel(label);
     if (!cleaned) return '';
     if (contentKind === 'epub' && isSyntheticEpubSectionLabel(cleaned)) return '';
-    return `Page ${cleaned}`;
+    return t('Page {page}', { page: cleaned });
 }

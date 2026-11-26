@@ -8,6 +8,8 @@ import { backendHighTokenUsageRunsAtom } from '../../atoms/messageUIState';
 import { getFirstRequestInputTokens } from '../../utils/runUsage';
 import { getPref } from '../../../src/utils/prefs';
 import { formatTokens } from './RunUsageChip';
+import { t } from '../../../src/utils/i18n';
+import { tr } from '../../utils/i18nNodes';
 
 interface HighTokenUsageWarningBarProps {
     onNewThread: (e: React.MouseEvent) => void;
@@ -52,17 +54,25 @@ const HighTokenUsageWarningBar: React.FC<HighTokenUsageWarningBarProps> = ({
     if (chatTokens === null && !flaggedByBackend) return null;
 
     const compactionOn = getPref('contextCompactionEnabled') === true;
-    const size = chatTokens !== null
-        ? `each message sends about ${formatTokens(chatTokens)} tokens to the model`
-        : 'each message resends much of it to the model';
+    const tokens = chatTokens !== null ? formatTokens(chatTokens) : null;
+    let sizeSentence: string;
+    if (tokens !== null) {
+        sizeSentence = compactionOn
+            ? t('This chat is long — each message sends about {tokens} tokens to the model, though older exchanges are summarized automatically.', { tokens })
+            : t('This chat is long — each message sends about {tokens} tokens to the model.', { tokens });
+    } else {
+        sizeSentence = compactionOn
+            ? t('This chat is long — each message resends much of it to the model, though older exchanges are summarized automatically.')
+            : t('This chat is long — each message resends much of it to the model.');
+    }
 
     return (
         <div className="high-token-usage-warning-bar display-flex flex-row items-start px-3 py-15 gap-2">
             <Icon icon={AlertIcon} className="font-color-orange scale-10 mt-010" />
             <span className="font-color-secondary text-sm">
-                {`This chat is long — ${size}`}
-                {compactionOn ? ', though older exchanges are summarized automatically.' : '.'}
+                {sizeSentence}
                 {' '}
+                {tr('{link} for a new topic: replies get faster and cheaper.', { link: (
                 <a
                     href="#"
                     className={`${isNewThreadLinkHovered ? 'font-color-primary' : 'font-color-secondary'} transition text-sm text-underline`}
@@ -75,15 +85,15 @@ const HighTokenUsageWarningBar: React.FC<HighTokenUsageWarningBarProps> = ({
                         onNewThread(e);
                     }}
                 >
-                    Start a new chat
+                    {t('Start a new chat')}
                 </a>
-                {' for a new topic: replies get faster and cheaper.'}
+                ) })}
             </span>
             <div className="flex-1" />
             <IconButton
                 variant="ghost-secondary"
                 icon={CancelIcon}
-                ariaLabel="Dismiss long chat warning"
+                ariaLabel={t('Dismiss long chat warning')}
                 onClick={onDismiss}
                 className="scale-85 mt-010"
             />

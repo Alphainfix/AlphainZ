@@ -11,6 +11,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { validateOTPCode } from '@beaver/agent-core/transport/otp'
 import { createOTPInputHandlers } from './otp-ui'
+import { t } from '../i18n';
 
 export interface OTPVerificationProps {
   /** The email address to display */
@@ -44,7 +45,7 @@ export function OTPVerification({
   isLoading = false,
   autoSubmit = true,
   resendCountdown = 0,
-  title = "Check your email",
+  title,
   description
 }: OTPVerificationProps) {
   const [otpCode, setOtpCode] = useState('')
@@ -89,12 +90,12 @@ export function OTPVerification({
     }
   }, [otpCode, handleVerify, autoSubmit, isLoading])
 
-  const defaultDescription = `We sent a 6-digit code to ${email}`
+  const defaultDescription = t('We sent a 6-digit code to {email}', { email })
 
   return (
     <div className="webapp-max-w-md">
       <h1 className="webapp-text-2xl webapp-font-bold mb-4 font-color-primary">
-        {title}
+        {title ?? t('Check your email')}
       </h1>
       <p className="font-color-secondary mb-8">
         {description || defaultDescription}
@@ -104,7 +105,7 @@ export function OTPVerification({
         <div>
           <div className="display-flex justify-between items-center mb-3">
             <label className="text-sm font-medium font-color-primary">
-              Verification code
+              {t('Verification code')}
             </label>
           </div>
           <div className="display-flex gap-2">
@@ -132,7 +133,7 @@ export function OTPVerification({
           className="webapp-btn webapp-btn-primary"
         >
           {isLoading && <div className="webapp-spinner"></div>}
-          {isLoading ? 'Verifying...' : 'Verify Email'}
+          {isLoading ? t('Verifying...') : t('Verify Email')}
         </button>
         
         <div className="text-center webapp-space-y-3">
@@ -143,8 +144,8 @@ export function OTPVerification({
             style={{ pointerEvents: resendCountdown > 0 || isLoading ? 'none' : 'auto' }}
           >
             {resendCountdown > 0 
-              ? `Resend code in ${resendCountdown}s` 
-              : 'Resend code'
+              ? t('Resend code in {seconds}s', { seconds: resendCountdown }) 
+              : t('Resend code')
             }
           </button>
           
@@ -156,7 +157,7 @@ export function OTPVerification({
                 className={`text-link-muted text-sm ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 style={{ pointerEvents: isLoading ? 'none' : 'auto' }}
               >
-                Wrong email? Change it
+                {t('Wrong email? Change it')}
               </button>
             </div>
           )}

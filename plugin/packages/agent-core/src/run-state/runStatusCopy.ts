@@ -22,6 +22,7 @@
  */
 
 import type { ReconnectState, RetryState } from "./atoms";
+import { t } from "../i18n/translate";
 
 /**
  * What to show on a status line for a run that is waiting.
@@ -40,7 +41,7 @@ export function runStatusText(state: {
      * belongs to, and a caller that renders per-run must check it.
      */
     backendRetry: RetryState | null;
-    /** What to say when neither is happening. */
+    /** What to say when neither is happening, already in the reader's language. */
     idleLabel: string;
     /**
      * How long the run has been waiting, appended to `idleLabel` alone: the two
@@ -58,15 +59,18 @@ export function runStatusText(state: {
         // reports the attempt currently in flight, where a bare "(1/4)" would
         // be counting a first try as a retry.
         return state.reconnect.attempt > 1
-            ? `Reconnecting… (${state.reconnect.attempt}/${state.reconnect.maxAttempts})`
-            : "Reconnecting…";
+            ? t("Reconnecting… ({attempt}/{maxAttempts})", {
+                attempt: state.reconnect.attempt,
+                maxAttempts: state.reconnect.maxAttempts,
+            })
+            : t("Reconnecting…");
     }
-    if (state.backendRetry) return "Retrying…";
+    if (state.backendRetry) return t("Retrying…");
     const seconds = state.elapsedSeconds;
     if (seconds === null || seconds === undefined || seconds < 1) {
         return state.idleLabel;
     }
     // A middot keeps the number from reading as a duration of generation
     // ("Generating 8s") or as time remaining.
-    return `${state.idleLabel} · ${Math.floor(seconds)}s`;
+    return t("{label} · {seconds}s", { label: state.idleLabel, seconds: Math.floor(seconds) });
 }

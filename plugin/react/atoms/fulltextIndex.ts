@@ -33,6 +33,7 @@ import { cachedTextAsDocument, readZoteroTextCache } from '../../src/services/ll
 import { hasLocators } from '../../src/services/llm/sentenceLocators';
 import { searchableLibraryIdsAtom } from './profile';
 import { store } from '../store';
+import { t } from '../../src/utils/i18n';
 
 export interface FulltextIndexState {
     status: 'idle' | 'counting' | 'indexing' | 'error';
@@ -97,11 +98,11 @@ export function embeddingProviderProblem(state: SemanticSearchState = semanticSe
         case 'ready':
             return null;
         case 'off':
-            return 'No embedding provider is chosen.';
+            return t('No embedding provider is chosen.');
         case 'needs_key':
-            return `Embeddings are set to ${state.label}, but this computer has no ${state.label} API key.`;
+            return t('Embeddings are set to {provider}, but this computer has no {provider} API key.', { provider: state.label });
         case 'unreachable':
-            return `Embeddings are set to Ollama, but ${state.reason}.`;
+            return t('Embeddings are set to Ollama, but {reason}.', { reason: state.reason });
     }
 }
 
@@ -419,8 +420,8 @@ export const startFulltextIndexAtom = atom(
             setState({
                 status: 'error',
                 error: problem
-                    ? `${problem} The full text of your PDFs is indexed once that is fixed.`
-                    : 'The index database is not open yet; try again in a moment.',
+                    ? `${problem} ${t('The full text of your PDFs is indexed once that is fixed.')}`
+                    : t('The index database is not open yet; try again in a moment.'),
             });
             return;
         }

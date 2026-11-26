@@ -1,6 +1,7 @@
 import React from "react";
 import { Icon, InformationCircleIcon } from "../icons/icons";
 import { parseTextWithLinksAndNewlines } from "../../utils/parseTextWithLinksAndNewlines";
+import { t } from '../../../src/utils/i18n';
 
 interface PreferenceToggleProps {
     checked: boolean;
@@ -31,7 +32,7 @@ const PreferenceToggle: React.FC<PreferenceToggleProps> = ({
     disabledTooltip,
     errorTooltip,
     tag,
-    errorText = "Error"
+    errorText
 }) => {
     const handleToggle = () => {
         onChange(!checked);
@@ -91,7 +92,7 @@ const PreferenceToggle: React.FC<PreferenceToggleProps> = ({
                                     style={{ color: 'var(--tag-red-secondary)', borderColor: 'var(--tag-red-tertiary)', background: 'var(--tag-red-quinary)' }}
                                     title={errorTooltip}
                                 >
-                                    {errorText}
+                                    {errorText ?? t('Error')}
                                 </div>
                             )}
                         </div>

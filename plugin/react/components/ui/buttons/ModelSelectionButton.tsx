@@ -19,16 +19,17 @@ import {
     type ProviderPresetId,
 } from '../../../../src/services/llm/openAICompatible';
 import { customEndpointLabel, isCustomProviderId } from '../../../../src/services/llm/customEndpoints';
+import { msg, t, tn } from '../../../../src/utils/i18n';
 
 /** What each thinking setting means where the user is choosing it. */
 const EFFORT_LABELS: Record<string, string> = {
-    none: 'Off — answer straight away',
-    minimal: 'Minimal',
-    low: 'Low — brief planning',
-    medium: 'Medium',
-    high: 'High — think it through',
-    xhigh: 'Extra high',
-    max: 'Max — the longest thinking',
+    none: msg('Off — answer straight away'),
+    minimal: msg('Minimal'),
+    low: msg('Low — brief planning'),
+    medium: msg('Medium'),
+    high: msg('High — think it through'),
+    xhigh: msg('Extra high'),
+    max: msg('Max — the longest thinking'),
 };
 
 /**
@@ -43,16 +44,16 @@ const EFFORT_LABELS: Record<string, string> = {
 const VENDOR_OF_PRESET: Partial<Record<ProviderPresetId, string>> = {
     deepseek: 'DeepSeek',
     openrouter: 'OpenRouter',
-    zhipu: 'Zhipu (BigModel)',
+    zhipu: msg('Zhipu (BigModel)'),
     google: 'Google Gemini',
     openai: 'OpenAI',
-    ollama: 'Ollama (local)',
+    ollama: msg('Ollama (local)'),
 };
 
 /** Vendor headings in the order they should appear. */
 export const VENDOR_ORDER = ['DeepSeek', 'OpenRouter', 'Zhipu (BigModel)', 'Google Gemini', 'OpenAI', 'Ollama (local)', 'Added by you'];
 
-const OTHER_VENDOR = 'Added by you';
+const OTHER_VENDOR = msg('Added by you');
 
 export function vendorFor(model: ModelConfig): string {
     // A hand-added endpoint is its own vendor, under the name the user gave it.
@@ -83,7 +84,7 @@ export function rowLabel(model: ModelConfig): string {
     const vision = isCustomProviderId(String(model.provider))
         ? model.supports_vision === true
         : presetCapabilities(model.provider as ProviderPresetId, snapshot).supportsVision;
-    return vision ? `${own} · reads figures` : own;
+    return vision ? t('{name} · reads figures', { name: own }) : own;
 }
 
 /**
@@ -143,10 +144,10 @@ const isBeaverModel = (model: Pick<ModelConfig, 'access_mode' | 'allow_app_key' 
 
 const getAccessibleModelLabel = (model: ModelConfig | null, isRecommended = false) => {
     if (!model) {
-        return 'None Selected';
+        return t('None Selected');
     }
     if (isBeaverModel(model)) {
-        return isRecommended ? 'Model (recommended)' : `Model: ${model.name}`;
+        return isRecommended ? t('Model (recommended)') : t('Model: {name}', { name: model.name });
     }
     return model.name;
 };
@@ -171,9 +172,9 @@ const ModelMenuItemContent: React.FC<{
             {(showCreditCosts || showRecommended) && (
                 <div className="text-xs font-color-tertiary items-center">
                     {showCreditCosts ? (
-                        <div className="text-xs">{creditCost} credit${creditCost !== 1 ? 's' : ''}</div>
+                        <div className="text-xs">{tn(creditCost, '{count} credit', '{count} credits')}</div>
                     ) : showRecommended ? (
-                        <div className="text-xs">Recommended</div>
+                        <div className="text-xs">{t('Recommended')}</div>
                     ) : null}
                 </div>
             )}
@@ -246,8 +247,8 @@ const ModelSelectionButton: React.FC<{
 
         previousSelectedKeyRef.current = selectedKey;
         const message = selectedModel
-            ? `Selected AI model: ${selectedModelAccessibleLabel}`
-            : 'No AI model selected';
+            ? t('Selected AI model: {name}', { name: selectedModelAccessibleLabel })
+            : t('No AI model selected');
 
         if (announcementTimerRef.current) {
             announcementTimerRef.current.win.clearTimeout(announcementTimerRef.current.id);
@@ -299,7 +300,7 @@ const ModelSelectionButton: React.FC<{
 
         const backRow = (title: string) =>
             row(
-                `Back to ${title}`,
+                t('Back to {title}', { title }),
                 <div className="display-flex flex-row items-center gap-1 text-sm font-color-tertiary">
                     <span>‹</span>
                     <span>{title}</span>
@@ -311,11 +312,11 @@ const ModelSelectionButton: React.FC<{
         if (view === 'root') {
             items.push(
                 row(
-                    'Model',
+                    t('Model'),
                     <div className="display-flex flex-row items-center gap-2 min-w-0">
-                        <span className="text-sm font-color-primary">Model</span>
+                        <span className="text-sm font-color-primary">{t('Model')}</span>
                         <span className="flex-1 text-sm font-color-tertiary text-right truncate">
-                            {selectedModel ? rowLabel(selectedModel) : 'None selected'}
+                            {selectedModel ? rowLabel(selectedModel) : t('None selected')}
                         </span>
                         <span className="font-color-tertiary">›</span>
                     </div>,
@@ -340,11 +341,11 @@ const ModelSelectionButton: React.FC<{
             if (supportsEffort) {
                 items.push(
                     row(
-                        'Thinking',
+                        t('Thinking'),
                         <div className="display-flex flex-row items-center gap-2 min-w-0">
-                            <span className="text-sm font-color-primary">Thinking</span>
+                            <span className="text-sm font-color-primary">{t('Thinking')}</span>
                             <span className="flex-1 text-sm font-color-tertiary text-right truncate">
-                                {THINKING_TIER_NAMES[shownEffort as keyof typeof THINKING_TIER_NAMES] ?? shownEffort}
+                                {t(THINKING_TIER_NAMES[shownEffort as keyof typeof THINKING_TIER_NAMES] ?? shownEffort)}
                             </span>
                             <span className="font-color-tertiary">›</span>
                         </div>,
@@ -357,10 +358,10 @@ const ModelSelectionButton: React.FC<{
         }
 
         if (view === 'thinking') {
-            items.push(backRow('Thinking'));
+            items.push(backRow(t('Thinking')));
             for (const effort of effortTiers) {
                 items.push({
-                    label: EFFORT_LABELS[effort] ?? effort,
+                    label: t(EFFORT_LABELS[effort] ?? effort),
                     role: 'menuitemradio',
                     ariaChecked: shownEffort === effort,
                     onClick: () => {
@@ -372,7 +373,7 @@ const ModelSelectionButton: React.FC<{
             return items;
         }
 
-        items.push(backRow('Model'));
+        items.push(backRow(t('Model')));
 
         const byVendor = new Map<string, ModelConfig[]>();
         for (const model of chooseModels) {
@@ -391,7 +392,7 @@ const ModelSelectionButton: React.FC<{
         const vendors = [...byVendor.keys()].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
 
         for (const vendor of vendors) {
-            items.push({ label: vendor, isGroupHeader: true, onClick: () => {} });
+            items.push({ label: t(vendor), isGroupHeader: true, onClick: () => {} });
             for (const model of byVendor.get(vendor) ?? []) {
                 const withAccess: ModelConfig = model.is_custom
                     ? model
@@ -437,7 +438,7 @@ const ModelSelectionButton: React.FC<{
      * ellipsis handles it, and that only happens in a very narrow sidebar.
      */
     const getButtonLabel = () => {
-        if (!selectedModel) return 'None Selected';
+        if (!selectedModel) return t('None Selected');
         const name = displayNameFor(selectedModel);
         return name.length > MAX_MODEL_NAME_LENGTH
             ? `${name.slice(0, MAX_MODEL_NAME_LENGTH - 1)}…`
@@ -501,14 +502,14 @@ const ModelSelectionButton: React.FC<{
                 style={dynamicStyle}
                 iconClassName="scale-11 -mr-015"
                 rightIconClassName="scale-11 -ml-1"
-                ariaLabel={`AI model: ${selectedModelAccessibleLabel}. Choose AI model`}
+                ariaLabel={t('AI model: {selectedModelAccessibleLabel}. Choose AI model', { selectedModelAccessibleLabel })}
                 // No hover card in the normal state: the button already shows
                 // the model id, its job is obvious, and the card popped up
                 // right over the composer. The one state that needs explaining
                 // is a dead button with no models behind it. (The full
                 // provider identity stayed reachable via the aria-label and
                 // the menu itself.)
-                tooltipContent={availableModels.length === 0 ? 'No models available' : undefined}
+                tooltipContent={availableModels.length === 0 ? t('No models available') : undefined}
                 showArrow={false}
                 disabled={disabled || availableModels.length === 0}
                 onAfterClose={handleAfterClose}

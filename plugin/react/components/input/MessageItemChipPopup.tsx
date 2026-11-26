@@ -1,6 +1,7 @@
 import React from 'react';
 import { CSSItemTypeIcon, NoteIcon, LibraryIcon } from '../icons/icons';
 import type { ChipListPopupContent, ChipPopupAction, ChipPopupContent, ChipPopupStatus, ChipPopupSubtitle } from '@beaver/agent-ui/chat/ChipPopup';
+import { attachedToSubtitle } from '@beaver/agent-ui/chat/ChipPopup';
 import type { ItemValidationState } from '../../atoms/itemValidation';
 import { getDisplayNameFromItem } from '../../utils/sourceUtils';
 import type { AttachmentInfo, ContentKind } from '@beaver/agent-core/extract/document/shared/contentKinds';
@@ -9,8 +10,9 @@ import {
     attachmentIssueLabel,
     summarizeRegularItemReadability,
 } from '../../utils/attachmentReadabilityCopy';
+import { t, tn } from '../../../src/utils/i18n';
 
-function safeDisplayName(item: Zotero.Item, fallback = 'Item'): string {
+function safeDisplayName(item: Zotero.Item, fallback = t('Item')): string {
     try {
         return getDisplayNameFromItem(item) || item.getDisplayTitle() || fallback;
     } catch {
@@ -70,12 +72,12 @@ function itemSubtitle(item: Zotero.Item): ChipPopupSubtitle | null {
         if (item.isAttachment()) {
             const parent = item.parentItem;
             if (parent) {
-                return { prefix: 'Attached to ', text: safeDisplayName(parent), italic: true };
+                return attachedToSubtitle(safeDisplayName(parent));
             }
-            return { text: 'Standalone attachment' };
+            return { text: t('Standalone attachment') };
         }
         if (item.isNote()) {
-            return item.parentItem ? { text: 'Attached note' } : { text: 'Standalone note' };
+            return item.parentItem ? { text: t('Attached note') } : { text: t('Standalone note') };
         }
         if (item.isRegularItem()) {
             const firstCreator = item.firstCreator || '';
@@ -131,12 +133,12 @@ function itemIconName(item: Zotero.Item, validation?: ItemValidationState): stri
 function itemAction(item: Zotero.Item): ChipPopupAction {
     try {
         if (item.isNote()) {
-            return { icon: NoteIcon, label: 'Open note' };
+            return { icon: NoteIcon, label: t('Open note') };
         }
     } catch {
         // Fall through to the default reveal action.
     }
-    return { icon: LibraryIcon, label: 'Reveal in library' };
+    return { icon: LibraryIcon, label: t('Reveal in library') };
 }
 
 /**
@@ -200,7 +202,7 @@ export function buildItemsSummaryListPopup(items: Zotero.Item[]): ChipListPopupC
 
     const remaining = items.length - rows.length;
     const footer = remaining > 0
-        ? `${remaining} more attachment${remaining === 1 ? '' : 's'}`
+        ? tn(remaining, '{count} more attachment', '{count} more attachments')
         : null;
 
     return { rows, footer };

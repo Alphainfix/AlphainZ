@@ -38,6 +38,7 @@ import ScreenReaderRunAnnouncer from './agentRuns/ScreenReaderRunAnnouncer';
 import { getFirstRunSelectionVariant } from '../utils/firstRunSelection';
 import ConversationView from './agentRuns/ConversationView';
 import ConversationOutline from './agentRuns/ConversationOutline';
+import { t } from '../../src/utils/i18n';
 
 interface SidebarProps {
     location: 'library' | 'reader';
@@ -217,7 +218,7 @@ const Sidebar = ({ location, isWindow = false }: SidebarProps) => {
                     <div className="display-flex flex-col items-center gap-3">
                         <Spinner size={22}/>
                         <span className="font-color-tertiary">
-                            {isMigratingData ? "Upgrading your data..." : "Loading..."}
+                            {isMigratingData ? t('Upgrading your data...') : t('Loading...')}
                         </span>
                     </div>
                 </div>
@@ -300,7 +301,7 @@ const Sidebar = ({ location, isWindow = false }: SidebarProps) => {
     const isFirstRunThread = runs.some(
         (r) => isFirstRunOrigin(r.user_prompt?.origin),
     );
-    const inputPlaceholder = isFirstRunThread ? 'Ask a follow-up question' : undefined;
+    const inputPlaceholder = isFirstRunThread ? t('Ask a follow-up question') : undefined;
 
     {/* Main page */}
     return (

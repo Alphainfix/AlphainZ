@@ -1,6 +1,7 @@
 import React from "react";
 import PreferenceToggle from "./PreferenceToggle";
 import { getPref, setPref } from "../../../src/utils/prefs";
+import { t } from '../../../src/utils/i18n';
 
 interface AddSelectedItemsOnNewThreadToggleProps {
     checked: boolean;
@@ -17,9 +18,9 @@ const AddSelectedItemsOnNewThreadToggle: React.FC<AddSelectedItemsOnNewThreadTog
         <PreferenceToggle
             checked={checked}
             onChange={handleChange}
-            title="Add Selected Items to New Threads"
-            description="Automatically include items selected in Zotero when creating a new chat thread."
-            tooltip="When enabled, any items you have selected in Zotero will be automatically added as sources when you start a new conversation thread."
+            title={t('Add Selected Items to New Threads')}
+            description={t('Automatically include items selected in Zotero when creating a new chat thread.')}
+            tooltip={t('When enabled, any items you have selected in Zotero will be automatically added as sources when you start a new conversation thread.')}
         />
     );
 };

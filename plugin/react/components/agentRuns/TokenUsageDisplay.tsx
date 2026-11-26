@@ -2,6 +2,7 @@ import React from 'react';
 import { RunUsage } from '@beaver/agent-core/agents/types';
 import { Icon, DollarCircleIcon } from '../icons/icons';
 import Tooltip from '@beaver/agent-ui/primitives/Tooltip';
+import { t } from '../../../src/utils/i18n';
 
 interface TokenUsageDisplayProps {
     usage: RunUsage;
@@ -32,28 +33,28 @@ export const TokenUsageDisplay: React.FC<TokenUsageDisplayProps> = ({ usage, cos
 
     const totalTokens = usage.input_tokens + usage.output_tokens;
     const summaryText = cost !== undefined 
-        ? `${formatTokens(totalTokens)} tokens • ${formatCost(cost)}`
-        : `${formatTokens(totalTokens)} tokens`;
+        ? t('{tokens} tokens • {cost}', { tokens: formatTokens(totalTokens), cost: formatCost(cost) })
+        : t('{tokens} tokens', { tokens: formatTokens(totalTokens) });
 
     const tooltipContent = (
         <div className="display-flex flex-col gap-1 text-sm min-w-[140px]">
             <div className="display-flex justify-between gap-4">
-                <span className="font-color-secondary whitespace-nowrap">Input tokens</span>
+                <span className="font-color-secondary whitespace-nowrap">{t('Input tokens')}</span>
                 <span>{formatTokens(usage.input_tokens)}</span>
             </div>
             <div className="display-flex justify-between gap-4">
-                <span className="font-color-secondary whitespace-nowrap">Output tokens</span>
+                <span className="font-color-secondary whitespace-nowrap">{t('Output tokens')}</span>
                 <span>{formatTokens(usage.output_tokens)}</span>
             </div>
             {usage.cache_read_tokens > 0 && (
                 <div className="display-flex justify-between gap-4">
-                    <span className="font-color-secondary whitespace-nowrap">Cache read</span>
+                    <span className="font-color-secondary whitespace-nowrap">{t('Cache read')}</span>
                     <span>{formatTokens(usage.cache_read_tokens)}</span>
                 </div>
             )}
             {usage.cache_write_tokens > 0 && (
                 <div className="display-flex justify-between gap-4">
-                    <span className="font-color-secondary whitespace-nowrap">Cache write</span>
+                    <span className="font-color-secondary whitespace-nowrap">{t('Cache write')}</span>
                     <span>{formatTokens(usage.cache_write_tokens)}</span>
                 </div>
             )}
@@ -67,7 +68,7 @@ export const TokenUsageDisplay: React.FC<TokenUsageDisplayProps> = ({ usage, cos
             </div> */}
             {cost !== undefined && (
                 <div className="display-flex justify-between gap-4 font-medium mt-1 pt-1 border-top-quinary">
-                    <span className="whitespace-nowrap">Total cost</span>
+                    <span className="whitespace-nowrap">{t('Total cost')}</span>
                     <span>{formatCost(cost)}</span>
                 </div>
             )}
@@ -76,7 +77,7 @@ export const TokenUsageDisplay: React.FC<TokenUsageDisplayProps> = ({ usage, cos
 
     return (
         <Tooltip
-            content="Usage details"
+            content={t('Usage details')}
             customContent={tooltipContent}
             showArrow={true}
         >

@@ -34,6 +34,7 @@ import {
 import Button from '@beaver/agent-ui/primitives/Button';
 import IconButton from '@beaver/agent-ui/primitives/IconButton';
 import Tooltip from '@beaver/agent-ui/primitives/Tooltip';
+import { t } from '../../../../../src/utils/i18n';
 
 /** Rows shown before the `Show all (N)` affordance. */
 const MAX_VISIBLE_ROWS = 12;
@@ -293,37 +294,37 @@ export const ChangesCard: React.FC<ChangesCardProps> = ({ run, rows, mode = 'rev
 
                 {isCompleted && (
                     <div className="display-flex flex-row items-center gap-25 mr-3 mt-015">
-                        <Tooltip content="Dismiss" showArrow singleLine>
+                        <Tooltip content={t('Dismiss')} showArrow singleLine>
                             <IconButton
                                 icon={CancelIcon}
                                 variant="ghost-secondary"
                                 onClick={handleDismiss}
-                                ariaLabel="Dismiss"
+                                ariaLabel={t('Dismiss')}
                             />
                         </Tooltip>
                     </div>
                 )}
 
                 {!isCompleted && hasPendingRows && <div className="display-flex flex-row items-center gap-25 mr-3 mt-015">
-                    <Tooltip content="Reject all" showArrow singleLine>
+                    <Tooltip content={t('Reject all')} showArrow singleLine>
                         <IconButton
                             icon={CancelIcon}
                             variant="ghost-secondary"
                             iconClassName="font-color-red"
                             onClick={handleBulkReject}
                             disabled={bulkDisabled}
-                            ariaLabel="Reject all"
+                            ariaLabel={t('Reject all')}
                         />
                     </Tooltip>
                     {showBulkApply && (
-                        <Tooltip content="Apply all" showArrow singleLine>
+                        <Tooltip content={t('Apply all')} showArrow singleLine>
                             <IconButton
                                 icon={TickIcon}
                                 variant="ghost-secondary"
                                 iconClassName="font-color-green scale-14"
                                 onClick={handleBulkApply}
                                 disabled={bulkDisabled}
-                                ariaLabel="Apply all"
+                                ariaLabel={t('Apply all')}
                             />
                         </Tooltip>
                     )}
@@ -358,7 +359,7 @@ export const ChangesCard: React.FC<ChangesCardProps> = ({ run, rows, mode = 'rev
                                 variant="ghost-secondary"
                                 onClick={() => setShowAllRows(true)}
                             >
-                                {`Show all (${rows.length})`}
+                                {t('Show all ({count})', { count: rows.length })}
                             </Button>
                         </div>
                     )}

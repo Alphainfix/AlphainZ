@@ -131,6 +131,7 @@ declare namespace _ZoteroTypes {
       "uiFontSize": number;
       "uiLineHeight": string;
       "uiColorScheme": string;
+      "uiLanguage": string;
       "conversationRail": boolean;
     };
   }

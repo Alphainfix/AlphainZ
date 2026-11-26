@@ -12,6 +12,7 @@ import { eventManager } from '../../events/eventManager';
 import { dismissDiffPreview } from '../../utils/noteEditorDiffPreview';
 import { diffPreviewNoteKeyAtom } from '../../utils/diffPreviewCoordinator';
 import Button from '@beaver/agent-ui/primitives/Button';
+import { t, tn } from '../../../src/utils/i18n';
 
 /** What Approve All may carry, and what has to be approved on its own card. */
 export interface BulkApprovalPlan {
@@ -43,16 +44,16 @@ export function heldBackNote(heldBack: ScopedPendingApproval[]): string | null {
     const deletions = groups.filter((group) => group === 'annotation_deletion').length;
     const rewrites = groups.filter((group) => group === 'note_rewrite').length;
     if (deletions > 0 && rewrites > 0) {
-        return 'Deleting annotations and rewriting a note each need their own Apply on the card.';
+        return t('Deleting annotations and rewriting a note each need their own Apply on the card.');
     }
     if (rewrites > 0) {
         return rewrites === 1
-            ? 'The note rewrite needs its own Apply on its card.'
-            : `The ${rewrites} note rewrites need their own Apply on their cards.`;
+            ? t('The note rewrite needs its own Apply on its card.')
+            : t('The {count} note rewrites need their own Apply on their cards.', { count: rewrites });
     }
     return deletions === 1
-        ? 'The annotation deletion needs its own Apply on its card.'
-        : `The ${deletions} annotation deletions need their own Apply on their cards.`;
+        ? t('The annotation deletion needs its own Apply on its card.')
+        : t('The {count} annotation deletions need their own Apply on their cards.', { count: deletions });
 }
 
 /** Proposals waiting in one other conversation. */
@@ -84,7 +85,7 @@ export function groupElsewhere(
         const listed = threads.find((thread) => thread.id === approval.threadId)?.name?.trim();
         groups.set(approval.threadId, {
             threadId: approval.threadId,
-            name: listed || approval.threadName?.trim() || 'another chat',
+            name: listed || approval.threadName?.trim() || t('another chat'),
             runId: approval.runId,
             count: 1,
         });
@@ -92,7 +93,7 @@ export function groupElsewhere(
     return [...groups.values()];
 }
 
-const changes = (count: number) => `${count} proposed ${count === 1 ? 'change' : 'changes'}`;
+const changes = (count: number) => tn(count, '{count} proposed change', '{count} proposed changes');
 
 /** How many other conversations are listed before the rest are summed up. */
 const MAX_ELSEWHERE_ROWS = 3;
@@ -162,14 +163,14 @@ const PendingActionsBar: React.FC = () => {
 
     const shownChats = otherChats.slice(0, MAX_ELSEWHERE_ROWS);
     const moreChats = otherChats.slice(MAX_ELSEWHERE_ROWS);
-    const approveLabel = heldBack.length > 0 ? `Approve ${approvable.length}` : 'Approve All';
+    const approveLabel = heldBack.length > 0 ? `Approve ${approvable.length}` : t('Approve All');
 
     return (
         <div
             ref={barRef}
             className="pending-actions-bar display-flex flex-col px-3 py-2 bg-senary border-bottom-quinary gap-1"
             role="region"
-            aria-label="Proposed changes"
+            aria-label={t('Proposed changes')}
         >
             {here.length > 0 && (
                 <>
@@ -179,9 +180,9 @@ const PendingActionsBar: React.FC = () => {
                             variant="ghost-secondary"
                             onClick={showCards}
                             style={{ padding: '2px 4px', fontSize: '0.875rem' }}
-                            ariaLabel={here.length === 1 ? 'Show the proposed change' : 'Show the proposed changes'}
+                            ariaLabel={here.length === 1 ? t('Show the proposed change') : t('Show the proposed changes')}
                         >
-                            Show
+                            {t('Show')}
                         </Button>
 
                         <div className="flex-1" />
@@ -192,7 +193,7 @@ const PendingActionsBar: React.FC = () => {
                                 onClick={(e) => { void decide(e, here, false); }}
                                 style={{ padding: '2px 8px', fontSize: '0.875rem' }}
                             >
-                                Reject All
+                                {t('Reject All')}
                             </Button>
                             {approvable.length > 0 && (
                                 <Button
@@ -209,8 +210,8 @@ const PendingActionsBar: React.FC = () => {
                     {approvable.length === 0 && (
                         <div className="font-color-secondary text-sm">
                             {here.length === 1
-                                ? 'This one needs its own Apply on its card.'
-                                : 'These need their own Apply on their cards.'}
+                                ? t('This one needs its own Apply on its card.')
+                                : t('These need their own Apply on their cards.')}
                         </div>
                     )}
                 </>
@@ -219,21 +220,24 @@ const PendingActionsBar: React.FC = () => {
             {shownChats.map((group) => (
                 <div key={group.threadId} className="display-flex flex-row items-center gap-2 min-w-0">
                     <span className="font-color-secondary text-sm truncate min-w-0">
-                        {`${changes(group.count)} in ‘${group.name}’`}
+                        {tn(group.count, '{count} proposed change in ‘{name}’', '{count} proposed changes in ‘{name}’', { name: group.name })}
                     </span>
                     <Button
                         variant="ghost-secondary"
                         onClick={(e) => openChat(e, group)}
                         style={{ padding: '2px 4px', fontSize: '0.875rem', flexShrink: 0 }}
-                        ariaLabel={`Open ‘${group.name}’ to decide its proposed changes`}
+                        ariaLabel={t('Open ‘{name}’ to decide its proposed changes', { name: group.name })}
                     >
-                        Open
+                        {t('Open')}
                     </Button>
                 </div>
             ))}
             {moreChats.length > 0 && (
                 <div className="font-color-secondary text-sm">
-                    {`${changes(moreChats.reduce((sum, group) => sum + group.count, 0))} in ${moreChats.length} more ${moreChats.length === 1 ? 'chat' : 'chats'}`}
+                    {t('{changes} in {chats}', {
+                        changes: changes(moreChats.reduce((sum, group) => sum + group.count, 0)),
+                        chats: tn(moreChats.length, '{count} more chat', '{count} more chats'),
+                    })}
                 </div>
             )}
         </div>

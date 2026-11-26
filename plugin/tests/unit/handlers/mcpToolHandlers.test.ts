@@ -25,6 +25,13 @@ const mockHandleReadNoteRequest = vi.fn();
 const mockValidateCreateNoteAction = vi.fn();
 const mockExecuteCreateNoteAction = vi.fn();
 const mockMcpCreateNoteToolEnabled = vi.hoisted(() => ({ value: false }));
+// The assistant's library tools have their own suite (mcpLibraryTools.test.ts);
+// here they are stand-ins, so these tests see only how the hook registers them.
+const mockLibraryTools = vi.hoisted(() => ({ value: [] as any[] }));
+
+vi.mock('../../../react/hooks/mcpLibraryTools', () => ({
+    mcpLibraryTools: () => mockLibraryTools.value,
+}));
 
 vi.mock('../../../src/services/agentDataProvider', () => ({
     handleItemSearchByTopicRequest: (...args: any[]) => mockHandleItemSearchByTopicRequest(...args),
@@ -86,6 +93,7 @@ const zotero = (globalThis as any).Zotero;
 
 beforeEach(() => {
     mockMcpCreateNoteToolEnabled.value = false;
+    mockLibraryTools.value = [];
     zotero.Utilities = { randomString: vi.fn(() => 'test-request-id') };
     zotero.DataDirectory = { dir: '/mock/data' };
     zotero.Server = { Endpoints: {} };
@@ -239,6 +247,34 @@ describe('MCP Tool Handlers (via useMcpServer)', () => {
 
             expect(names).toContain('create_note');
             expect(result.tools).toHaveLength(9);
+        });
+
+        it("registers the assistant's library tools, hiding one whose check says it cannot run", async () => {
+            const libraryTool = (name: string, isAvailable?: () => Promise<boolean>) => ({
+                definition: {
+                    name,
+                    description: `The ${name} stand-in, long enough to pass for a description.`,
+                    inputSchema: { type: 'object', properties: {} },
+                },
+                handler: vi.fn().mockResolvedValue({ content: [{ type: 'text', text: `${name} ran` }] }),
+                ...(isAvailable ? { isAvailable } : {}),
+            });
+            mockLibraryTools.value = [
+                libraryTool('search_in_document'),
+                libraryTool('search_library_fulltext', async () => false),
+                libraryTool('search_library_figures', async () => true),
+            ];
+            endpoint = setupMcpEndpoint();
+
+            const names = (await listTools(endpoint)).tools.map((t: any) => t.name);
+            expect(names).toContain('search_in_document');
+            expect(names).toContain('search_library_figures');
+            expect(names).not.toContain('search_library_fulltext');
+            expect(names).toHaveLength(10);
+
+            const call = await callTool(endpoint, 'search_in_document', { attachment_id: 'u-ABCD1234' });
+            expect(call.content[0].text).toBe('search_in_document ran');
+            expect(mockLibraryTools.value[0].handler).toHaveBeenCalledWith({ attachment_id: 'u-ABCD1234' });
         });
 
         it('each tool has name, description, and inputSchema', async () => {

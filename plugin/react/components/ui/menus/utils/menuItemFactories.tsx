@@ -5,6 +5,7 @@ import { getDisplayNameFromItem, isValidZoteroItem } from '../../../../utils/sou
 import { ZoteroTag } from '@beaver/agent-core/types/zotero';
 import { ThreadItemFilter } from '../../../../atoms/ui';
 import { highlightQuery } from './highlightQuery';
+import { t } from '../../../../../src/utils/i18n';
 
 /**
  * Context for creating source menu items
@@ -246,7 +247,7 @@ export async function createNoteMenuItem(
 ): Promise<SearchMenuItem> {
     const { currentMessageItems, onAdd, onRemove } = context;
 
-    const title = note.getNoteTitle() || 'Untitled Note';
+    const title = note.getNoteTitle() || t('Untitled Note');
     const isInCurrentMessageItems = currentMessageItems.some(
         (i) => i.id === note.id
     );
@@ -259,8 +260,8 @@ export async function createNoteMenuItem(
             const firstCreator = parent.firstCreator || '';
             const year = parent.getField('date')?.match(/\d{4}/)?.[0] || '';
             secondaryText = firstCreator
-                ? `Note on ${firstCreator}${year ? ` ${year}` : ''}`
-                : `Note on ${parent.getDisplayTitle() || 'item'}`;
+                ? t('Note on {parent}', { parent: year ? `${firstCreator} ${year}` : firstCreator })
+                : t('Note on {parent}', { parent: parent.getDisplayTitle() || t('item') });
         } else {
             const noteContent = note.getNote() || '';
             const textContent = noteContent.replace(/<[^>]*>/g, '').trim();
@@ -270,7 +271,7 @@ export async function createNoteMenuItem(
             if (afterTitle) {
                 secondaryText = afterTitle.slice(0, 80) + (afterTitle.length > 80 ? '\u2026' : '');
             } else {
-                secondaryText = 'Standalone note';
+                secondaryText = t('Standalone note');
             }
         }
     } catch {

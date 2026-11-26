@@ -11,6 +11,7 @@ import Icon from "@beaver/agent-ui/icons/Icon";
 import { AlertIcon, SettingsIcon, ZapIcon } from './icons/icons';
 import { openPreferencesWindow } from "../../src/ui/openPreferencesWindow";
 import IconButton from "@beaver/agent-ui/primitives/IconButton";
+import { t } from '../../src/utils/i18n';
 
 interface ActionSuggestionsProps {
     /** When true, global actions are always shown. When false, global actions only appear if no context-specific actions match. */
@@ -101,7 +102,7 @@ const ActionSuggestions: React.FC<ActionSuggestionsProps> = ({ showGlobal = true
             style={{ padding: '6px 6px' }}
         >
             <span className="text-base truncate">
-                {action.title}
+                {t(action.title)}
             </span>
         </Button>
     ));
@@ -110,7 +111,7 @@ const ActionSuggestions: React.FC<ActionSuggestionsProps> = ({ showGlobal = true
         <div className="display-flex flex-row gap-1 items-start font-color-tertiary mt-3">
             <Icon icon={AlertIcon} className="mt-010" />
             <div className="text-sm">
-                This library is not synced
+                {t('This library is not synced')}
             </div>
         </div>
     ) : null;
@@ -123,7 +124,7 @@ const ActionSuggestions: React.FC<ActionSuggestionsProps> = ({ showGlobal = true
             <div className="display-flex flex-col gap-05 px-1" style={style}>
                 {actions.length > 0 ? actionButtons : (
                     <div className="font-color-tertiary text-sm px-1 py-2">
-                        No actions available for the current selection.
+                        {t('No actions available for the current selection.')}
                     </div>
                 )}
                 <div className="display-flex flex-row items-center gap-2 mt-2 pt-2 border-top-quinary">
@@ -134,8 +135,8 @@ const ActionSuggestions: React.FC<ActionSuggestionsProps> = ({ showGlobal = true
                         variant="ghost-tertiary"
                         onClick={() => openPreferencesWindow('actions')}
                         icon={SettingsIcon}
-                        ariaLabel="Edit actions"
-                        title="Edit actions"
+                        ariaLabel={t('Edit actions')}
+                        title={t('Edit actions')}
                     />
                 </div>
                 {notSyncedWarning}
@@ -149,7 +150,7 @@ const ActionSuggestions: React.FC<ActionSuggestionsProps> = ({ showGlobal = true
                 <Icon icon={ZapIcon} />
                 <div className="display-flex flex-row gap-1 items-center min-w-0">
                     <div className="font-color-tertiary font-semibold flex-shrink-0" style={{ whiteSpace: 'nowrap', fontSize: '0.925rem' }}>
-                        Actions {contextLabel ? `for` : ''}
+                        {contextLabel ? t('Actions for') : t('Actions')}
                     </div>
                     {contextLabelElement}
                 </div>

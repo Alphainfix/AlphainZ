@@ -7,6 +7,7 @@
  */
 
 import { PROVIDER_PRESETS } from '../../../src/services/llm/openAICompatible';
+import { msg } from '../../../src/utils/i18n';
 
 export type ProviderId = keyof typeof PROVIDER_PRESETS;
 export type KeyPrefName = 'llmKeyDeepseek' | 'llmKeyOpenai' | 'llmKeyOpenrouter' | 'llmKeyZhipu' | 'llmKeyGoogle';
@@ -30,9 +31,9 @@ export interface Vendor {
     /** Providers that become usable once this key is present. */
     providers: VendorProvider[];
     keyUrl?: string;
-    /** One line, for narrow places (the welcome wizard in the side pane). */
+    /** One line, for narrow places (the welcome wizard in the side pane). English; shown through `t`. */
     summary?: string;
-    /** The fuller description the provider card shows. */
+    /** The fuller description the provider card shows. English; shown through `t`. */
     note?: string;
 }
 
@@ -49,10 +50,10 @@ export const VENDORS: Vendor[] = [
         keyPref: 'llmKeyDeepseek',
         providers: [{ id: 'deepseek' }],
         keyUrl: 'https://platform.deepseek.com/api_keys',
-        summary: 'The recommended first pick: reads figures, calls tools, low price.',
-        note: 'deepseek-flash — DeepSeek V4.1 Flash: 1M context, reads figures, calls tools. $0.15/M in · '
+        summary: msg('The recommended first pick: reads figures, calls tools, low price.'),
+        note: msg('deepseek-flash — DeepSeek V4.1 Flash: 1M context, reads figures, calls tools. $0.15/M in · '
             + '$0.60/M out, twice that at peak hours (weekdays 01:00–04:00 and 06:00–10:00 UTC). A stored '
-            + 'choice of a retired V4 model runs as deepseek-flash.',
+            + 'choice of a retired V4 model runs as deepseek-flash.'),
     },
     {
         id: 'openrouter',
@@ -60,18 +61,18 @@ export const VENDORS: Vendor[] = [
         keyPref: 'llmKeyOpenrouter',
         providers: [{ id: 'openrouter' }],
         keyUrl: 'https://openrouter.ai/keys',
-        summary: 'GLM 5.3 Flash and DeepSeek V4.1 Flash behind one key.',
-        note: 'Reaches GLM 5.3 Flash (1.3M context, reads figures, ~$0.08/M in) and DeepSeek V4.1 Flash '
-            + '(1M context, reads figures, $0.15/M in · $0.60/M out, no peak hours). Both call tools.',
+        summary: msg('GLM 5.3 Flash and DeepSeek V4.1 Flash behind one key.'),
+        note: msg('Reaches GLM 5.3 Flash (1.3M context, reads figures, ~$0.08/M in) and DeepSeek V4.1 Flash '
+            + '(1M context, reads figures, $0.15/M in · $0.60/M out, no peak hours). Both call tools.'),
     },
     {
         id: 'zhipu',
-        label: 'Zhipu (BigModel)',
+        label: msg('Zhipu (BigModel)'),
         keyPref: 'llmKeyZhipu',
         providers: [{ id: 'zhipu' }],
         keyUrl: 'https://bigmodel.cn/usercenter/proj-mgmt/apikeys',
-        summary: 'GLM 5.3 Flash from Zhipu directly.',
-        note: 'GLM 5.3 Flash from Zhipu directly — 1M context, reads figures, calls tools.',
+        summary: msg('GLM 5.3 Flash from Zhipu directly.'),
+        note: msg('GLM 5.3 Flash from Zhipu directly — 1M context, reads figures, calls tools.'),
     },
     {
         id: 'google',
@@ -79,12 +80,12 @@ export const VENDORS: Vendor[] = [
         keyPref: 'llmKeyGoogle',
         providers: [{ id: 'google' }],
         keyUrl: 'https://aistudio.google.com/apikey',
-        summary: 'Gemini 3.8 Flash and 4 Argon; the same key runs Gemini Embedding for topic search.',
-        note: 'Gemini 3.8 Flash (the default; $0.75/M in · $3.75/M out until 31 Dec 2026, then double), '
+        summary: msg('Gemini 3.8 Flash and 4 Argon; the same key runs Gemini Embedding for topic search.'),
+        note: msg('Gemini 3.8 Flash (the default; $0.75/M in · $3.75/M out until 31 Dec 2026, then double), '
             + '3.5 Flash-Lite ($0.30/M in · $2.50/M out) and 4 Argon ($2/M in · $10/M out until 30 Nov 2026, '
             + 'then double). All read figures, call tools and think before they answer. The same key runs '
             + 'Gemini Embedding 2 for topic and full-text search. A key from a project without billing is '
-            + 'free but tightly limited, and Google may use what it is sent to improve its products.',
+            + 'free but tightly limited, and Google may use what it is sent to improve its products.'),
     },
     {
         id: 'openai',
@@ -92,7 +93,7 @@ export const VENDORS: Vendor[] = [
         keyPref: 'llmKeyOpenai',
         providers: [{ id: 'openai' }],
         keyUrl: 'https://platform.openai.com/api-keys',
-        summary: 'GPT-4o and GPT-4o mini.',
+        summary: msg('GPT-4o and GPT-4o mini.'),
     },
 ];
 

@@ -5,6 +5,7 @@ import { ANNOTATION_ICON_BY_TYPE, ANNOTATION_TEXT_BY_TYPE } from '../../../utils
 import { toAnnotation } from '../../../types/attachments/converters';
 import { getDisplayNameFromItem } from '../../../utils/sourceUtils';
 import { truncateText } from '@beaver/agent-ui/utils/stringUtils';
+import { t } from '../../../../src/utils/i18n';
 
 /**
  * Icon for a row in the items summary preview.
@@ -33,9 +34,9 @@ function getItemSummaryDisplayName(item: Zotero.Item): string {
     if (item.isAnnotation()) {
         const annotation = toAnnotation(item);
         if (annotation?.annotation_type) {
-            return ANNOTATION_TEXT_BY_TYPE[annotation.annotation_type] || 'Annotation';
+            return t(ANNOTATION_TEXT_BY_TYPE[annotation.annotation_type] || 'Annotation');
         }
-        return 'Annotation';
+        return t('Annotation');
     }
     if (item.isRegularItem()) {
         return truncateText(getDisplayNameFromItem(item), 50);

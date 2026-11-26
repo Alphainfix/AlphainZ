@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Icon, SearchIcon } from '../icons';
 import { getWindowFromElement, getDocumentFromElement } from '../utils/windowContext';
 import { isImeKeyEvent } from './ime';
+import { t } from '../i18n';
 
 /**
 * Menu item interface for search menu
@@ -535,7 +536,7 @@ const SearchMenu: React.FC<SearchMenuProps> = ({
                 placeholder={placeholder}
                 className="w-full bg-quaternary font-color-primary outline-none chat-input"
                 style={{ fontSize: '12px' }}
-                aria-label="Search"
+                aria-label={t('Search')}
             />
         </div>
     )
@@ -566,7 +567,7 @@ const SearchMenu: React.FC<SearchMenuProps> = ({
                             displayOrderMenuItems.map((item, index) => renderMenuItem(item, index))
                         ) : (
                             <div className="px-2 p-1 py-2 text-sm font-color-tertiary text-center">
-                                {searchQuery.trim() ? "No results found" : "Start typing to search"}
+                                {searchQuery.trim() ? t('No results found') : t('Start typing to search')}
                             </div>
                         )}
                     </div>

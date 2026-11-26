@@ -368,6 +368,8 @@ const ENDPOINT_PATHS = [
     '/alphainz/test/caret-watch',
     '/alphainz/test/caret-probe',
     '/alphainz/test/ui-click',
+    '/alphainz/test/ui-click-text',
+    '/alphainz/test/ui-text',
     '/alphainz/test/layout-probe',
     '/alphainz/test/reading-probe',
     '/alphainz/test/zotero-view',
@@ -1623,6 +1625,44 @@ async function handleTestUiClickHttpRequest(request: any) {
     };
 }
 
+/** The window a UI probe works in: the main Zotero window, or AlphainZ's settings window. */
+function probeWindow(which: unknown): any {
+    return which === 'preferences' ? BeaverUIFactory.findPreferencesWindow() : Zotero.getMainWindow();
+}
+
+/** The text a part of the UI shows, as a reader sees it (default: the library sidebar). */
+async function handleTestUiTextHttpRequest(request: any) {
+    const win = probeWindow(request?.window);
+    const doc = win?.document;
+    if (!doc) return { ok: false, error: 'window not open' };
+    const selector = String(request?.selector || (request?.window === 'preferences' ? 'body' : '#alphainz-pane-library'));
+    const el = doc.querySelector(selector) as HTMLElement | null;
+    if (!el) return { ok: false, error: `nothing matches ${selector}` };
+    const text = String(el.innerText ?? el.textContent ?? '').replace(/\n{3,}/g, '\n\n');
+    return { ok: true, text: text.slice(0, Number(request?.limit ?? 20000)) };
+}
+
+/** Click the control that shows `text` (or has it as its aria-label), the `index`th if several do. */
+async function handleTestUiClickTextHttpRequest(request: any) {
+    const want = String(request?.text ?? '').replace(/\s+/g, ' ').trim();
+    if (!want) return { ok: false, error: 'text is required' };
+    const win = probeWindow(request?.window);
+    const doc = win?.document;
+    if (!doc) return { ok: false, error: 'window not open' };
+    const scope = request?.selector ? doc.querySelector(String(request.selector)) : doc;
+    if (!scope) return { ok: false, error: `nothing matches ${request.selector}` };
+    const controls = Array.from(scope.querySelectorAll(
+        'button, a, summary, label, [role="button"], [role="menuitem"], [role="menuitemradio"], [role="tab"], [role="option"]',
+    )) as HTMLElement[];
+    const shown = (el: HTMLElement) => String(el.textContent ?? '').replace(/\s+/g, ' ').trim();
+    const exact = controls.filter((el) => shown(el) === want || el.getAttribute('aria-label') === want);
+    const matches = exact.length > 0 ? exact : controls.filter((el) => shown(el).includes(want));
+    const target = matches[Number(request?.index ?? 0)];
+    if (!target) return { ok: false, matched: matches.length, error: 'no control shows that text' };
+    target.click();
+    return { ok: true, matched: matches.length, clicked: shown(target).slice(0, 80) };
+}
+
 async function handleTestCaretProbeHttpRequest(request: any) {
     const win: any = Zotero.getMainWindow();
     const doc = win?.document;
@@ -2315,6 +2355,12 @@ function registerEndpoints(): boolean {
 
         Zotero.Server.Endpoints['/alphainz/test/ui-click'] =
             createEndpoint(handleTestUiClickHttpRequest);
+
+        Zotero.Server.Endpoints['/alphainz/test/ui-click-text'] =
+            createEndpoint(handleTestUiClickTextHttpRequest);
+
+        Zotero.Server.Endpoints['/alphainz/test/ui-text'] =
+            createEndpoint(handleTestUiTextHttpRequest);
 
         Zotero.Server.Endpoints['/alphainz/test/layout-probe'] =
             createEndpoint(handleTestLayoutProbeHttpRequest);

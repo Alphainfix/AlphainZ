@@ -6,6 +6,7 @@ import { getPref, setPref } from '../../src/utils/prefs';
 import { useEffect } from 'react';
 import { logger } from '@beaver/agent-core/platform/logger';
 import { store } from '../store';
+import { t } from '../../src/utils/i18n';
 
 export const useIndexingCompleteMessage = () => {
     const fileStatusSummary = useAtomValue(fileStatusSummaryAtom);
@@ -25,7 +26,7 @@ export const useIndexingCompleteMessage = () => {
             const message = `We completed indexing your files. You can now use all of AlphainZ's features to search, chat with, and explore your research library.`;
 
             addPopupMessage({
-                title: "Your library is ready!",
+                title: t("Your library is ready!"),
                 text: message,
                 type: "indexing_complete",
                 expire: false,

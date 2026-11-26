@@ -4,10 +4,7 @@ import type { ZoteroItemReference } from '@beaver/agent-core/types/zotero';
 import { AnnotationResultList } from '../../../components/agentRuns/toolResultViews/AnnotationListResultView';
 import type { AnnotationRowView } from '@beaver/agent-core/run-state/toolResultViews';
 import type { ActionStatus } from './agentActionViewHelpers';
-
-function plural(count: number): string {
-    return count === 1 ? '' : 's';
-}
+import { tn } from '../../../../src/utils/i18n';
 
 function referenceKey(ref: ZoteroItemReference): string {
     return `${ref.library_ref ?? ref.library_id}-${ref.zotero_key}`;
@@ -90,8 +87,12 @@ export const DeleteAnnotationsPreview: React.FC<{
 
             {skipped.length > 0 && (
                 <div className="text-sm font-color-tertiary px-3 py-2">
-                    {`${skipped.length} annotation${plural(skipped.length)} skipped: ${skipped[0].reason}`}
-                    {skipped.length > 1 ? ` (+${skipped.length - 1} more)` : ''}
+                    {tn(
+                        skipped.length,
+                        '{count} annotation skipped: {reason}',
+                        '{count} annotations skipped: {reason} (+{more} more)',
+                        { reason: skipped[0].reason, more: skipped.length - 1 },
+                    )}
                 </div>
             )}
         </div>

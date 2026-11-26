@@ -13,6 +13,7 @@ import { addPopupMessageAtom } from '../../utils/popupMessageUtils';
 import { getActionCommand } from '@beaver/agent-ui/composer/slashCommands';
 import { getHost } from '@beaver/agent-ui/host';
 import { SettingsIcon } from '../icons/icons';
+import { t, tn } from '../../../src/utils/i18n';
 
 interface DragDropWrapperProps {
     children: React.ReactNode;
@@ -71,11 +72,11 @@ const DragDropWrapper: React.FC<DragDropWrapperProps> = ({
     const validateCollection = (collection: Zotero.Collection): { valid: boolean; error?: string } => {
         // Check if collection is deleted
         if (collection.deleted) {
-            return { valid: false, error: "Collection is deleted" };
+            return { valid: false, error: t("Collection is deleted") };
         }
         // Check if collection is in a searchable library
         if (!searchableLibraryIds.includes(collection.libraryID)) {
-            return { valid: false, error: "Collection is not in a synced library" };
+            return { valid: false, error: t("Collection is not in a synced library") };
         }
         return { valid: true };
     };
@@ -127,7 +128,7 @@ const DragDropWrapper: React.FC<DragDropWrapperProps> = ({
         if (itemCount > maxAddAttachmentToMessage) {
             e.dataTransfer.dropEffect = 'none';
             if (isDragging) setIsDragging(false);
-            showErrorMessage(`You can add up to ${maxAddAttachmentToMessage} items at a time.`);
+            showErrorMessage(t('You can add up to {count} items at a time.', { count: maxAddAttachmentToMessage }));
             return;
         }
         
@@ -155,7 +156,7 @@ const DragDropWrapper: React.FC<DragDropWrapperProps> = ({
                     }
                     else {
                         setObjectIcon(ZOTERO_ICONS.ANNOTATION);
-                        setDragError("Annotation type not supported");
+                        setDragError(t("Annotation type not supported"));
                     }
                 }
             } catch (error) {
@@ -187,9 +188,9 @@ const DragDropWrapper: React.FC<DragDropWrapperProps> = ({
                         const firstCollection = ids.length > 0 ? Zotero.Collections.get(ids[0]) : null;
                         if (firstCollection) {
                             const validation = validateCollection(firstCollection);
-                            showErrorMessage(validation.error || "Collection not supported");
+                            showErrorMessage(validation.error || t("Collection not supported"));
                         } else {
-                            showErrorMessage("Collection not found");
+                            showErrorMessage(t("Collection not found"));
                         }
                         e.dataTransfer.dropEffect = 'none';
                     }
@@ -245,7 +246,7 @@ const DragDropWrapper: React.FC<DragDropWrapperProps> = ({
         if (itemCount > maxAddAttachmentToMessage) {
             e.dataTransfer.dropEffect = 'none';
             if (isDragging) setIsDragging(false);
-            showErrorMessage(`You can add up to ${maxAddAttachmentToMessage} items at a time.`);
+            showErrorMessage(t('You can add up to {count} items at a time.', { count: maxAddAttachmentToMessage }));
             return;
         }
         
@@ -263,7 +264,7 @@ const DragDropWrapper: React.FC<DragDropWrapperProps> = ({
                     }
                     else {
                         setObjectIcon(ZOTERO_ICONS.ANNOTATION);
-                        setDragError("Annotation type not supported");
+                        setDragError(t("Annotation type not supported"));
                     }
                 }
             } catch (error) {
@@ -294,9 +295,9 @@ const DragDropWrapper: React.FC<DragDropWrapperProps> = ({
                         const firstCollection = ids.length > 0 ? Zotero.Collections.get(ids[0]) : null;
                         if (firstCollection) {
                             const validation = validateCollection(firstCollection);
-                            showErrorMessage(validation.error || "Collection not supported");
+                            showErrorMessage(validation.error || t("Collection not supported"));
                         } else {
-                            showErrorMessage("Collection not found");
+                            showErrorMessage(t("Collection not found"));
                         }
                     }
                 }
@@ -362,7 +363,7 @@ const DragDropWrapper: React.FC<DragDropWrapperProps> = ({
         for (const path of paths) {
             const result = await readActionFile(path);
             if (!result.ok) {
-                addPopupMessage({ type: 'error', title: 'Import failed', text: result.error, expire: true });
+                addPopupMessage({ type: 'error', title: t('Import failed'), text: result.error, expire: true });
                 continue;
             }
             const { action, command, commandRenamed } = importAction(result.action);
@@ -373,15 +374,15 @@ const DragDropWrapper: React.FC<DragDropWrapperProps> = ({
                 targetWindow,
             });
             const renamedNote = commandRenamed
-                ? ` The /${getActionCommand(result.action)} command was taken, so it was added as /${command}.`
+                ? ' ' + t('The /{existing} command was taken, so it was added as /{command}.', { existing: getActionCommand(result.action), command })
                 : '';
             addPopupMessage({
                 type: 'info',
-                title: 'Action added',
-                text: `"${action.title}" was added to your message. Type /${command} to use it again.${renamedNote}`,
+                title: t('Action added'),
+                text: t('"{title}" was added to your message. Type /{command} to use it again.', { title: t(action.title), command }) + renamedNote,
                 expire: false,
                 button: {
-                    text: 'Open in settings',
+                    text: t('Open in settings'),
                     icon: SettingsIcon,
                     onClick: () => getHost().navigation?.openActionSettings?.(action.id),
                 },
@@ -406,7 +407,7 @@ const DragDropWrapper: React.FC<DragDropWrapperProps> = ({
             : 0;
 
         if (itemCount > maxAddAttachmentToMessage) {
-            showErrorMessage(`You can add up to ${maxAddAttachmentToMessage} items at a time.`);
+            showErrorMessage(t('You can add up to {count} items at a time.', { count: maxAddAttachmentToMessage }));
             return;
         }
 
@@ -438,7 +439,7 @@ const DragDropWrapper: React.FC<DragDropWrapperProps> = ({
                     });
                 
                 if (validCollections.length === 0) {
-                    showErrorMessage("No valid collections to add");
+                    showErrorMessage(t("No valid collections to add"));
                     return;
                 }
                 
@@ -473,7 +474,7 @@ const DragDropWrapper: React.FC<DragDropWrapperProps> = ({
         if (isFileDrag(e.dataTransfer)) {
             const files = getDroppedFiles(e.dataTransfer);
             if (files.length === 0) {
-                showErrorMessage('No files found in drop');
+                showErrorMessage(t('No files found in drop'));
                 return;
             }
 
@@ -536,12 +537,12 @@ const DragDropWrapper: React.FC<DragDropWrapperProps> = ({
                     )}
                     <div className="text-lg">
                         {dragType === 'annotation'
-                            ? `Drop here to add ${dragCount} annotation${dragCount !== 1 ? 's' : ''}`
+                            ? tn(dragCount, 'Drop here to add {count} annotation', 'Drop here to add {count} annotations')
                             : dragType === 'collection'
-                            ? `Drop here to filter by ${dragCount} collection${dragCount !== 1 ? 's' : ''}`
+                            ? tn(dragCount, 'Drop here to filter by {count} collection', 'Drop here to filter by {count} collections')
                             : dragType === 'file'
-                            ? `Drop here to add ${dragCount} file${dragCount !== 1 ? 's' : ''}`
-                            : `Drop here to add ${dragCount} item${dragCount !== 1 ? 's' : ''}`}
+                            ? tn(dragCount, 'Drop here to add {count} file', 'Drop here to add {count} files')
+                            : tn(dragCount, 'Drop here to add {count} item', 'Drop here to add {count} items')}
                     </div>
                 </div>
             </div>

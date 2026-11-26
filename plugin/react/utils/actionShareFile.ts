@@ -16,6 +16,7 @@ import {
 } from '../types/actionShare';
 import { getActionCommand } from '@beaver/agent-ui/composer/slashCommands';
 import { logger } from '@beaver/agent-core/platform/logger';
+import { t } from '../../src/utils/i18n';
 
 const DOT_EXT = `.${SHAREABLE_ACTION_FILE_EXTENSION}`;
 
@@ -55,8 +56,8 @@ const createFilePicker = (): ZoteroFilePicker => {
  */
 export const exportActionToFile = async (action: Action): Promise<string | null> => {
     const fp = createFilePicker();
-    fp.init(Zotero.getMainWindow(), 'Save Action', fp.modeSave);
-    fp.appendFilter('AlphainZ action', `*${DOT_EXT}`);
+    fp.init(Zotero.getMainWindow(), t('Save Action'), fp.modeSave);
+    fp.appendFilter(t('AlphainZ action'), `*${DOT_EXT}`);
     fp.appendFilters(fp.filterAll);
     fp.defaultString = suggestedFileName(action);
 
@@ -78,8 +79,8 @@ export const exportActionToFile = async (action: Action): Promise<string | null>
  */
 export const importActionFromFile = async (): Promise<ParseShareableActionResult | null> => {
     const fp = createFilePicker();
-    fp.init(Zotero.getMainWindow(), 'Import Action', fp.modeOpen);
-    fp.appendFilter('AlphainZ action', `*${DOT_EXT}`);
+    fp.init(Zotero.getMainWindow(), t('Import Action'), fp.modeOpen);
+    fp.appendFilter(t('AlphainZ action'), `*${DOT_EXT}`);
     fp.appendFilters(fp.filterAll);
 
     const rv = await fp.show();
@@ -95,6 +96,6 @@ export const readActionFile = async (path: string): Promise<ParseShareableAction
         return parseShareableAction(contents);
     } catch (e) {
         logger(`actionShareFile.readActionFile: ${e}`, 1);
-        return { ok: false, error: 'Could not read the action file.' };
+        return { ok: false, error: t('Could not read the action file.') };
     }
 };

@@ -17,6 +17,7 @@ import {
     summarizeUnsupportedAttachments,
     type AttachmentReadabilityInfo,
 } from './attachmentReadabilityCopy';
+import { t, tn } from '../../src/utils/i18n';
 
 /**
  * Adds a new popup message to the list.
@@ -93,7 +94,7 @@ export const addOrUpdateFailedUploadMessageAtom = atom(
             set(addPopupMessageAtom, {
                 type: 'error',
                 title: messageTitle,
-                text: `Failed to upload file(s). Please retry manually.`,
+                text: t(`Failed to upload file(s). Please retry manually.`),
                 expire: false,
                 buttonIcon: RepeatIcon,
                 buttonOnClick: async () => {
@@ -131,13 +132,13 @@ export const EXCLUDED_LIBRARY_SELECTION_POPUP_ID = 'library-excluded-selection';
 function excludedLibraryText(names: string[]): string {
     const unique = [...new Set(names)].map((name) => `"${name}"`);
 
-    const subject = unique.length === 0
-        ? 'This library is'
-        : unique.length === 1
-            ? `The library ${unique[0]} is`
-            : `The libraries ${unique.join(', ')} are`;
-
-    return `${subject} excluded from AlphainZ. You can change excluded libraries in AlphainZ Settings.`;
+    if (unique.length === 0) {
+        return t('This library is excluded from AlphainZ. You can change excluded libraries in AlphainZ Settings.');
+    }
+    if (unique.length === 1) {
+        return t('The library {name} is excluded from AlphainZ. You can change excluded libraries in AlphainZ Settings.', { name: unique[0] });
+    }
+    return t('The libraries {names} are excluded from AlphainZ. You can change excluded libraries in AlphainZ Settings.', { names: unique.join(t(', ')) });
 }
 
 /**
@@ -402,14 +403,14 @@ export const addRegularItemsSummaryPopupAtom = atom(
         const hasUnsupportedAttachments = Boolean(unsupportedLabel);
         const label = unsupportedLabel
             || summarizeRegularItemReadability(allInfos).label
-            || "Some attachments can't be read";
+            || t("Some attachments can't be read");
         const affectedItemCount = hasUnsupportedAttachments ? unsupportedItemCount : items.length;
 
         set(addPopupMessageAtom, {
             type: 'items_summary',
             title: hasUnsupportedAttachments
-                ? `${affectedItemCount} ${affectedItemCount === 1 ? 'item has' : 'items have'} unsupported attachments`
-                : `${affectedItemCount} ${affectedItemCount === 1 ? 'item has' : 'items have'} attachment issues`,
+                ? tn(affectedItemCount, '{count} item has unsupported attachments', '{count} items have unsupported attachments')
+                : tn(affectedItemCount, '{count} item has attachment issues', '{count} items have attachment issues'),
             customContent: createElement(RegularItemsSummaryContent, {
                 items: [{ item: items[0], label }],
                 showItemTitles: false,

@@ -10,6 +10,7 @@ import FolderDetailIcon from '@beaver/agent-ui/icons/FolderDetailIcon';
 import TagIcon from '@beaver/agent-ui/icons/TagIcon';
 import HighlighterIcon from '@beaver/agent-ui/icons/HighlighterIcon';
 import { logger } from '@beaver/agent-core/platform/logger';
+import { t } from '../../../../src/utils/i18n';
 
 interface SuggestionCardButtonProps {
     card: SuggestionCard;
@@ -28,6 +29,9 @@ const ICON_BY_KIND: Record<CardKind, React.ComponentType<React.SVGProps<SVGSVGEl
 const SuggestionCardButton: React.FC<SuggestionCardButtonProps> = ({ card, permissionsOverride }) => {
     const submit = useSetAtom(submitFirstRunCardAtom);
     const Icon = ICON_BY_KIND[card.kind] ?? BookmarkIcon;
+    const description = t(card.description);
+    // The emphasis segments are English; a translated description is shown plain.
+    const segments = description === card.description ? card.description_segments : undefined;
     const [isPending, setIsPending] = useState(false);
 
     const handleClick = async () => {
@@ -88,16 +92,16 @@ const SuggestionCardButton: React.FC<SuggestionCardButtonProps> = ({ card, permi
             <div className="display-flex flex-col gap-2">
                 <div className="display-flex flex-row items-center gap-2">
                     <Icon width={14} height={14} className="font-color-primary" />
-                    <div className="font-semibold">{card.title}</div>
+                    <div className="font-semibold">{t(card.title)}</div>
                 </div>
                 <div className="text-base font-color-secondary">
-                    {card.description_segments && card.description_segments.length > 0
-                        ? card.description_segments.map((seg, i) =>
+                    {segments && segments.length > 0
+                        ? segments.map((seg, i) =>
                             seg.emphasized
                                 ? <span key={i} className="font-semibold">{seg.text}</span>
                                 : <span key={i}>{seg.text}</span>
                         )
-                        : card.description}
+                        : description}
                 </div>
             </div>
         </div>

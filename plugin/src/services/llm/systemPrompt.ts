@@ -29,6 +29,13 @@ export interface PromptContext {
      * describes them.
      */
     readsImages?: boolean;
+    /**
+     * The language the plugin's interface is in. Chinese adds a line telling
+     * the model to answer in Chinese when the user's own words do not decide it
+     * — a built-in action's or a suggestion's prompt, which are written in
+     * English. Left unset, nothing is added.
+     */
+    interfaceLanguage?: 'en' | 'zh-CN';
 }
 
 /**
@@ -274,6 +281,12 @@ const WRITES_OFF = `
 
 The user has not turned on changes to their library, so none of the write tools described above is available in this conversation: no highlights, sticky notes or notes, no edits or deletions, no adding papers, tagging or filing. When asked for any of these, do not say you are doing or proposing it. Say plainly that changes to the library are turned off and can be turned on under ${LIBRARY_WRITES_SETTING}, then do what you can without writing: quote and cite the passages you would highlight, or lay out the note or the filing you would suggest.`;
 
+const INTERFACE_CHINESE = `
+
+## The user's interface is in Chinese
+
+The user has set AlphainZ to Simplified Chinese. The app's built-in actions and suggested questions arrive as English prompts that the user did not write; answer them in Simplified Chinese. When the user writes their own words, the rules under Language above decide as usual.`;
+
 const SEMANTIC_UNAVAILABLE = `
 
 ## Note on tools
@@ -294,7 +307,8 @@ const SEMANTIC_UNAVAILABLE = `
  *
  * What can still move it is configuration, not the turn: the embedding index
  * coming or going, the literature-lookup limit in Settings, whether changes to
- * the library are turned on, and whether the chosen model reads images.
+ * the library are turned on, whether the chosen model reads images, and the
+ * interface language.
  */
 export function buildSystemPrompt(context: PromptContext = {}): string {
     let prompt = BASE
@@ -311,6 +325,10 @@ export function buildSystemPrompt(context: PromptContext = {}): string {
 
     if (context.writesAllowed === false) {
         prompt += WRITES_OFF;
+    }
+
+    if (context.interfaceLanguage === 'zh-CN') {
+        prompt += INTERFACE_CHINESE;
     }
 
     return prompt;

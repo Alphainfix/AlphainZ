@@ -8,6 +8,7 @@ import {
     TextNode,
 } from 'lexical';
 import { ActionTargetType } from '@beaver/agent-core/types/actions';
+import { t } from '../i18n';
 
 export type SerializedSlashCommandNode = Spread<
     {
@@ -145,7 +146,9 @@ export class SlashCommandNode extends TextNode {
     // Accessible name for the pill
     private ariaLabel(): string {
         const base = this.__title ? this.__title : `/${this.__commandName}`;
-        return this.__missing ? `${base}, command, unavailable` : `${base}, command`;
+        return this.__missing
+            ? t('{command}, command, unavailable', { command: base })
+            : t('{command}, command', { command: base });
     }
 
     createDOM(config: EditorConfig): HTMLElement {

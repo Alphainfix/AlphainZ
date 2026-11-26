@@ -1,5 +1,6 @@
 import React from 'react';
 import { UserQuestionView } from '@beaver/agent-core/run-state/toolResultViews';
+import { t } from '../../../../src/utils/i18n';
 
 /**
  * Shared renderer for the {@link UserQuestionView} view model (ask_user_question).
@@ -14,9 +15,9 @@ export const UserQuestionResultView: React.FC<{ view: UserQuestionView }> = ({ v
     const status = view.status ?? 'answered';
     const statusNote =
         status === 'cancelled'
-            ? 'Question skipped'
+            ? t('Question skipped')
             : status === 'no_response'
-                ? 'No response'
+                ? t('No response')
                 : null;
 
     return (
@@ -44,7 +45,7 @@ export const UserQuestionResultView: React.FC<{ view: UserQuestionView }> = ({ v
                             </div>
                         ) : (
                             <div className="text-sm font-color-tertiary">
-                                Not answered
+                                {t('Not answered')}
                             </div>
                         )}
                     </div>

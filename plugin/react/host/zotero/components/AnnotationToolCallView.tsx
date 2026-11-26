@@ -46,6 +46,7 @@ import {
     toggleAnnotationPanelVisibilityAtom
 } from '../../../atoms/messageUIState';
 import { isNoteAnnotationToolResult, isHighlightAnnotationToolResult } from '@beaver/agent-core/run-state/toolResultTypes';
+import { t, tn } from '../../../../src/utils/i18n';
 
 // =============================================================================
 // Types
@@ -279,7 +280,7 @@ const AnnotationListItem: React.FC<AnnotationListItemProps> = ({
                 )}
                 <div className="flex-1 min-w-0">
                     <div className={getTextClasses()}>
-                        {annotation.proposed_data.title || 'Annotation'}
+                        {annotation.proposed_data.title || t('Annotation')}
                     </div>
                 </div>
 
@@ -290,7 +291,7 @@ const AnnotationListItem: React.FC<AnnotationListItemProps> = ({
                             variant="ghost-secondary"
                             onClick={handleReject}
                             className="p-1"
-                            title="Delete annotation"
+                            title={t('Delete annotation')}
                             icon={CancelIcon}
                             loading={isBusy}
                         />
@@ -304,7 +305,7 @@ const AnnotationListItem: React.FC<AnnotationListItemProps> = ({
                             variant="ghost-secondary"
                             onClick={handleReAdd}
                             className="p-1 scale-13"
-                            title="Add annotation"
+                            title={t('Add annotation')}
                             icon={TickIcon}
                             loading={isBusy}
                         />
@@ -318,7 +319,7 @@ const AnnotationListItem: React.FC<AnnotationListItemProps> = ({
                             variant="ghost-tertiary"
                             onClick={handleReject}
                             className="p-1"
-                            title="Reject annotation"
+                            title={t('Reject annotation')}
                             icon={CancelIcon}
                             loading={isBusy}
                         />
@@ -326,7 +327,7 @@ const AnnotationListItem: React.FC<AnnotationListItemProps> = ({
                             variant="ghost-tertiary"
                             onClick={handleReAdd}
                             className="p-1 scale-13"
-                            title="Add annotation"
+                            title={t('Add annotation')}
                             icon={TickIcon}
                             loading={isBusy}
                         />
@@ -632,11 +633,19 @@ export const AnnotationToolCallView: React.FC<AnnotationToolCallViewProps> = ({ 
 
     // Button text
     const getButtonText = () => {
-        const annotationCount = status === 'completed' ? `${totalAnnotations} ` : "";
-        if (isHighlightAnnotationPart) return isError ? 'Highlights: Error' : `${annotationCount}Highlight${totalAnnotations === 1 ? '' : 's'}`;
-        if (isNoteAnnotationPart) return isError ? 'Notes: Error' : `${annotationCount}Note${totalAnnotations === 1 ? '' : 's'}`;
-        if (isError) return 'Annotations: Error';
-        return 'Annotations';
+        const counted = status === 'completed';
+        if (isHighlightAnnotationPart) {
+            if (isError) return t('Highlights: Error');
+            if (counted) return tn(totalAnnotations, '{count} Highlight', '{count} Highlights');
+            return totalAnnotations === 1 ? t('Highlight') : t('Highlights');
+        }
+        if (isNoteAnnotationPart) {
+            if (isError) return t('Notes: Error');
+            if (counted) return tn(totalAnnotations, '{count} Note', '{count} Notes');
+            return totalAnnotations === 1 ? t('Note') : t('Notes');
+        }
+        if (isError) return t('Annotations: Error');
+        return t('Annotations');
     };
 
     const isButtonDisabled = isInProgress || isError || (isCompleted && !hasAnnotationsToShow);
@@ -688,7 +697,7 @@ export const AnnotationToolCallView: React.FC<AnnotationToolCallViewProps> = ({ 
 
                 {readOnlyLibrary && (
                     <div className="text-sm font-color-tertiary mt-015">
-                        Read-only library
+                        {t('Read-only library')}
                     </div>
                 )}
 
@@ -699,22 +708,22 @@ export const AnnotationToolCallView: React.FC<AnnotationToolCallViewProps> = ({ 
                                 {attachmentTitle}
                             </div>
                         </Tooltip>
-                        <Tooltip content="Reject all" showArrow singleLine>
+                        <Tooltip content={t('Reject all')} showArrow singleLine>
                             <IconButton
                                 icon={CancelIcon}
                                 variant="ghost-secondary"
                                 iconClassName="font-color-red"
                                 onClick={handleRejectAll}
-                                ariaLabel="Reject all"
+                                ariaLabel={t('Reject all')}
                             />
                         </Tooltip>
-                        <Tooltip content="Add annotations" showArrow singleLine>
+                        <Tooltip content={t('Add annotations')} showArrow singleLine>
                             <IconButton
                                 icon={TickIcon}
                                 variant="ghost-secondary"
                                 iconClassName="font-color-green scale-14"
                                 onClick={() => handleApplyAnnotations()}
-                                ariaLabel="Add annotations"
+                                ariaLabel={t('Add annotations')}
                             />
                         </Tooltip>
                     </div>

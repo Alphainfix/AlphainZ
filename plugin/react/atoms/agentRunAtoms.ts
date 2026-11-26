@@ -262,6 +262,7 @@ import { appendRunIfMissing, findResumeChainRoot, findRunForResume, hasOnlyThink
 import { prewarmMuPDFWorker } from '../../src/beaver-extract';
 import { BeaverTemporaryAnnotations } from '../utils/annotationUtils';
 import { isRejectedItemValidation, itemValidationResultsAtom } from './itemValidation';
+import { msg, t, tn } from '../../src/utils/i18n';
 
 // =============================================================================
 // Helper Functions
@@ -924,8 +925,8 @@ async function startAutoRetryRun(
                 set(isWSChatPendingAtom, false);
                 set(addPopupMessageAtom, {
                     type: 'warning',
-                    title: 'Chat changed elsewhere',
-                    text: 'This chat was changed somewhere else, so the failed run was not retried automatically. Reloading the chat.',
+                    title: t('Chat changed elsewhere'),
+                    text: t('This chat was changed somewhere else, so the failed run was not retried automatically. Reloading the chat.'),
                     expire: true,
                 });
                 await set(loadThreadAtom, {
@@ -975,7 +976,7 @@ async function startAutoRetryRun(
         await executeWSRequest(newRun, request, get, set);
     } catch (error) {
         logger(`${logPrefix}: Unexpected error:`, error, 1);
-        const failureMessage = error instanceof Error ? error.message : 'Failed to automatically retry run';
+        const failureMessage = error instanceof Error ? error.message : t('Failed to automatically retry run');
         set(wsErrorAtom, {
             event: 'error',
             type: 'auto_retry_error',
@@ -1104,7 +1105,7 @@ function confirmUndoAppliedActions(
             (sum, action) => sum + getAppliedPdfAnnotationCount(action),
             0,
         );
-        changeLines.push(`• ${annotationCount} PDF annotation${annotationCount === 1 ? '' : 's'}`);
+        changeLines.push(tn(annotationCount, '• {count} PDF annotation', '• {count} PDF annotations'));
     }
     if (annotationEdits.length > 0) {
         const annotationCount = annotationEdits.reduce((sum, action) => {
@@ -1117,51 +1118,52 @@ function confirmUndoAppliedActions(
                     : 1;
             return sum + count;
         }, 0);
-        changeLines.push(`• ${annotationCount} PDF annotation change${annotationCount === 1 ? '' : 's'}`);
+        changeLines.push(tn(annotationCount, '• {count} PDF annotation change', '• {count} PDF annotation changes'));
     }
     if (zoteroNotes.length > 0) {
-        changeLines.push(`• ${zoteroNotes.length} Zotero note${zoteroNotes.length === 1 ? '' : 's'}`);
+        changeLines.push(tn(zoteroNotes.length, '• {count} Zotero note', '• {count} Zotero notes'));
     }
     if (metadataEdits.length > 0) {
-        changeLines.push(`• ${metadataEdits.length} metadata edit${metadataEdits.length === 1 ? '' : 's'}`);
+        changeLines.push(tn(metadataEdits.length, '• {count} metadata edit', '• {count} metadata edits'));
     }
     if (noteEdits.length > 0) {
-        changeLines.push(`• ${noteEdits.length} note edit${noteEdits.length === 1 ? '' : 's'}`);
+        changeLines.push(tn(noteEdits.length, '• {count} note edit', '• {count} note edits'));
     }
     if (createItems.length > 0) {
-        changeLines.push(`• ${createItems.length} created item${createItems.length === 1 ? '' : 's'}`);
+        changeLines.push(tn(createItems.length, '• {count} created item', '• {count} created items'));
     }
     if (createCollections.length > 0) {
-        changeLines.push(`• ${createCollections.length} created collection${createCollections.length === 1 ? '' : 's'}`);
+        changeLines.push(tn(createCollections.length, '• {count} created collection', '• {count} created collections'));
     }
     if (organizeItems.length > 0) {
-        changeLines.push(`• ${organizeItems.length} organize action${organizeItems.length === 1 ? '' : 's'}`);
+        changeLines.push(tn(organizeItems.length, '• {count} organize action', '• {count} organize actions'));
     }
     if (manageTags.length > 0) {
-        changeLines.push(`• ${manageTags.length} tag change${manageTags.length === 1 ? '' : 's'}`);
+        changeLines.push(tn(manageTags.length, '• {count} tag change', '• {count} tag changes'));
     }
     if (manageCollections.length > 0) {
-        changeLines.push(`• ${manageCollections.length} collection change${manageCollections.length === 1 ? '' : 's'}`);
+        changeLines.push(tn(manageCollections.length, '• {count} collection change', '• {count} collection changes'));
     }
     if (createNotes.length > 0) {
-        changeLines.push(`• ${createNotes.length} created note${createNotes.length === 1 ? '' : 's'}`);
+        changeLines.push(tn(createNotes.length, '• {count} created note', '• {count} created notes'));
     }
     
-    const title = 'Retry?';
+    const title = t('Retry?');
     const later = laterExchanges > 0
         ? `${laterExchangesSentence(laterExchanges, stopsAnswerBeingWritten)}\n\n`
         : '';
-    const message = `${later}The following changes were applied and can be undone:\n\n${changeLines.join('\n')}\n\nUndo them and retry, or retry without undoing?`;
+    const message = `${later}${t('The following changes were applied and can be undone:')}\n\n${changeLines.join('\n')}\n\n`
+        + t('Undo them and retry, or retry without undoing?');
 
     const buttonIndex = Zotero.Prompt.confirm({
         window: Zotero.getMainWindow(),
         title,
         text: message,
-        button0: 'Undo && Retry',
+        button0: t('Undo && Retry'),
         // Cancel must be at button1 so Escape/dialog-close routes here
         // (Services.prompt.confirmEx returns index 1 on Esc).
         button1: Zotero.Prompt.BUTTON_TITLE_CANCEL,
-        button2: 'Retry',
+        button2: t('Retry'),
         defaultButton: 1,
     });
 
@@ -1260,14 +1262,14 @@ async function determineMissingReason(ref: ZoteroItemReference, userId: string |
 
 /** Human-readable messages for each missing reason */
 const MISSING_REASON_MESSAGES: Record<MissingItemReason, string> = {
-    'not_found': 'Item not found in your Zotero library',
-    'library_unavailable': "Library is not available on this computer. It may be a group library you haven't joined on this device",
-    'in_trash': 'Item is in trash',
-    'library_not_synced': 'Library is not configured to sync with AlphainZ',
-    'filtered_from_sync': 'Item type not supported',
-    'pending_sync': 'Item was added after the last sync. Please wait for sync to complete or sync manually in settings',
-    'file_unavailable_locally_and_on_server': 'File is unavailable',
-    'unknown': 'Unexpected error. Try again; if it keeps happening, Zotero\'s debug output (Help → Debug Output Logging) will show why.',
+    'not_found': msg('Item not found in your Zotero library'),
+    'library_unavailable': msg("Library is not available on this computer. It may be a group library you haven't joined on this device"),
+    'in_trash': msg('Item is in trash'),
+    'library_not_synced': msg('Library is not configured to sync with AlphainZ'),
+    'filtered_from_sync': msg('Item type not supported'),
+    'pending_sync': msg('Item was added after the last sync. Please wait for sync to complete or sync manually in settings'),
+    'file_unavailable_locally_and_on_server': msg('File is unavailable'),
+    'unknown': msg('Unexpected error. Try again; if it keeps happening, Zotero\'s debug output (Help → Debug Output Logging) will show why.'),
 };
 
 /**
@@ -1307,10 +1309,10 @@ async function handleMissingZoteroData(
     
     // Build user-friendly message
     const itemCount = event.items.length;
-    const itemWord = itemCount === 1 ? 'attachment' : 'attachments';
     const otherCount = itemCount - primaryCount;
     
-    let message = `Unable to process ${itemCount} ${itemWord}: ${MISSING_REASON_MESSAGES[primaryReason]}`;
+    let message = tn(itemCount, 'Unable to process {count} attachment: {reason}', 'Unable to process {count} attachments: {reason}',
+        { reason: t(MISSING_REASON_MESSAGES[primaryReason]) });
     
     // Add count if not all items have the same reason
     if (primaryCount < itemCount) {
@@ -1319,7 +1321,7 @@ async function handleMissingZoteroData(
     
     // Mention other reasons exist without listing them all
     if (otherCount > 0) {
-        message += `\n\n${otherCount} other ${itemWord} ${otherCount === 1 ? 'has a' : 'have'} different reason.`;
+        message += '\n\n' + tn(otherCount, '{count} other attachment has a different reason.', '{count} other attachments have different reasons.');
     }
     
     // Add warning
@@ -2280,7 +2282,7 @@ async function offerSelectionComment(run: AgentRun, set: Setter): Promise<void> 
         if (!result.saved) {
             set(addPopupMessageAtom, {
                 type: 'error',
-                title: 'Could not save the answer to the highlight',
+                title: t('Could not save the answer to the highlight'),
                 text: result.message,
                 expire: true,
                 duration: 6000,
@@ -2317,7 +2319,7 @@ async function offerSelectionComment(run: AgentRun, set: Setter): Promise<void> 
     set(addPopupMessageAtom, {
         id: popupId,
         type: 'info',
-        title: 'Save to the highlight?',
+        title: t('Save to the highlight?'),
         expire: false,
         customContent: createElement(SelectionCommentOfferContent, {
             highlightText: annotation.annotationText || '',
@@ -2337,7 +2339,7 @@ async function offerSelectionComment(run: AgentRun, set: Setter): Promise<void> 
                     withdraw();
                     set(addPopupMessageAtom, {
                         type: 'error',
-                        title: 'Could not save',
+                        title: t('Could not save'),
                         text: result.message,
                         expire: true,
                         duration: 4000,
@@ -2407,8 +2409,8 @@ export function createWSCallbacks(
             ) {
                 set(addPopupMessageAtom, {
                     type: 'info',
-                    title: 'Indexing your library',
-                    text: 'We are processing your library to enable Beta features. You can use standard features in the meantime.',
+                    title: t('Indexing your library'),
+                    text: t('We are processing your library to enable Beta features. You can use standard features in the meantime.'),
                     expire: true,
                     duration: 10000
                 });
@@ -3430,8 +3432,8 @@ export const sendWSMessageAtom = atom(
             releaseAnchorOfUnsentQuestion(messageOrigin);
             set(addPopupMessageAtom, {
                 type: 'warning',
-                title: 'Libraries still loading',
-                text: 'AlphainZ is still reading your Zotero libraries. Try sending again in a moment.',
+                title: t('Libraries still loading'),
+                text: t('AlphainZ is still reading your Zotero libraries. Try sending again in a moment.'),
                 expire: true,
                 duration: 4000,
             });
@@ -3448,10 +3450,10 @@ export const sendWSMessageAtom = atom(
             set(currentMessageItemsAtom, (items) => items.filter((item) => !rejectedSelectedItems.includes(item)));
             set(addPopupMessageAtom, {
                 type: 'error',
-                title: rejectedSelectedItems.length === 1 ? 'Item Removed' : 'Items Removed',
+                title: rejectedSelectedItems.length === 1 ? t('Item Removed') : t('Items Removed'),
                 text: rejectedSelectedItems.length === 1
-                    ? 'An item that AlphainZ cannot use was removed from this message.'
-                    : `${rejectedSelectedItems.length} items that AlphainZ cannot use were removed from this message.`,
+                    ? t('An item that AlphainZ cannot use was removed from this message.')
+                    : t('{count} items that AlphainZ cannot use were removed from this message.', { count: rejectedSelectedItems.length }),
                 expire: true,
                 duration: 4000,
             });
@@ -3517,8 +3519,8 @@ export const sendWSMessageAtom = atom(
                 logger(`sendWSMessageAtom: External file copy missing, dropping: ext-${file.extKey} ('${file.filename}')`, 1);
                 set(addPopupMessageAtom, {
                     type: 'warning',
-                    title: 'File unavailable',
-                    text: `"${file.filename}" is no longer available and was removed from the message.`,
+                    title: t('File unavailable'),
+                    text: t('"{filename}" is no longer available and was removed from the message.', { filename: file.filename }),
                     expire: true,
                 });
                 continue;
@@ -3798,7 +3800,7 @@ export const sendWSMessageAtom = atom(
             set(wsErrorAtom, {
                 event: 'error',
                 type: 'preparation_error',
-                message: error instanceof Error ? error.message : 'Failed to prepare message',
+                message: error instanceof Error ? error.message : t('Failed to prepare message'),
                 is_retryable: true,
             });
             set(activeRunAtom, null);
@@ -3839,9 +3841,9 @@ interface RegenerateRunOptions {
  */
 function confirmRemovingLaterExchanges(laterExchanges: number, stopsAnswerBeingWritten: boolean): boolean {
     return getHost().dialogs?.confirm({
-        title: 'Retry from here?',
-        text: `${laterExchangesSentence(laterExchanges, stopsAnswerBeingWritten)} They cannot be brought back.`,
-        confirmLabel: 'Retry',
+        title: t('Retry from here?'),
+        text: `${laterExchangesSentence(laterExchanges, stopsAnswerBeingWritten)} ${t('They cannot be brought back.')}`,
+        confirmLabel: t('Retry'),
     }) ?? true;
 }
 
@@ -3850,15 +3852,14 @@ function confirmRemovingLaterExchanges(laterExchanges: number, stopsAnswerBeingW
  * naming the answer still being written when that is one of them.
  */
 function laterExchangesSentence(laterExchanges: number, stopsAnswerBeingWritten: boolean): string {
-    return `Retrying this message also removes ${laterExchangesPhrase(laterExchanges)} after it in this chat`
-        + (stopsAnswerBeingWritten ? ', including the answer still being written' : '')
-        + '.';
-}
-
-function laterExchangesPhrase(laterExchanges: number): string {
-    return laterExchanges === 1
-        ? 'the question and answer'
-        : `the ${laterExchanges} questions and answers`;
+    if (stopsAnswerBeingWritten) {
+        return tn(laterExchanges,
+            'Retrying this message also removes the question and answer after it in this chat, including the answer still being written.',
+            'Retrying this message also removes the {count} questions and answers after it in this chat, including the answer still being written.');
+    }
+    return tn(laterExchanges,
+        'Retrying this message also removes the question and answer after it in this chat.',
+        'Retrying this message also removes the {count} questions and answers after it in this chat.');
 }
 
 /**
@@ -4158,8 +4159,8 @@ async function startRegenerateRun(
                 keepStoppedLaterRun();
                 set(addPopupMessageAtom, {
                     type: 'error',
-                    title: 'Retry failed',
-                    text: 'AlphainZ could not be reached to start the retry. Nothing was changed — please try again.',
+                    title: t('Retry failed'),
+                    text: t('AlphainZ could not be reached to start the retry. Nothing was changed — please try again.'),
                     expire: true,
                 });
                 return;
@@ -4173,8 +4174,8 @@ async function startRegenerateRun(
                 keepStoppedLaterRun();
                 set(addPopupMessageAtom, {
                     type: 'warning',
-                    title: 'Chat changed elsewhere',
-                    text: 'This chat was changed somewhere else (for example on another device), so the retry was not applied. Reloading the chat.',
+                    title: t('Chat changed elsewhere'),
+                    text: t('This chat was changed somewhere else (for example on another device), so the retry was not applied. Reloading the chat.'),
                     expire: true,
                 });
                 // Show the thread whole, including whatever was added elsewhere.
@@ -4274,7 +4275,7 @@ export const regenerateFromRunAtom = atom(
         await startRegenerateRun(get, set, runId, {
             logPrefix: 'regenerateFromRunAtom',
             walkResumeChain: true,
-            failureMessage: 'Failed to regenerate response',
+            failureMessage: t('Failed to regenerate response'),
         });
     }
 );
@@ -4297,7 +4298,7 @@ export const regenerateWithEditedPromptAtom = atom(
             logPrefix: 'regenerateWithEditedPromptAtom',
             walkResumeChain: false,
             editedPrompt: params.editedPrompt,
-            failureMessage: 'Failed to regenerate with edited prompt',
+            failureMessage: t('Failed to regenerate with edited prompt'),
             onProceed: params.onProceed,
         });
     }
@@ -4323,7 +4324,7 @@ export const autoResumeErroredRunAtom = atom(
                 trigger: 'auto',
                 logPrefix: 'autoResumeErroredRunAtom',
                 failureErrorType: 'auto_resume_error',
-                failureMessage: 'Failed to automatically resume run',
+                failureMessage: t('Failed to automatically resume run'),
             });
         } finally {
             set(scheduledAutoResumeRunIdsAtom, (prev: Set<string>) => {
@@ -4365,7 +4366,7 @@ export const resumeFromRunAtom = atom(
             trigger: 'user',
             logPrefix: 'resumeFromRunAtom',
             failureErrorType: 'resume_error',
-            failureMessage: 'Failed to resume run',
+            failureMessage: t('Failed to resume run'),
         });
     }
 );

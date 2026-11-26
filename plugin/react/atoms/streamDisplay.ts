@@ -24,21 +24,22 @@
 import { atom } from 'jotai';
 
 import { getPref, setPref } from '../../src/utils/prefs';
+import { msg } from '../../src/utils/i18n';
 
 export type StreamDisplayMode = 'expanded' | 'collapsed' | 'answer';
 
 export const STREAM_DISPLAY_MODES: StreamDisplayMode[] = ['expanded', 'collapsed', 'answer'];
 
 export const STREAM_DISPLAY_LABELS: Record<StreamDisplayMode, string> = {
-    expanded: 'Show all steps',
-    collapsed: 'Collapse steps',
-    answer: 'Answer only',
+    expanded: msg('Show all steps'),
+    collapsed: msg('Collapse steps'),
+    answer: msg('Answer only'),
 };
 
 export const STREAM_DISPLAY_HINTS: Record<StreamDisplayMode, string> = {
-    expanded: 'Thinking and tool calls inline',
-    collapsed: 'One line you can open',
-    answer: 'Everything while it works, then just the answer',
+    expanded: msg('Thinking and tool calls inline'),
+    collapsed: msg('One line you can open'),
+    answer: msg('Everything while it works, then just the answer'),
 };
 
 /**

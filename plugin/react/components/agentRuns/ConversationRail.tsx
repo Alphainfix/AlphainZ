@@ -5,6 +5,7 @@ import { userScrolledAtom, windowUserScrolledAtom } from '../../atoms/ui';
 import { useCurrentTurnIndex } from '../../hooks/useCurrentTurn';
 import { jumpToRun, scrollByWheel } from '../../utils/conversationNavigation';
 import { clipText, nearestCentreIndex, turnMeta, type ConversationTurn } from '../../utils/conversationTurns';
+import { t } from '../../../src/utils/i18n';
 
 interface ConversationRailProps {
     /** The thread view's scroll container. */
@@ -28,7 +29,7 @@ function isKeyboardFocus(element: Element): boolean {
 }
 
 function markLabel(turn: ConversationTurn): string {
-    return `Question ${turn.index + 1}: ${clipText(turn.question, 120)}`;
+    return t('Question {number}: {question}', { number: turn.index + 1, question: clipText(turn.question, 120) });
 }
 
 /**
@@ -188,7 +189,7 @@ export const ConversationRail = React.memo(function ConversationRail({ container
 
     return (
         <>
-            <nav className="conversation-rail" aria-label="Questions in this conversation">
+            <nav className="conversation-rail" aria-label={t('Questions in this conversation')}>
                 <div ref={marksRef} className="conversation-rail-marks">
                     {turns.map((turn, index) => (
                         <button
@@ -261,7 +262,7 @@ export const ConversationRail = React.memo(function ConversationRail({ container
                 {cardTurn && (
                     <>
                         <div className="conversation-peek-meta">
-                            <span className="conversation-peek-number">Question {cardTurn.index + 1}</span>
+                            <span className="conversation-peek-number">{t('Question {number}', { number: cardTurn.index + 1 })}</span>
                             {meta.split(' · ').filter(Boolean).map((part) => (
                                 <span key={part}>· {part}</span>
                             ))}
@@ -269,7 +270,7 @@ export const ConversationRail = React.memo(function ConversationRail({ container
                         <div className="conversation-peek-question">{cardTurn.question}</div>
                         <div className={`conversation-peek-answer is-${cardTurn.status}`}>{cardTurn.answer}</div>
                         <div className="conversation-peek-foot">
-                            {hovered === null ? 'Press Enter to jump' : 'Click to jump'}
+                            {hovered === null ? t('Press Enter to jump') : t('Click to jump')}
                         </div>
                     </>
                 )}

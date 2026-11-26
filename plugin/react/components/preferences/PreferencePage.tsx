@@ -25,6 +25,7 @@ import PermissionsSection from "./PermissionsSection";
 import EmbeddingIndexProgress from "../pages/onboarding/EmbeddingIndexProgress";
 import ExcludedLibrariesList from "./ExcludedLibrariesList";
 import { useEmbeddingHealth } from "../../hooks/useEmbeddingHealth";
+import { msg, t, tn } from '../../../src/utils/i18n';
 
 
 const PreferencePage: React.FC = () => {
@@ -166,14 +167,14 @@ const PreferencePage: React.FC = () => {
                 icon: RepeatIcon,
                 iconClassName: '',
                 disabled: false,
-                text: `Indexing Failed (${embeddingIndexState.failedItems})`
+                text: t('Indexing Failed ({count})', { count: embeddingIndexState.failedItems })
             };
         }
         return {
             icon: RepeatIcon,
             iconClassName: '',
             disabled: false,
-            text: 'Check & Repair'
+            text: t('Check & Repair')
         };
     };
 
@@ -182,12 +183,12 @@ const PreferencePage: React.FC = () => {
     const windowShortcutLabel = `${Zotero.isMac ? '⌘⇧' : 'Ctrl+Shift'}+${keyboardShortcut}`;
     type VisiblePreferencePageTab = Exclude<PreferencePageTab, 'account'>;
     const tabs = useMemo<{ id: VisiblePreferencePageTab; label: string; icon: React.ComponentType<React.SVGProps<SVGSVGElement>> | React.ReactElement }[]>(() => [
-        { id: 'general', label: 'General', icon: SettingsIcon },
-        { id: 'sync', label: 'Search', icon: SearchIcon },
-        { id: 'permissions', label: 'Permissions', icon: LockIcon },
-        { id: 'models', label: 'Model', icon: KeyIcon },
-        { id: 'actions', label: 'Actions', icon: ZapIcon },
-        { id: 'advanced', label: 'Advanced', icon: ToolsIcon },
+        { id: 'general', label: msg('General'), icon: SettingsIcon },
+        { id: 'sync', label: msg('Search'), icon: SearchIcon },
+        { id: 'permissions', label: msg('Permissions'), icon: LockIcon },
+        { id: 'models', label: msg('Model'), icon: KeyIcon },
+        { id: 'actions', label: msg('Actions'), icon: ZapIcon },
+        { id: 'advanced', label: msg('Advanced'), icon: ToolsIcon },
     ], []);
     const effectiveActiveTab: VisiblePreferencePageTab = activeTab === 'account' ? 'general' : activeTab;
 
@@ -230,7 +231,7 @@ const PreferencePage: React.FC = () => {
             <div className="display-flex flex-row items-center gap-3 px-1">
                 <Icon icon={SettingsIcon} className="scale-16 mt-020" aria-hidden="true" focusable="false" />
                 <h1 id="alphainz-preferences-title" className="text-2xl font-semibold  font-color-primary" style={{ marginBlock: "0rem" }}>
-                    Settings
+                    {t('Settings')}
                 </h1>
                 {/* <Button variant="outline" rightIcon={CancelIcon} onClick={() => togglePreferencePage((prev) => !prev)} className="mt-1">Close</Button> */}
             </div>
@@ -238,7 +239,7 @@ const PreferencePage: React.FC = () => {
 
             <div
                 role="tablist"
-                aria-label="Settings sections"
+                aria-label={t('Settings sections')}
                 className="display-flex flex-row items-center mb-3 mt-2"
                 style={{ borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--fill-quarternary)', width: 'fit-content' }}
                 onKeyDown={handleTabKeyDown}
@@ -277,12 +278,12 @@ const PreferencePage: React.FC = () => {
                             icon={tab.icon as React.ComponentType<React.SVGProps<SVGSVGElement>>}
                             className="scale-95 -ml-05"
                         />
-                        {tab.label}
+                        {t(tab.label)}
                         {tab.id === 'models' && modelTabNeedsAttention && (
                             <span
                                 role="img"
-                                aria-label="Topic search needs attention"
-                                title="Topic search needs attention"
+                                aria-label={t('Topic search needs attention')}
+                                title={t('Topic search needs attention')}
                                 data-testid="models-tab-attention"
                                 style={{
                                     width: '6px',
@@ -307,11 +308,11 @@ const PreferencePage: React.FC = () => {
                 <>
                     <AppearanceSection />
                     <>
-                            <SectionLabel>Preferences</SectionLabel>
+                            <SectionLabel>{t('Preferences')}</SectionLabel>
                             <SettingsGroup>
                                 <SettingsRow
-                                    title="Keyboard Shortcut"
-                                    description={<>Sidebar: {sidebarShortcutLabel} &middot; Window: {windowShortcutLabel} &middot; Changes require restart</>}
+                                    title={t('Keyboard Shortcut')}
+                                    description={<>{t('Sidebar:')}{' '}{sidebarShortcutLabel}{' '}{t('· Window:')}{' '}{windowShortcutLabel}{' '}{t('· Changes require restart')}</>}
                                     control={
                                         <select
                                             id="keyboard-shortcut"
@@ -328,8 +329,8 @@ const PreferencePage: React.FC = () => {
                                     }
                                 />
                                 <SettingsRow
-                                    title={`Citation Format: ${citationFormat ? 'Numeric' : 'Author-Year'}`}
-                                    description="Choose between numeric [1] or author-year (Smith, 2023) citations"
+                                    title={t('Citation Format: {format}', { format: citationFormat ? t('Numeric') : t('Author-Year') })}
+                                    description={t('Choose between numeric [1] or author-year (Smith, 2023) citations')}
                                     onClick={handleCitationFormatToggle}
                                     hasBorder
                                     control={
@@ -343,11 +344,11 @@ const PreferencePage: React.FC = () => {
                                     }
                                 />
                                 <SettingsRow
-                                    title="Keep Cited Passages Highlighted"
-                                    description="When enabled, AlphainZ marks cited passages with temporary Zotero annotations that disappear on your next click. When disabled, AlphainZ briefly flashes the passage instead."
+                                    title={t('Keep Cited Passages Highlighted')}
+                                    description={t('When enabled, AlphainZ marks cited passages with temporary Zotero annotations that disappear on your next click. When disabled, AlphainZ briefly flashes the passage instead.')}
                                     onClick={handleTemporaryCitationAnnotationsToggle}
                                     hasBorder
-                                    tooltip="When disabled, citations use Zotero's transient PDF position highlight instead."
+                                    tooltip={t('When disabled, citations use Zotero\'s transient PDF position highlight instead.')}
                                     control={
                                         <input
                                             type="checkbox"
@@ -359,11 +360,11 @@ const PreferencePage: React.FC = () => {
                                     }
                                 />
                                 <SettingsRow
-                                    title="Add Selected Items to New Threads"
-                                    description="Automatically attach selected items to new thread"
+                                    title={t('Add Selected Items to New Threads')}
+                                    description={t('Automatically attach selected items to new thread')}
                                     onClick={handleAddSelectedOnNewThreadToggle}
                                     hasBorder
-                                    tooltip="When enabled, any items you have selected in Zotero will be automatically added as sources when you start a new conversation thread."
+                                    tooltip={t('When enabled, any items you have selected in Zotero will be automatically added as sources when you start a new conversation thread.')}
                                     control={
                                         <input
                                             type="checkbox"
@@ -375,11 +376,11 @@ const PreferencePage: React.FC = () => {
                                     }
                                 />
                                 <SettingsRow
-                                    title="Add Selected Items When Opening"
-                                    description="Automatically attach selected items when opening AlphainZ"
+                                    title={t('Add Selected Items When Opening')}
+                                    description={t('Automatically attach selected items when opening AlphainZ')}
                                     onClick={handleAddSelectedOnOpenToggle}
                                     hasBorder
-                                    tooltip="When enabled, any items you have selected in Zotero will be automatically added as sources when you open AlphainZ."
+                                    tooltip={t('When enabled, any items you have selected in Zotero will be automatically added as sources when you open AlphainZ.')}
                                     control={
                                         <input
                                             type="checkbox"
@@ -391,8 +392,8 @@ const PreferencePage: React.FC = () => {
                                     }
                                 />
                                 <SettingsRow
-                                    title="Add Provenance Note to Imported Items"
-                                    description="Add a child note that links the item back to its AlphainZ conversation"
+                                    title={t('Add Provenance Note to Imported Items')}
+                                    description={t('Add a child note that links the item back to its AlphainZ conversation')}
                                     onClick={handleAddProvenanceNoteToggle}
                                     hasBorder
                                     control={
@@ -406,11 +407,11 @@ const PreferencePage: React.FC = () => {
                                     }
                                 />
                                 <SettingsRow
-                                    title="Announce Responses for Screen Readers"
-                                    description="Move focus to screen-reader text when AlphainZ starts and finishes generating a response"
+                                    title={t('Announce Responses for Screen Readers')}
+                                    description={t('Move focus to screen-reader text when AlphainZ starts and finishes generating a response')}
                                     onClick={handleFocusResponseForScreenReadersToggle}
                                     hasBorder
-                                    tooltip="When enabled, focus moves from the chat input to screen-reader-only status text while AlphainZ generates, then to a screen-reader-only copy of the completed response."
+                                    tooltip={t('When enabled, focus moves from the chat input to screen-reader-only status text while AlphainZ generates, then to a screen-reader-only copy of the completed response.')}
                                     control={
                                         <input
                                             type="checkbox"
@@ -422,13 +423,13 @@ const PreferencePage: React.FC = () => {
                                     }
                                 />
                                 <SettingsRow
-                                    title="Preview Note Edits in Editor"
+                                    title={t('Preview Note Edits in Editor')}
                                     description={diffPreviewSupported
-                                        ? "Show proposed note edits inline in the Zotero note editor"
-                                        : "Requires Zotero 8 — unavailable on this version"}
+                                        ? t('Show proposed note edits inline in the Zotero note editor')
+                                        : t('Requires Zotero 8 — unavailable on this version')}
                                     onClick={diffPreviewSupported ? handleShowDiffPreviewToggle : undefined}
                                     hasBorder
-                                    tooltip="When enabled, edit_note proposals appear as a colored diff directly in the note editor with Apply / Reject controls. When disabled, approvals fall back to the sidebar preview. Turn off if a Zotero update causes the in-editor preview to misbehave."
+                                    tooltip={t('When enabled, edit_note proposals appear as a colored diff directly in the note editor with Apply / Reject controls. When disabled, approvals fall back to the sidebar preview. Turn off if a Zotero update causes the in-editor preview to misbehave.')}
                                     control={
                                         <input
                                             type="checkbox"
@@ -458,28 +459,25 @@ const PreferencePage: React.FC = () => {
             {/* ===== SYNC TAB ===== */}
             {effectiveActiveTab === 'sync' && (
                 <>
-                    <SectionLabel>Libraries</SectionLabel>
+                    <SectionLabel>{t('Libraries')}</SectionLabel>
                     <ExcludedLibrariesList />
 
-                    <SectionLabel>Titles and abstracts</SectionLabel>
+                    <SectionLabel>{t('Titles and abstracts')}</SectionLabel>
                     <SettingsGroup>
                         <SettingsRow
-                            title="Titles and abstracts"
+                            title={t('Titles and abstracts')}
                             description={
                                 semanticSearchReady ? (
                                     <>
-                                    What lets the agent find an item by subject. It is built and kept
-                                    up to date on its own, so there is normally nothing to do here —
-                                    run a check if search results look out of date. Reading inside
-                                    the PDFs is a separate, larger index, under Model.
+                                    {t('What lets the agent find an item by subject. It is built and kept up to date on its own, so there is normally nothing to do here — run a check if search results look out of date. Reading inside the PDFs is a separate, larger index, under Model.')}
                                     {embeddingIndexState.failedItems > 0 && (
                                         <span className="display-flex font-color-yellow mt-1">
-                                            {embeddingIndexState.failedItems} items failed to index
+                                            {tn(embeddingIndexState.failedItems, '{count} item failed to index', '{count} items failed to index')}
                                         </span>
                                     )}
                                     {embeddingIndexState.status === 'error' && embeddingIndexState.error && (
                                         <span className="display-flex font-color-red mt-1">
-                                            Error: {embeddingIndexState.error}
+                                            {t('Error:')}{' '}{embeddingIndexState.error}
                                         </span>
                                     )}
                                     </>
@@ -494,10 +492,10 @@ const PreferencePage: React.FC = () => {
                                      */
                                     <span className="display-flex font-color-yellow" data-testid="search-index-state">
                                         {semantic.status === 'off'
-                                            ? 'Off: no embedding provider is chosen, so this index is not built and the agent '
-                                                + 'cannot find items by subject. Choose a provider under Model to turn it on.'
-                                            : `${embeddingProviderProblem(semantic)} This index is built by itself once that is `
-                                                + 'fixed; until then the agent cannot find items by subject.'}
+                                            ? t('Off: no embedding provider is chosen, so this index is not built and the agent '
+                                                + 'cannot find items by subject. Choose a provider under Model to turn it on.')
+                                            : `${embeddingProviderProblem(semantic)} ` + t('This index is built by itself once that is '
+                                                + 'fixed; until then the agent cannot find items by subject.')}
                                     </span>
                                 )
                             }
@@ -520,7 +518,7 @@ const PreferencePage: React.FC = () => {
                                         onClick={() => setActiveTab('models')}
                                         style={{ padding: '4px 6px' }}
                                     >
-                                        {semantic.status === 'off' ? 'Choose a provider' : 'Fix it under Model'}
+                                        {semantic.status === 'off' ? t('Choose a provider') : t('Fix it under Model')}
                                     </Button>
                                 )
                             }

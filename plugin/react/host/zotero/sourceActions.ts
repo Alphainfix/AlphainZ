@@ -1,6 +1,7 @@
 import { logger } from '@beaver/agent-core/platform/logger';
 import { store } from '../../store';
 import { addPopupMessageAtom } from '../../utils/popupMessageUtils';
+import { msg, t } from '../../../src/utils/i18n';
 
 /** Surface a transient warning when an external file can't be opened here. */
 function notifyExternalFileUnavailable(): void {
@@ -8,8 +9,8 @@ function notifyExternalFileUnavailable(): void {
         store.set(addPopupMessageAtom, {
             id: 'external-file-unavailable',
             type: 'warning',
-            title: 'File Not Available',
-            text: 'This file is not available on this computer. It was removed or attached on another device.',
+            title: t('File Not Available'),
+            text: t('This file is not available on this computer. It was removed or attached on another device.'),
         });
     } catch (e) {
         logger(`notifyExternalFileUnavailable: failed to surface popup: ${e}`, 2);
@@ -23,37 +24,39 @@ function notifyExternalFileUnavailable(): void {
 export type UnavailableReferenceKind = 'item' | 'collection' | 'annotation' | 'action';
 export type UnavailableReferenceCause = 'missing' | 'library_unavailable';
 
+/** English; shown through `t`. */
 const UNAVAILABLE_REFERENCE_COPY: Record<UnavailableReferenceKind, { title: string; text: string }> = {
     item: {
-        title: 'Item Not Available',
-        text: 'This item is no longer in your Zotero library. It may have been deleted.',
+        title: msg('Item Not Available'),
+        text: msg('This item is no longer in your Zotero library. It may have been deleted.'),
     },
     collection: {
-        title: 'Collection Not Available',
-        text: 'This collection is no longer in your Zotero library. It may have been deleted.',
+        title: msg('Collection Not Available'),
+        text: msg('This collection is no longer in your Zotero library. It may have been deleted.'),
     },
     annotation: {
-        title: 'Annotation Not Available',
-        text: 'This annotation is no longer in your Zotero library. It may have been deleted.',
+        title: msg('Annotation Not Available'),
+        text: msg('This annotation is no longer in your Zotero library. It may have been deleted.'),
     },
     action: {
-        title: 'Action Not Found',
-        text: 'This action is not available on this computer. It may have been deleted or created on another device.',
+        title: msg('Action Not Found'),
+        text: msg('This action is not available on this computer. It may have been deleted or created on another device.'),
     },
 };
 
+/** English; shown through `t`. */
 const LIBRARY_UNAVAILABLE_COPY: Record<Exclude<UnavailableReferenceKind, 'action'>, { title: string; text: string }> = {
     item: {
-        title: 'Item Not Available',
-        text: "This item is in a library that isn't available on this computer. It may be a group library you haven't joined on this device.",
+        title: msg('Item Not Available'),
+        text: msg("This item is in a library that isn't available on this computer. It may be a group library you haven't joined on this device."),
     },
     collection: {
-        title: 'Collection Not Available',
-        text: "This collection is in a library that isn't available on this computer. It may be a group library you haven't joined on this device.",
+        title: msg('Collection Not Available'),
+        text: msg("This collection is in a library that isn't available on this computer. It may be a group library you haven't joined on this device."),
     },
     annotation: {
-        title: 'Annotation Not Available',
-        text: "This annotation is in a library that isn't available on this computer. It may be a group library you haven't joined on this device.",
+        title: msg('Annotation Not Available'),
+        text: msg("This annotation is in a library that isn't available on this computer. It may be a group library you haven't joined on this device."),
     },
 };
 
@@ -71,13 +74,12 @@ export function notifyReferenceUnavailable(
     const copy = cause === 'library_unavailable' && kind !== 'action'
         ? LIBRARY_UNAVAILABLE_COPY[kind]
         : UNAVAILABLE_REFERENCE_COPY[kind];
-    const { title, text } = copy;
     try {
         store.set(addPopupMessageAtom, {
             id: `reference-unavailable-${kind}-${cause}`,
             type: 'warning',
-            title,
-            text,
+            title: t(copy.title),
+            text: t(copy.text),
         });
     } catch (e) {
         logger(`notifyReferenceUnavailable: failed to surface popup: ${e}`, 2);

@@ -29,6 +29,7 @@ import type { ToolDispatcher } from './agentLoop';
 import { formatTokenCount } from './runLimits';
 import { isModelRequestError, isQuotaErrorCode, parsePartialToolArguments } from './sse';
 import { WRITE_TOOL_NAMES } from './writeTools';
+import { msg, t } from '../../utils/i18n';
 
 /**
  * The slice of `WSCallbacks` a local run drives.
@@ -240,7 +241,7 @@ export interface RunErrorReport {
 }
 
 /** Where every provider's key, address and model list are set. */
-const PROVIDER_SETTINGS = 'Settings → Model → Providers';
+const PROVIDER_SETTINGS = msg('Settings → Model → Providers');
 
 /**
  * How finely a streaming call's argument preview follows the stream: it is
@@ -278,12 +279,13 @@ function ranWriteTool(messages: ChatMessage[]): boolean {
 export function classifyRunError(error: Error): RunErrorReport {
     if (!isModelRequestError(error)) {
         if (error.name === 'AbortError') {
-            return { type: 'run_cancelled', message: 'Run cancelled.', is_retryable: false };
+            return { type: 'run_cancelled', message: t('Run cancelled.'), is_retryable: false };
         }
-        return { type: 'llm_error', message: error.message || 'The run failed.', is_retryable: true };
+        return { type: 'llm_error', message: error.message || t('The run failed.'), is_retryable: true };
     }
 
-    const who = error.label || 'The model provider';
+    const who = error.label || t('The model provider');
+    const settings = t(PROVIDER_SETTINGS);
     const reason = error.detail ? { user_facing_details: error.detail } : {};
     const status = error.status;
     const tag = status !== undefined ? ` (${status})` : '';
@@ -297,16 +299,16 @@ export function classifyRunError(error: Error): RunErrorReport {
 
     switch (error.kind) {
         case 'cancelled':
-            return { type: 'run_cancelled', message: 'Run cancelled.', is_retryable: false };
+            return { type: 'run_cancelled', message: t('Run cancelled.'), is_retryable: false };
         case 'network':
             return report(
                 'llm_network_error',
-                `Could not reach ${who}. Check your internet connection, or the address if this is a server you run yourself.`,
+                t('Could not reach {who}. Check your internet connection, or the address if this is a server you run yourself.', { who }),
             );
         case 'timeout':
-            return report('llm_timeout', `${who} stopped responding. Try again in a moment.`);
+            return report('llm_timeout', t('{who} stopped responding. Try again in a moment.', { who }));
         case 'stream':
-            return report('llm_streaming_error', `The connection to ${who} broke off mid-reply. Try again.`);
+            return report('llm_streaming_error', t('The connection to {who} broke off mid-reply. Try again.', { who }));
         default:
             break;
     }
@@ -314,57 +316,57 @@ export function classifyRunError(error: Error): RunErrorReport {
     if (status === 401) {
         return report(
             'llm_auth_error',
-            `${who} rejected the API key (401). Check the key on its card under ${PROVIDER_SETTINGS}.`,
+            t('{who} rejected the API key (401). Check the key on its card under {settings}.', { who, settings }),
         );
     }
     if (status === 403) {
         return REGION_ERROR_CODES.has(error.code ?? '')
             ? report(
                   'llm_model_access_denied',
-                  `${who} is not available in your region (403). Choose another provider under Settings → Model.`,
+                  t('{who} is not available in your region (403). Choose another provider under Settings → Model.', { who }),
               )
             : report(
                   'llm_auth_error',
-                  `${who} refused the request (403). The key may not have access to this model — check it on its card under ${PROVIDER_SETTINGS}.`,
+                  t('{who} refused the request (403). The key may not have access to this model — check it on its card under {settings}.', { who, settings }),
               );
     }
     if (status === 402) {
         return report(
             'llm_insufficient_credits',
-            `${who} says the account is out of credit (402). Top it up with the provider, or choose another model under Settings → Model.`,
+            t('{who} says the account is out of credit (402). Top it up with the provider, or choose another model under Settings → Model.', { who }),
         );
     }
     if (isQuotaErrorCode(error.code)) {
         return report(
             'llm_quota_exceeded',
-            `${who} says the quota or balance is used up${tag}. Top it up or wait for it to reset, or choose another model under Settings → Model.`,
+            t('{who} says the quota or balance is used up{tag}. Top it up or wait for it to reset, or choose another model under Settings → Model.', { who, tag }),
         );
     }
     if (status === 429) {
-        return report('llm_rate_limit', `${who} is limiting how fast requests can be sent (429). Wait a moment, then retry.`, {
+        return report('llm_rate_limit', t('{who} is limiting how fast requests can be sent (429). Wait a moment, then retry.', { who }), {
             ...(error.retryAfterMs !== undefined ? { retry_after: Math.ceil(error.retryAfterMs / 1000) } : {}),
         });
     }
     if (status === 404 || error.code === 'model_not_found') {
         return report(
             'llm_invalid_model',
-            `${who} could not find the model or the endpoint${tag}. Check the model name, and the address if you set one, under ${PROVIDER_SETTINGS}.`,
+            t('{who} could not find the model or the endpoint{tag}. Check the model name, and the address if you set one, under {settings}.', { who, tag, settings }),
         );
     }
     if (status === 413 || CONTEXT_ERROR_CODES.has(error.code ?? '')) {
         return report(
             'llm_context_window_exceeded',
-            `This conversation is too long for the model${tag}. Start a new chat, or ask about fewer papers at once.`,
+            t('This conversation is too long for the model{tag}. Start a new chat, or ask about fewer papers at once.', { tag }),
         );
     }
     if (status === 408 || status === 504) {
-        return report('llm_timeout', `${who} took too long to answer${tag}. Try again in a moment.`);
+        return report('llm_timeout', t('{who} took too long to answer{tag}. Try again in a moment.', { who, tag }));
     }
     if (status !== undefined && status >= 500) {
-        return report('llm_service_unavailable', `${who} had a server problem${tag}. Try again in a moment.`);
+        return report('llm_service_unavailable', t('{who} had a server problem{tag}. Try again in a moment.', { who, tag }));
     }
     if (status !== undefined && status >= 400) {
-        return report('invalid_request', `${who} rejected the request${tag}.`);
+        return report('invalid_request', t('{who} rejected the request{tag}.', { who, tag }));
     }
     // Reported inside a 200: an upstream failure mid-reply, or a body that
     // explains why the request was refused. Without a sentence from the
@@ -372,8 +374,8 @@ export function classifyRunError(error: Error): RunErrorReport {
     // a missing body, the finish reason the reply ended with.
     const specific = error.detail ? {} : { user_facing_details: error.message };
     return error.retryable
-        ? report('llm_service_unavailable', `${who} could not finish the reply. Try again in a moment.`, specific)
-        : report('invalid_request', `${who} returned an error instead of a reply.`, specific);
+        ? report('llm_service_unavailable', t('{who} could not finish the reply. Try again in a moment.', { who }), specific)
+        : report('invalid_request', t('{who} returned an error instead of a reply.', { who }), specific);
 }
 
 /**
@@ -624,8 +626,8 @@ export async function runLocalAgent(options: LocalRunOptions): Promise<AgentLoop
                             event: 'warning',
                             run_id: runId,
                             type: 'semantic_search_failed',
-                            message: `Topic search could not run: ${reason} Keyword and metadata search still `
-                                + 'work, so the answer may miss papers that use other words.',
+                            message: t('Topic search could not run: {reason} Keyword and metadata search still '
+                                + 'work, so the answer may miss papers that use other words.', { reason }),
                         });
                     }
                 }
@@ -677,7 +679,7 @@ export async function runLocalAgent(options: LocalRunOptions): Promise<AgentLoop
             // Said outright, so nobody presses Retry expecting something the
             // automatic retries have not already tried.
             ...(result.attempts && result.attempts > 1
-                ? { message: `${report.message} (Tried ${result.attempts} times.)` }
+                ? { message: t('{message} (Tried {count} times.)', { message: report.message, count: result.attempts }) }
                 : {}),
         });
         close();
@@ -689,8 +691,8 @@ export async function runLocalAgent(options: LocalRunOptions): Promise<AgentLoop
             event: 'warning',
             run_id: runId,
             type: 'iteration_limit',
-            message: `Stopped after ${result.iterations} steps, the limit set under "Model requests per question" `
-                + 'in Settings → Advanced. Ask it to continue, raise the limit, or ask a narrower question.',
+            message: t('Stopped after {count} steps, the limit set under "Model requests per question" '
+                + 'in Settings → Advanced. Ask it to continue, raise the limit, or ask a narrower question.', { count: result.iterations }),
         });
     }
 
@@ -702,7 +704,7 @@ export async function runLocalAgent(options: LocalRunOptions): Promise<AgentLoop
     // to act. The wording is about the turn that was cut off, not the run: a
     // preamble from an earlier step is not the answer being cut.
     if (result.reason === 'length') {
-        const capPhrase = outputTokenLimit ? `${formatTokenCount(outputTokenLimit)}-token` : 'per-reply';
+        const cap = outputTokenLimit ? t('{tokens}-token', { tokens: formatTokenCount(outputTokenLimit) }) : t('per-reply');
         const lastTurnText = result.lastTurnText ?? result.text;
         callbacks.onWarning?.({
             event: 'warning',
@@ -711,16 +713,18 @@ export async function runLocalAgent(options: LocalRunOptions): Promise<AgentLoop
             // Named where the user can act on it: the limit is a setting now,
             // and its value is the first thing worth knowing.
             message: result.truncatedToolCall
-                ? `The reply reached the ${capPhrase} output limit while writing a ${result.truncatedToolCall} call, so `
-                  + ((result.truncatedTurnCalls ?? 1) > 1
-                      ? `none of the ${result.truncatedTurnCalls} tool calls in that step ran. `
-                      : 'that call did not run. ')
-                  + 'Raise "Output tokens per reply" in Settings → Advanced, or ask for less in one go.'
+                ? ((result.truncatedTurnCalls ?? 1) > 1
+                    ? t('The reply reached the {cap} output limit while writing a {tool} call, so none of the {count} '
+                        + 'tool calls in that step ran. Raise "Output tokens per reply" in Settings → Advanced, or ask for '
+                        + 'less in one go.', { cap, tool: result.truncatedToolCall, count: result.truncatedTurnCalls ?? 1 })
+                    : t('The reply reached the {cap} output limit while writing a {tool} call, so that call did not run. '
+                        + 'Raise "Output tokens per reply" in Settings → Advanced, or ask for less in one go.',
+                        { cap, tool: result.truncatedToolCall }))
                 : lastTurnText.trim()
-                  ? `The answer was cut off at the ${capPhrase} output limit. Ask it to continue, or raise `
-                    + '"Output tokens per reply" in Settings → Advanced.'
-                  : `The model spent its whole ${capPhrase} output budget thinking, before it could answer or use `
-                    + 'a tool. Raise "Output tokens per reply" in Settings → Advanced, or lower the thinking effort.',
+                  ? t('The answer was cut off at the {cap} output limit. Ask it to continue, or raise '
+                    + '"Output tokens per reply" in Settings → Advanced.', { cap })
+                  : t('The model spent its whole {cap} output budget thinking, before it could answer or use '
+                    + 'a tool. Raise "Output tokens per reply" in Settings → Advanced, or lower the thinking effort.', { cap }),
         });
     }
 
@@ -736,7 +740,7 @@ export async function runLocalAgent(options: LocalRunOptions): Promise<AgentLoop
             event: 'warning',
             run_id: runId,
             type: 'empty_response',
-            message: 'The model ended its turn without writing a reply. Ask again, or try another model.',
+            message: t('The model ended its turn without writing a reply. Ask again, or try another model.'),
         });
     }
 
@@ -745,7 +749,7 @@ export async function runLocalAgent(options: LocalRunOptions): Promise<AgentLoop
             event: 'warning',
             run_id: runId,
             type: 'content_filter',
-            message: "The provider's content filter stopped this response.",
+            message: t("The provider's content filter stopped this response."),
         });
     }
 
@@ -754,8 +758,8 @@ export async function runLocalAgent(options: LocalRunOptions): Promise<AgentLoop
             event: 'warning',
             run_id: runId,
             type: 'stream_interrupted',
-            message: 'The connection closed before the model finished, so this answer may be incomplete. '
-                + 'Ask it to continue, or retry.',
+            message: t('The connection closed before the model finished, so this answer may be incomplete. '
+                + 'Ask it to continue, or retry.'),
         });
     }
 

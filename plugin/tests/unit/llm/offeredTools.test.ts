@@ -186,7 +186,11 @@ describe('with changes to the library turned off', () => {
         const [root, tab, section] = LIBRARY_WRITES_SETTING.split(' → ');
         expect(root).toBe('Settings');
         const read = (path: string) => readFileSync(new URL(`../../../${path}`, import.meta.url), 'utf8');
-        expect(read('react/components/preferences/PreferencePage.tsx')).toContain(`label: '${tab}'`);
+        // The interface text is English passed through the translation call.
+        const shows = (source: string, text: string, forms: string[]) =>
+            expect(forms.some((form) => source.includes(form)), `${text} is shown`).toBe(true);
+        const page = read('react/components/preferences/PreferencePage.tsx');
+        shows(page, tab, [`label: '${tab}'`, `label: msg('${tab}')`]);
         const tabSource: Record<string, string> = {
             Model: 'react/components/preferences/ModelSettingsSection.tsx',
             Permissions: 'react/components/preferences/PermissionsSection.tsx',
@@ -194,7 +198,7 @@ describe('with changes to the library turned off', () => {
         expect(Object.keys(tabSource)).toContain(tab);
         const source = read(tabSource[tab]);
         expect(source).toContain("setPref('allowAgentWrites'");
-        expect(source).toContain(`>${section}<`);
+        shows(source, section, [`>${section}<`, `t('${section}')`]);
     });
 
     it('says nothing of the kind once they are on', () => {

@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatAuthors } from './utils';
+import { t } from '../../../src/utils/i18n';
 
 interface ReferenceMetadataDisplayProps {
     /** Item title */
@@ -33,7 +34,7 @@ const ReferenceMetadataDisplay: React.FC<ReferenceMetadataDisplayProps> = ({
     return (
         <div className="display-flex flex-col gap-1 min-w-0">
             <div className={getTextClasses()}>
-                {title || 'Untitled Item'}
+                {title || t('Untitled Item')}
             </div>
             {formattedAuthors && (
                 <div className={`${getTextClasses('font-color-secondary')} truncate`}>

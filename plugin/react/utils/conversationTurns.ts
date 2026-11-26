@@ -19,6 +19,7 @@ import { WRITE_TOOL_NAMES } from '../../src/services/llm/writeTools';
 import { mathToPlainText, replaceMath } from '../../src/utils/latexToRichText';
 import { extractAssistantResponseMarkdown, toScreenReaderText } from './screenReaderAnnouncements';
 import { finalAnswerText } from './selectionChatComment';
+import { t, tn } from '../../src/utils/i18n';
 
 /** Where a turn's answer stands, taken from the last run that worked on it. */
 export type TurnStatus = 'answering' | 'waiting' | 'done' | 'stopped' | 'failed';
@@ -100,7 +101,7 @@ const FORMULA_SLOT = /\uE000(\d+)\uE001/g;
 
 /**
  * Answer markdown as one line of plain text: no markdown syntax, no citation
- * tags, formulas as characters (`|0⟩ ↔ |1⟩`, not `|0\rangle`), and a table
+ * tags, formulas as characters (`⟨x⟩ ↔ ⟨y⟩`, not `\langle x\rangle`), and a table
  * named rather than flattened.
  */
 export function plainAnswerText(markdown: string): string {
@@ -177,7 +178,7 @@ function failureLine(run: AgentRun): string {
         ? toScreenReaderText(stripRunErrorTypePrefix(error.message, error.type))
         : '';
     const sentence = message.match(/^.*?[.!?](?=\s|$)/)?.[0] ?? message;
-    return `Failed: ${clipText(sentence || getRunErrorTitle(error?.type), MAX_ERROR_CHARS)}`;
+    return t('Failed: {reason}', { reason: clipText(sentence || getRunErrorTitle(error?.type), MAX_ERROR_CHARS) });
 }
 
 function questionText(run: AgentRun): string {
@@ -187,12 +188,12 @@ function questionText(run: AgentRun): string {
         .trim();
     if (text) return clipText(text, MAX_QUESTION_CHARS);
     const attachments = prompt.attachments?.length ?? 0;
-    if (attachments > 0) return attachments === 1 ? '1 attachment' : `${attachments} attachments`;
-    return prompt.is_resume ? 'Continued answer' : 'Untitled question';
+    if (attachments > 0) return tn(attachments, '{count} attachment', '{count} attachments');
+    return prompt.is_resume ? t('Continued answer') : t('Untitled question');
 }
 
 function changesLabel(count: number): string {
-    return count === 1 ? '(1 library change)' : `(${count} library changes)`;
+    return tn(count, '({count} library change)', '({count} library changes)');
 }
 
 function toTurn(runs: AgentRun[], index: number): ConversationTurn {
@@ -203,9 +204,9 @@ function toTurn(runs: AgentRun[], index: number): ConversationTurn {
     let citations = 0;
 
     if (status === 'answering') {
-        answer = 'Answering…';
+        answer = t('Answering…');
     } else if (status === 'waiting') {
-        answer = 'Waiting for your approval…';
+        answer = t('Waiting for your approval…');
     } else {
         const summaries = runs.map(summarizeRun);
         citations = summaries.reduce((sum, summary) => sum + summary.citations, 0);
@@ -217,9 +218,9 @@ function toTurn(runs: AgentRun[], index: number): ConversationTurn {
         } else if (written) {
             answer = written;
         } else if (status === 'stopped') {
-            answer = isInterruptedRun(last) ? 'Cut off before it answered.' : 'Stopped before it answered.';
+            answer = isInterruptedRun(last) ? t('Cut off before it answered.') : t('Stopped before it answered.');
         } else {
-            answer = 'No written answer.';
+            answer = t('No written answer.');
         }
     }
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { SearchMenuItem } from '@beaver/agent-ui/primitives/SearchMenu';
 import { LibraryMenuItemContext, createLibraryMenuItem } from '../utils/menuItemFactories';
+import { t } from '../../../../../src/utils/i18n';
 
 interface UseLibrariesMenuOptions {
     isActive: boolean;
@@ -60,7 +61,7 @@ export const useLibrariesMenu = ({
         const items = filteredLibraries.map((library) =>
             createLibraryMenuItem(library, libraryMenuItemContext, searchQuery)
         );
-        const header: SearchMenuItem = { label: 'Select Library', isGroupHeader: true, onClick: () => {} };
+        const header: SearchMenuItem = { label: t('Select Library'), isGroupHeader: true, onClick: () => {} };
         if (verticalPosition === 'above') {
             setMenuItems([...items.reverse(), header]);
         } else {

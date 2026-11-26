@@ -10,6 +10,7 @@ import { ChipWithPopup, type ChipPopupContent } from '@beaver/agent-ui/chat/Chip
 import { ChipButton } from '../agentRuns/requestChips/ChipButton';
 import { ChipRemovableIcon } from '../agentRuns/requestChips/ChipRemovableIcon';
 import { getHost } from '@beaver/agent-ui/host';
+import { t } from '../../../src/utils/i18n';
 
 const MAX_FILENAME_LENGTH = 25;
 
@@ -89,8 +90,8 @@ export const ExternalFileButton = forwardRef<HTMLButtonElement, ExternalFileButt
         // in Finder/Explorer. Each no-ops gracefully when the copy is
         // unavailable on this device.
         const fileMenuItems: MenuItem[] = [
-            { label: 'Open File', icon: ExternalLinkIcon, onClick: openFile },
-            { label: 'Show File', icon: FileViewIcon, onClick: showFile },
+            { label: t('Open File'), icon: ExternalLinkIcon, onClick: openFile },
+            { label: t('Show File'), icon: FileViewIcon, onClick: showFile },
         ];
 
         const { isRemoveMenuOpen, contextMenuHandlers, removeHandlers, removeMenu } = useRemoveContextMenu({
@@ -117,8 +118,8 @@ export const ExternalFileButton = forwardRef<HTMLButtonElement, ExternalFileButt
                 />
             ),
             title: filename,
-            subtitle: { text: 'External file' },
-            action: { icon: ExternalLinkIcon, label: 'Open external file', iconClassName: 'scale-75' },
+            subtitle: { text: t('External file') },
+            action: { icon: ExternalLinkIcon, label: t('Open external file'), iconClassName: 'scale-75' },
         };
 
         return (

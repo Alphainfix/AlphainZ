@@ -18,6 +18,7 @@ import { citationLocationDisplay } from '../utils/citationLocation';
 import { ExternalReference } from '@beaver/agent-core/types/externalReferences';
 import { ZoteroItemReference } from '@beaver/agent-core/types/zotero';
 import { getHost, type ResolvedItemDisplay } from '../host';
+import { t } from '../i18n';
 
 interface CitedSourcesListProps {
     citations: CitedSource[];
@@ -187,7 +188,7 @@ const CitedSourcesList: React.FC<CitedSourcesListProps> = ({
                                             to go and check the claim. */}
                                         {location && (
                                             <span className="ml-2 flex-shrink-0 font-color-tertiary whitespace-nowrap">
-                                                {`p. ${location}`}
+                                                {t('p. {pages}', { pages: location })}
                                             </span>
                                         )}
                                     </div>
@@ -214,7 +215,7 @@ const CitedSourcesList: React.FC<CitedSourcesListProps> = ({
                                                 className: 'scale-12',
                                             })
                                         ) : isExternalFile ? (
-                                            <Tooltip content="Open file" singleLine>
+                                            <Tooltip content={t('Open file')} singleLine>
                                                 <IconButton
                                                     icon={ExternalLinkIcon}
                                                     variant="ghost-secondary"
@@ -224,14 +225,14 @@ const CitedSourcesList: React.FC<CitedSourcesListProps> = ({
                                                             getHost().navigation?.launchExternalFile(ref.ext_key);
                                                         }
                                                     }}
-                                                    ariaLabel="Open file"
-                                                    title="Open file"
+                                                    ariaLabel={t('Open file')}
+                                                    title={t('Open file')}
                                                     className="display-flex scale-11"
                                                 />
                                             </Tooltip>
                                         ) : (
                                             <>
-                                                <Tooltip content="Reveal in Zotero" singleLine>
+                                                <Tooltip content={t('Reveal in Zotero')} singleLine>
                                                     <IconButton
                                                         icon={() => (
                                                             <>
@@ -244,14 +245,14 @@ const CitedSourcesList: React.FC<CitedSourcesListProps> = ({
                                                             const target = mappedZoteroItem || zoteroRef;
                                                             if (target) getHost().navigation?.revealInLibrary(target);
                                                         }}
-                                                        ariaLabel="Reveal source"
-                                                        title="Reveal in Zotero"
+                                                        ariaLabel={t('Reveal source')}
+                                                        title={t('Reveal in Zotero')}
                                                         className="display-flex scale-11"
                                                         disabled={!mappedZoteroItem && !zoteroRef}
                                                     />
                                                 </Tooltip>
                                                 {citation.citation_type !== "note" && (
-                                                    <Tooltip content="Open PDF" singleLine>
+                                                    <Tooltip content={t('Open PDF')} singleLine>
                                                         <IconButton
                                                             icon={PdfIcon}
                                                             variant="ghost-secondary"
@@ -259,8 +260,8 @@ const CitedSourcesList: React.FC<CitedSourcesListProps> = ({
                                                                 const target = mappedZoteroItem || zoteroRef;
                                                                 if (target) getHost().navigation?.openSource(target);
                                                             }}
-                                                            ariaLabel="Open PDF"
-                                                            title="Open PDF"
+                                                            ariaLabel={t('Open PDF')}
+                                                            title={t('Open PDF')}
                                                             className="display-flex scale-12"
                                                             disabled={!isPdfButtonEnabled(citation, mappedZoteroItem)}
                                                         />

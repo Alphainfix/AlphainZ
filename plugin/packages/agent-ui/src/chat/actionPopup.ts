@@ -3,6 +3,7 @@ import type { ChipPopupContent } from './ChipPopup';
 import type { ActionCategory, KnownActionCategory } from '@beaver/agent-core/types/actions';
 import { ZapIcon, BookSearchIcon, LayersIcon, HighlighterIcon, QuillWriteIcon } from '../icons';
 import { truncateText } from '../utils/stringUtils';
+import { t } from '../i18n';
 
 /**
  * Hover-card content for /command action pills — both the live pill in the
@@ -47,7 +48,7 @@ export interface ActionPopupSource {
 }
 
 export function buildActionPopup(source: ActionPopupSource): ChipPopupContent {
-    const title = source.title || (source.command ? `/${source.command}` : 'Action');
+    const title = source.title || (source.command ? `/${source.command}` : t('Action'));
     // Prefer the user-authored description; fall back to a preview of the prompt.
     const subtitleSource = source.description?.trim() || source.prompt || '';
     const subtitleText = subtitleSource
@@ -60,7 +61,7 @@ export function buildActionPopup(source: ActionPopupSource): ChipPopupContent {
             icon:
                 source.icon ??
                 ((source.category && CATEGORY_ICONS.get(source.category)) || ZapIcon),
-            label: 'Click to edit in preferences',
+            label: t('Click to edit in preferences'),
         },
     };
 }

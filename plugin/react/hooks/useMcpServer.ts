@@ -2,18 +2,23 @@
  * Hook to register an MCP (Model Context Protocol) server on Zotero's HTTP server.
  *
  * When the `mcpServerEnabled` preference is true, this hook creates an MCPService,
- * registers all tools, and mounts the /beaver/mcp endpoint.
+ * registers all tools, and mounts the /alphainz/mcp endpoint.
  * The endpoint speaks JSON-RPC 2.0 (MCP Streamable HTTP transport), so any MCP
  * client (Claude Code, Claude Desktop via mcp-remote, Cursor) can call the tools.
  *
  * Tools: search_by_topic, search_by_metadata, read_attachment, read_note,
- *        get_item_details, list_collections, list_tags, list_items
+ *        get_item_details, list_collections, list_tags, list_items, plus the
+ *        assistant's own library tools from `mcpLibraryTools` (full-text and
+ *        figure search, search_in_document, view_page_images,
+ *        view_attachment_image, find_annotations, get_annotations,
+ *        list_libraries)
  * Optional tool: create_note
  */
 
 import { useEffect } from 'react';
 import { useAtomValue } from 'jotai';
 import { MCPService } from '../../src/services/mcpService';
+import { mcpLibraryTools } from './mcpLibraryTools';
 import {
     handleItemSearchByTopicRequest,
     handleItemSearchByMetadataRequest,
@@ -1511,6 +1516,9 @@ export function useMcpServer() {
 
         for (const { def, handler } of tools) {
             service.registerTool(def.name, def, handler);
+        }
+        for (const { definition, handler, isAvailable } of mcpLibraryTools()) {
+            service.registerTool(definition.name, definition, handler, isAvailable ? { isAvailable } : {});
         }
 
         const registered = service.register();

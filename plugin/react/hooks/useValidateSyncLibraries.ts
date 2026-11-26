@@ -5,6 +5,7 @@ import { accountService } from '@beaver/agent-core/transport/clients/accountServ
 import { useLibraryDeletions } from './useLibraryDeletions';
 import { ZoteroLibrary } from '@beaver/agent-core/types/zotero';
 import { logger } from '@beaver/agent-core/platform/logger';
+import { t } from '../../src/utils/i18n';
 
 /**
  * Validates that libraries in syncedLibraryIds exist in Zotero.
@@ -61,7 +62,7 @@ export function useValidateSyncLibraries() {
 
                 const buttonIndex = Zotero.Prompt.confirm({
                     window: Zotero.getMainWindow(),
-                    title: 'Remove Library from Syncing?',
+                    title: t('Remove Library from Syncing?'),
                     text: `The library "${name}" is no longer available in Zotero.\n\nDo you want to remove it from AlphainZ? This will delete all associated data.`,
                     button0: Zotero.Prompt.BUTTON_TITLE_YES,
                     button1: Zotero.Prompt.BUTTON_TITLE_NO,

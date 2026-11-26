@@ -10,6 +10,7 @@ import { Spinner } from '../icons/icons';
 import Button from '@beaver/agent-ui/primitives/Button';
 import { isSkippedFilesDialogVisibleAtom } from '../../atoms/ui';
 import { errorGroupsAtom } from '../../atoms/errors';
+import { t } from '../../../src/utils/i18n';
 
 /**
  * Convert plural "Files" to singular "File" when count is 1
@@ -50,7 +51,7 @@ export const SkippedFilesSummary: React.FC = () => {
                 <div className="mt-1">
                     <Spinner size={14} />
                 </div>
-                <div className="ml-2 font-color-tertiary">Loading...</div>
+                <div className="ml-2 font-color-tertiary">{t('Loading...')}</div>
             </div>
         );
     }
@@ -127,12 +128,12 @@ export const SkippedFilesSummary: React.FC = () => {
                     variant="outline"
                     onClick={handleShowFiles}
                 >
-                    Show Files
+                    {t('Show Files')}
                 </Button>
                 {isLoading && (
                     <div className="mr-2 display-flex items-center gap-1 font-color-tertiary">
                         <div><Spinner className="mt-020" size={14} /></div>
-                        <div>Updating...</div>
+                        <div>{t('Updating...')}</div>
                     </div>
                 )}
             </div>

@@ -7,6 +7,7 @@ import type { EditNoteOperation } from '@beaver/agent-core/types/agentActions/ed
 import { getPageLocator, normalizeCitationTag, parseRawCitationAttributes } from '@beaver/agent-core/citations/citationGrammar';
 import { modelObjectIdFromReference, resolveObjectId, UNRESOLVED_LIBRARY_ID } from '../../../src/utils/libraryIdentity';
 import { assessNoteRewrite, type NoteRewriteRisk } from '../../../src/utils/noteRewriteRisk';
+import { t, tn } from '../../../src/utils/i18n';
 
 type ActionStatus = 'pending' | 'applied' | 'rejected' | 'undone' | 'error' | 'awaiting';
 
@@ -173,16 +174,20 @@ export function computeRewriteScope(oldHtml: string, newHtml: string): RewriteSc
 }
 
 export function formatRewriteScope(scope: RewriteScope | null): string {
-    if (!scope) return 'Replaces the entire note';
-    const lines = `${scope.oldLines} → ${scope.newLines} lines`;
+    if (!scope) return t('Replaces the entire note');
+    const lines = { oldLines: scope.oldLines, newLines: scope.newLines };
+    if (scope.reason === null) return t('Replaces the entire note: {oldLines} → {newLines} lines', lines);
     // Losing text and swapping it out are both destructive but read very
     // differently, so report whichever signal actually fired.
-    const detail = scope.reason === 'shrunk'
-        ? `about ${Math.round(scope.removedFraction * 100)}% of the text is deleted`
-        : `about ${Math.round((1 - scope.retainedFraction) * 100)}% of the text is replaced`;
-    return scope.reason === null
-        ? `Replaces the entire note: ${lines}`
-        : `Replaces the entire note: ${lines}, ${detail}`;
+    return scope.reason === 'shrunk'
+        ? t('Replaces the entire note: {oldLines} → {newLines} lines, about {percent}% of the text is deleted', {
+            ...lines,
+            percent: Math.round(scope.removedFraction * 100),
+        })
+        : t('Replaces the entire note: {oldLines} → {newLines} lines, about {percent}% of the text is replaced', {
+            ...lines,
+            percent: Math.round((1 - scope.retainedFraction) * 100),
+        });
 }
 
 // ---- Component ----
@@ -359,11 +364,21 @@ export const EditNotePreview: React.FC<EditNotePreviewProps> = ({
                     {/* Show header for str_replace_all mode */}
                     {operation === 'str_replace_all' && (
                         <div className="text-sm font-color-primary font-medium px-3 py-1">
-                            {isDelete ? 'Delete' : 'Replace'}
-                            {' (all occurrences)'}
                             {occurrencesReplaced != null && occurrencesReplaced > 0
-                                ? ` — ${occurrencesReplaced} occurrence${occurrencesReplaced === 1 ? '' : 's'}`
-                                : ''}
+                                ? isDelete
+                                    ? tn(
+                                        occurrencesReplaced,
+                                        'Delete (all occurrences) — {count} occurrence',
+                                        'Delete (all occurrences) — {count} occurrences',
+                                    )
+                                    : tn(
+                                        occurrencesReplaced,
+                                        'Replace (all occurrences) — {count} occurrence',
+                                        'Replace (all occurrences) — {count} occurrences',
+                                    )
+                                : isDelete
+                                    ? t('Delete (all occurrences)')
+                                    : t('Replace (all occurrences)')}
                         </div>
                     )}
                     <div className="inline-diff-container">

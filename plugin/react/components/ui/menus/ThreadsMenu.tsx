@@ -14,6 +14,7 @@ import { isLocalBrain } from '../../../../src/services/llm/agentConfig';
 import { LOCAL_USER_ID } from '../../../atoms/auth';
 import { clearThreadListCache } from '../../ThreadListView';
 import { clearRecentChatsCache } from '../../RecentChats';
+import { t } from '../../../../src/utils/i18n';
 
 interface ThreadsMenuProps {
     className?: string;
@@ -46,7 +47,7 @@ const groupThreadsByDate = (threads: ThreadData[]) => {
  */
 const ThreadsMenu: React.FC<ThreadsMenuProps> = ({ 
     className = '',
-    ariaLabel = 'Show chat history'
+    ariaLabel
 }) => {
     const user = useAtomValue(userAtom);
     const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
@@ -172,7 +173,7 @@ const ThreadsMenu: React.FC<ThreadsMenuProps> = ({
 
     const handleStartRename = (threadId: string, currentName: string) => {
         setEditingThreadId(threadId);
-        setEditingName(currentName || 'Unnamed conversation');
+        setEditingName(currentName || t('Unnamed conversation'));
         setAllowBlur(true);
     };
 
@@ -218,14 +219,14 @@ const ThreadsMenu: React.FC<ThreadsMenuProps> = ({
         if (groupThreads.length > 0) {
             // Add group header
             menuItems.push({
-                label: groupName,
+                label: t(groupName),
                 onClick: () => {}, // No action for headers
                 isGroupHeader: true
             });
             
             // Add threads in group
             groupThreads.forEach(thread => {
-                const threadName = thread.name || 'Unnamed conversation';
+                const threadName = thread.name || t('Unnamed conversation');
                 
                 menuItems.push({
                     label: threadName,
@@ -275,8 +276,8 @@ const ThreadsMenu: React.FC<ThreadsMenuProps> = ({
                                 e.stopPropagation();
                                 handleDeleteThread(thread.id);
                             },
-                            tooltip: "Delete thread",
-                            ariaLabel: "Delete thread", 
+                            tooltip: t("Delete thread"),
+                            ariaLabel: t("Delete thread"), 
                             className: "scale-90 flex"
                         }
                     ]
@@ -291,8 +292,8 @@ const ThreadsMenu: React.FC<ThreadsMenuProps> = ({
             variant="ghost"
             icon={ChattingIcon}
             className={className}
-            ariaLabel={ariaLabel}
-            tooltipContent="Chat history"
+            ariaLabel={ariaLabel ?? t('Show chat history')}
+            tooltipContent={t('Chat history')}
             width="200px"
             maxHeight="260px"
             showArrow={true}
@@ -307,12 +308,12 @@ const ThreadsMenu: React.FC<ThreadsMenuProps> = ({
                         {isLoading ? (
                             <Spinner size={12} className="mr-1" />
                         ) : (
-                            "Show more"
+                            t('Show more')
                         )}
                     </button>
                 ) : (threads.filter(thread => thread.id !== currentThreadId).length === 0) ? (
                     <div className="text-center font-color-tertiary p-2">
-                        No threads
+                        {t('No threads')}
                     </div>
                 ) : null}
                 </>

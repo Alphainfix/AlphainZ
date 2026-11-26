@@ -17,23 +17,25 @@ import Tooltip from '../primitives/Tooltip';
 import PermissionMenu from '../primitives/PermissionMenu';
 import type { PermissionMenuOption } from '../primitives/PermissionMenu';
 import { DollarCircleIcon, HandIcon, Icon, LayersIcon, PlusSignIcon, SecurityWarningIcon } from '../icons';
+import { msg, t } from '../i18n';
 
 /**
  * The coverage choices, and the only prose on this card the client owns.
- * Everything else the user reads comes from the backend.
+ * Everything else the user reads comes from the backend. In English; shown
+ * through `t` (see `translatedModeOptions`).
  */
 const MODE_OPTIONS: readonly PermissionMenuOption<BatchApprovalMode>[] = [
     {
         value: 'full_access',
-        label: 'Full access',
-        description: "Apply library changes without asking again",
+        label: msg('Full access'),
+        description: msg('Apply library changes without asking again'),
         icon: SecurityWarningIcon,
         tone: 'warning',
     },
     {
         value: 'ask_each_time',
-        label: 'Ask permission',
-        description: 'Review every change before it is applied',
+        label: msg('Ask permission'),
+        description: msg('Review every change before it is applied'),
         icon: HandIcon,
     },
 ];
@@ -46,9 +48,18 @@ const MODE_HEADING = "";
  * Naming a slot is chrome — the same class of copy as the mode menu — while
  * everything the slots hold is composed by the backend.
  */
-const ACTION_HEADING = 'Requested action';
-const INSTRUCTIONS_HEADING = 'Your instructions';
-const ADD_INSTRUCTIONS_LABEL = 'Add instructions';
+const ACTION_HEADING = msg('Requested action');
+const INSTRUCTIONS_HEADING = msg('Your instructions');
+const ADD_INSTRUCTIONS_LABEL = msg('Add instructions');
+
+/** The coverage choices in the reader's language. */
+function translatedModeOptions(): PermissionMenuOption<BatchApprovalMode>[] {
+    return MODE_OPTIONS.map((option) => ({
+        ...option,
+        label: t(option.label),
+        description: option.description ? t(option.description) : option.description,
+    }));
+}
 
 /** Vertical rhythm. The card interrupts the user, so it is laid out loosely. */
 const BLOCK_GAP = '1rem';
@@ -128,7 +139,7 @@ export const BatchApprovalCard: React.FC<BatchApprovalCardProps> = ({
             className="user-message-display"
             style={{ minHeight: 'fit-content', padding: '0.8rem' }}
             role="group"
-            aria-label="Batch operation approval"
+            aria-label={t('Batch operation approval')}
             // The instructions field can take focus but nothing here announces
             // itself, so this is what tells a screen reader the run has stopped
             // and is waiting on a decision.
@@ -201,7 +212,7 @@ export const BatchApprovalCard: React.FC<BatchApprovalCardProps> = ({
                         className="text-xs font-semibold uppercase font-color-secondary"
                         style={{ letterSpacing: '0.06em' }}
                     >
-                        {ACTION_HEADING}
+                        {t(ACTION_HEADING)}
                     </div>
                     <div className="font-color-primary">
                         {approval.message}
@@ -224,7 +235,7 @@ export const BatchApprovalCard: React.FC<BatchApprovalCardProps> = ({
                             border: '1px solid var(--tag-orange-tertiary)',
                         }}
                         role="note"
-                        aria-label="What this batch removes or overwrites"
+                        aria-label={t('What this batch removes or overwrites')}
                     >
                         <Icon
                             icon={SecurityWarningIcon}
@@ -248,7 +259,7 @@ export const BatchApprovalCard: React.FC<BatchApprovalCardProps> = ({
                             className="text-xs font-semibold uppercase font-color-secondary"
                             style={{ letterSpacing: '0.06em' }}
                         >
-                            {INSTRUCTIONS_HEADING}
+                            {t(INSTRUCTIONS_HEADING)}
                         </div>
                         <textarea
                             className="chat-input"
@@ -256,8 +267,8 @@ export const BatchApprovalCard: React.FC<BatchApprovalCardProps> = ({
                             // The field only exists because the user just asked
                             // for it, so the caret belongs in it.
                             autoFocus
-                            placeholder="What to change, or what you want done instead"
-                            aria-label="Instructions for this batch (optional)"
+                            placeholder={t('What to change, or what you want done instead')}
+                            aria-label={t('Instructions for this batch (optional)')}
                             value={draft.userInstructions}
                             disabled={isDecided}
                             onChange={(e) => {
@@ -279,14 +290,14 @@ export const BatchApprovalCard: React.FC<BatchApprovalCardProps> = ({
                     <Button
                         variant="ghost"
                         icon={PlusSignIcon}
-                        ariaLabel="Add instructions for this batch"
+                        ariaLabel={t('Add instructions for this batch')}
                         // Pulled back by its own padding so the label lines up
                         // with the text above it rather than the button box.
                         style={{ alignSelf: 'flex-start', marginLeft: '-6px' }}
                         disabled={isDecided}
                         onClick={() => setWantsInstructions(true)}
                     >
-                        {ADD_INSTRUCTIONS_LABEL}
+                        {t(ADD_INSTRUCTIONS_LABEL)}
                     </Button>
                 )}
 
@@ -298,18 +309,18 @@ export const BatchApprovalCard: React.FC<BatchApprovalCardProps> = ({
                     style={{ borderTop: '1px solid var(--fill-quinary)', paddingTop: '0.7rem' }}
                 >
                     <PermissionMenu
-                        options={MODE_OPTIONS}
+                        options={translatedModeOptions()}
                         value={draft.mode}
                         onChange={(mode) => setDraft((prev) => setMode(mode, prev))}
                         heading={MODE_HEADING}
                         disabled={isDecided}
-                        tooltipContent="How this batch's changes are approved"
+                        tooltipContent={t('How this batch\'s changes are approved')}
                         style={{ padding: '2px 6px', fontSize: '0.95rem' }}
                     />
                     <div className="flex-1" />
                     <Button
                         variant="ghost"
-                        ariaLabel="Cancel batch operation"
+                        ariaLabel={t('Cancel batch operation')}
                         onClick={handleDecline}
                         disabled={isDecided}
                         className="mr-1"
@@ -318,7 +329,7 @@ export const BatchApprovalCard: React.FC<BatchApprovalCardProps> = ({
                     </Button>
                     <Button
                         variant="solid"
-                        ariaLabel="Approve batch operation"
+                        ariaLabel={t('Approve batch operation')}
                         style={{ padding: '3px 5px' }}
                         onClick={handleApprove}
                         disabled={isDecided}

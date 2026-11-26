@@ -99,7 +99,7 @@ export interface ToolSchema {
 
 /**
  * How the key is presented. Most OpenAI-compatible endpoints take a bearer
- * token; gateways behind Apigee read `X-Api-Key` instead, and some reject a
+ * token; some API gateways read `X-Api-Key` instead, and a few reject a
  * bearer token outright.
  */
 export type AuthStyle = 'bearer' | 'x-api-key';

@@ -72,7 +72,7 @@ const ARG_COUNT: Record<string, number> = {
     ...Object.fromEntries(Object.keys(ACCENTS).map((name) => [name, 1])),
 };
 
-/** `±` and `∓` where they are signs rather than operations: `|±1⟩`, `m=±1`, `(±2)`. */
+/** `±` and `∓` where they are signs rather than operations: `|±1|`, `x=±1`, `(±2)`. */
 const SIGNS: Record<string, string> = { pm: '±', mp: '∓' };
 
 const AFTER_RELATION_OR_OPERATOR = new Set([...Object.values(RELATIONS), ...Object.values(OPERATORS)]);
@@ -83,7 +83,7 @@ function startsOperand(before: string): boolean {
     if (!text || /<(sub|sup|i|b)>$/.test(text)) return true;
     if (/<\/(sub|sup|i|b)>$/.test(text)) return false;
     const last = text[text.length - 1];
-    // A bar opens a ket (`|±1⟩`) where an operand could start, and closes `|a|` elsewhere.
+    // A bar opens a group (`|±1|`) where an operand could start, and closes `|a|` elsewhere.
     if (last === '|') return text.length === 1 || /[\s([{⟨=]/.test(text[text.length - 2]);
     return /[([{⟨=<>,;:]/.test(last) || AFTER_RELATION_OR_OPERATOR.has(last);
 }
@@ -139,7 +139,7 @@ const MATH_SEGMENT = /\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\\\((.+?)\\\)|\$(\S(
 /**
  * One LaTeX math expression as plain characters, for text that shows neither
  * LaTeX nor tags, such as a one-line preview. A script becomes Unicode script
- * characters when every character in it has one (`x₂`, `¹³C`, `10⁻³`), and
+ * characters when every character in it has one (`x₂`, `¹⁴C`, `10⁻³`), and
  * stays `_x` / `^x` when not.
  */
 export function mathToPlainText(source: string): string {

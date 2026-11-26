@@ -16,6 +16,7 @@ import {
 import { libraryItemCountAtom } from '../../atoms/zoteroContext';
 import { OnboardingFooter } from './onboarding';
 import { logger } from '@beaver/agent-core/platform/logger';
+import { t } from '../../../src/utils/i18n';
 
 /**
  * "Where should we start?" action launcher. The user selects a curated
@@ -145,7 +146,7 @@ const WhereToStartPage: React.FC = () => {
             await start();
         } catch (err) {
             logger(`WhereToStartPage: start failed: ${err}`, 1);
-            setFooterError('Failed to start. Please try again.');
+            setFooterError(t('Failed to start. Please try again.'));
         }
     };
 
@@ -157,7 +158,7 @@ const WhereToStartPage: React.FC = () => {
             await skip();
         } catch (err) {
             logger(`WhereToStartPage: skip failed: ${err}`, 1);
-            setFooterError('Failed to connect to AlphainZ. Please try again.');
+            setFooterError(t('Failed to connect to AlphainZ. Please try again.'));
         } finally {
             setIsSkipping(false);
         }
@@ -307,24 +308,24 @@ const WhereToStartPage: React.FC = () => {
                     
                     {/* Heading */}
                     <div className="where-to-start-heading">
-                        <div className="where-to-start-title">Let's dig into your library</div>
-                        <div className="where-to-start-subtitle">Here are a few good places to start.</div>
+                        <div className="where-to-start-title">{t('Let\'s dig into your library')}</div>
+                        <div className="where-to-start-subtitle">{t('Here are a few good places to start.')}</div>
                     </div>
 
                     {/* Options */}
                     <div className="where-to-start-card">
                         {showLoading ? (
-                            <div className="where-to-start-loader" aria-label="Loading starting points">
+                            <div className="where-to-start-loader" aria-label={t('Loading starting points')}>
                                 <div className="where-to-start-loader-row" />
                                 <div className="where-to-start-loader-row" />
                                 <div className="where-to-start-loader-row" />
                             </div>
                         ) : options.length === 0 ? (
                             <div className="font-color-secondary text-base p-3">
-                                No starting points available.
+                                {t('No starting points available.')}
                             </div>
                         ) : (
-                            <div className="where-to-start-options" aria-label="First task options">
+                            <div className="where-to-start-options" aria-label={t('First task options')}>
                                 {options.map((opt, i) => (
                                     <StartOptionRow
                                         key={opt.actionId}
@@ -346,13 +347,13 @@ const WhereToStartPage: React.FC = () => {
 
             <OnboardingFooter
                 message={footerError ?? undefined}
-                buttonLabel="Start"
+                buttonLabel={t('Start')}
                 onButtonClick={() => void handleStart()}
                 isLoading={isSubmitting}
                 disabled={!canStart || isSkipping}
                 showBackButton
                 onBackClick={() => void handleSkip()}
-                backButtonLabel="Skip"
+                backButtonLabel={t('Skip')}
                 backButtonDisabled={isSubmitting || isSkipping}
                 backButtonLoading={isSkipping}
                 hideBackIcon

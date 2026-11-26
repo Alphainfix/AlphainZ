@@ -18,6 +18,7 @@ import { ExternalFileButton } from '../input/ExternalFileButton';
 import { collectionReferenceKey } from '@beaver/agent-core/types/zotero';
 import { ChipWithListPopup } from '@beaver/agent-ui/chat/ChipPopup';
 import { buildItemsSummaryListPopup } from '../input/MessageItemChipPopup';
+import { tn } from '../../../src/utils/i18n';
 
 const MAX_ATTACHMENTS = 4;
 
@@ -229,7 +230,7 @@ const MessageAttachmentDisplay = ({
                         type="button"
                         className="variant-outline source-button"
                         style={{ height: '22px' }}
-                        title={`${overflowCount} more attachment${overflowCount === 1 ? '' : 's'}`}
+                        title={tn(overflowCount, '{count} more attachment', '{count} more attachments')}
                     >
                         +{overflowCount}
                     </button>

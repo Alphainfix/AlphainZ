@@ -25,6 +25,7 @@ import {
 } from '../atoms/profile';
 import { isTransientNetworkError } from '../utils/isTransientNetworkError';
 import { store } from '../store';
+import { t } from '../../src/utils/i18n';
 
 // Adaptive refresh intervals based on sidebar visibility
 const ACTIVE_REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutes when sidebar is visible
@@ -406,7 +407,7 @@ export const useProfileSync = () => {
             // attempt: 0 so the user doesn't see "Trying again (attempt 6)" while idle.
             setProfileSyncStatus({
                 kind: 'transient',
-                message: 'Offline',
+                message: t('Offline'),
                 attempt: 0,
                 offline: true,
             });

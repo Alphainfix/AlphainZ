@@ -209,6 +209,16 @@ function toolResultBudget(name: string, fallback: number): number {
 }
 
 /**
+ * The characters one result of this tool may take in the assistant's context.
+ *
+ * The MCP server clips with the same budget, so a client outside Zotero never
+ * gets a result the assistant itself would have been refused.
+ */
+export function toolResultCharBudget(name: string): number {
+    return toolResultBudget(name, DEFAULT_MAX_TOOL_RESULT_CHARS);
+}
+
+/**
  * What a tool returns when its result is (or includes) images.
  *
  * A rendered PDF page is the case this exists for: the tool that rasterized the

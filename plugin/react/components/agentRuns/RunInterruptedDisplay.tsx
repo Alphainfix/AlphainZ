@@ -3,6 +3,7 @@ import { useSetAtom } from 'jotai';
 import { Icon, AlertCircleIcon, LinkForwardIcon } from '../icons/icons';
 import Button from '@beaver/agent-ui/primitives/Button';
 import { resumeFromRunAtom } from '../../atoms/agentRunAtoms';
+import { t } from '../../../src/utils/i18n';
 
 interface RunInterruptedDisplayProps {
     runId: string;
@@ -46,7 +47,7 @@ export const RunInterruptedDisplay: React.FC<RunInterruptedDisplayProps> = ({ ru
                     </div>
                     <div className="display-flex flex-col gap-1">
                         <div className="text-base font-color-primary font-medium">
-                            Response interrupted
+                            {t('Response interrupted')}
                         </div>
                         <div className="text-base font-color-secondary">
                             {interruptionText(reasonCode)}
@@ -63,7 +64,7 @@ export const RunInterruptedDisplay: React.FC<RunInterruptedDisplayProps> = ({ ru
                         loading={isResuming}
                         data-run-interrupted-action="resume"
                     >
-                        Continue response
+                        {t('Continue response')}
                     </Button>
                 </div>
             </div>
@@ -75,12 +76,12 @@ export const RunInterruptedDisplay: React.FC<RunInterruptedDisplayProps> = ({ ru
 function interruptionText(reasonCode?: string): string {
     switch (reasonCode) {
         case 'connection_lost':
-            return 'The connection dropped before this response finished. Continuing picks up where it left off.';
+            return t('The connection dropped before this response finished. Continuing picks up where it left off.');
         case 'server_shutdown':
-            return 'The server restarted before this response finished. Continuing picks up where it left off.';
+            return t('The server restarted before this response finished. Continuing picks up where it left off.');
         case 'client_closed':
         default:
-            return 'AlphainZ closed before this response finished. Continuing picks up where it left off.';
+            return t('AlphainZ closed before this response finished. Continuing picks up where it left off.');
     }
 }
 

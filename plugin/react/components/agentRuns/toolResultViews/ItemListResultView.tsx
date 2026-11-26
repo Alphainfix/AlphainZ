@@ -10,6 +10,8 @@ import {
 import { getHost } from '@beaver/agent-ui/host';
 import { EXTERNAL_LIBRARY_ID } from '../../../../src/services/externalFiles';
 import { AnnotationResultRow } from './AnnotationResultRow';
+import { t } from '../../../../src/utils/i18n';
+import { tr } from '../../../utils/i18nNodes';
 
 /**
  * Shared renderer for hydrated item and annotation rows.
@@ -43,18 +45,16 @@ function activateRow(row: ItemRowView): void {
 }
 
 /**
- * The second line of an item row, split so only the parent bibliographic
- * identity is italicized.
+ * The second line of an item row.
  *
- * `prefix` (e.g. "Attached to ") renders in normal style; `text` is the body.
- * `italic` is true only when `text` is parent-item information ("Smith 2004.
- * Title"), so the relationship prefix and the standalone/external labels stay
+ * `parent` is true when `text` is parent-item information ("Smith 2004.
+ * Title"): the row then reads "Attached to <parent>" with only the parent
+ * italicized, so the relationship words and the standalone/external labels stay
  * upright.
  */
 interface RowSubtitle {
-    prefix: string | null;
     text: string;
-    italic: boolean;
+    parent: boolean;
 }
 
 /**
@@ -73,12 +73,12 @@ function rowSubtitle(row: ItemRowView): RowSubtitle | null {
     const isAttachmentHeadline = row.item_type === 'attachment' && !row.attachment_label;
     const isNote = row.item_type === 'note';
     if (!isAttachmentHeadline && !isNote) {
-        return row.subtitle ? { prefix: null, text: row.subtitle, italic: false } : null;
+        return row.subtitle ? { text: row.subtitle, parent: false } : null;
     }
-    if (row.subtitle) return { prefix: 'Attached to ', text: row.subtitle, italic: true };
-    if (isNote) return { prefix: null, text: 'Standalone note', italic: false };
-    const label = row.library_id === EXTERNAL_LIBRARY_ID ? 'External file' : 'Standalone attachment';
-    return { prefix: null, text: label, italic: false };
+    if (row.subtitle) return { text: row.subtitle, parent: true };
+    if (isNote) return { text: t('Standalone note'), parent: false };
+    const label = row.library_id === EXTERNAL_LIBRARY_ID ? t('External file') : t('Standalone attachment');
+    return { text: label, parent: false };
 }
 
 interface RowEventProps {
@@ -108,7 +108,7 @@ const ItemRow: React.FC<{ row: ItemRowView } & RowEventProps> = ({
             onClick={() => activateRow(row)}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
-            title={isExternal ? 'Click to open the file' : 'Click to reveal in Zotero'}
+            title={isExternal ? t('Click to open the file') : t('Click to reveal in Zotero')}
         >
             <div
                 className="display-flex items-center justify-center flex-shrink-0 rounded-md ml-05 mt-010"
@@ -133,12 +133,11 @@ const ItemRow: React.FC<{ row: ItemRowView } & RowEventProps> = ({
                     <div className="display-flex flex-row items-center gap-2 min-w-0">
                         {subtitle && (
                             <div className="truncate text-sm font-color-secondary">
-                                {subtitle.prefix}
-                                {subtitle.italic ? (
-                                    <span className="font-italic">{subtitle.text}</span>
-                                ) : (
-                                    subtitle.text
-                                )}
+                                {subtitle.parent
+                                    ? tr('Attached to {parent}', {
+                                        parent: <span className="font-italic">{subtitle.text}</span>,
+                                    })
+                                    : subtitle.text}
                             </div>
                         )}
                         {/* {row.attachment_label && (
@@ -162,7 +161,7 @@ export const ItemListResultView: React.FC<{ view: ItemListView }> = ({ view }) =
     if (view.items.length === 0) {
         return (
             <div className="p-3 text-sm font-color-tertiary">
-                No items found
+                {t('No items found')}
             </div>
         );
     }

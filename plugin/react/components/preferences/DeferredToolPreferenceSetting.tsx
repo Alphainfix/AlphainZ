@@ -10,6 +10,7 @@ import {
     DEFERRED_TOOL_PREFERENCE_LABELS,
     DEFERRED_TOOL_PREFERENCE_DESCRIPTIONS,
 } from '../../atoms/deferredToolPreferences';
+import { t } from '../../../src/utils/i18n';
 
 interface DeferredToolPreferenceSettingProps {
     /** The tool name to get/set preference for */
@@ -48,27 +49,27 @@ const DeferredToolPreferenceSetting: React.FC<DeferredToolPreferenceSettingProps
         ];
 
         return preferences.map((pref) => ({
-            label: DEFERRED_TOOL_PREFERENCE_LABELS[pref],
+            label: t(DEFERRED_TOOL_PREFERENCE_LABELS[pref]),
             onClick: () => handleSelect(pref),
             customContent: (
                 <div className="display-flex flex-col gap-05 min-w-0 py-05 items-start">
                     <div className="display-flex flex-row items-center gap-2">
                         <div className={`text-sm ${currentPreference === pref ? 'font-medium font-color-primary' : 'font-color-secondary'}`}>
-                            {DEFERRED_TOOL_PREFERENCE_LABELS[pref]}
+                            {t(DEFERRED_TOOL_PREFERENCE_LABELS[pref])}
                         </div>
                         {currentPreference === pref && (
                             <Icon icon={TickIcon} className="font-color-primary scale-11" />
                         )}
                     </div>
                     <div className="text-xs font-color-tertiary">
-                        {DEFERRED_TOOL_PREFERENCE_DESCRIPTIONS[pref]}
+                        {t(DEFERRED_TOOL_PREFERENCE_DESCRIPTIONS[pref])}
                     </div>
                 </div>
             ),
         }));
     }, [currentPreference, toolName]);
 
-    const buttonLabel = DEFERRED_TOOL_PREFERENCE_LABELS[currentPreference];
+    const buttonLabel = t(DEFERRED_TOOL_PREFERENCE_LABELS[currentPreference]);
 
     return (
         <div className="display-flex flex-row items-start justify-between gap-4">
@@ -95,7 +96,7 @@ const DeferredToolPreferenceSetting: React.FC<DeferredToolPreferenceSettingProps
                 style={{
                     padding: '4px 2px',
                 }}
-                ariaLabel={`Select preference for ${label}`}
+                ariaLabel={t('Select preference for {label}', { label })}
             />
         </div>
     );

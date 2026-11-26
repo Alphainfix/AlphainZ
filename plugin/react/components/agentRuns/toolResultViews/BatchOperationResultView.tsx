@@ -1,14 +1,15 @@
 import React from 'react';
 import { BatchOperationView } from '@beaver/agent-core/run-state/toolResultViews';
 import { Icon, LayersIcon, SecurityWarningIcon } from '@beaver/agent-ui/icons';
+import { msg, t } from '../../../../src/utils/i18n';
 
 /**
  * Labels for the slots this card lays out, as opposed to what goes in them.
  * Deliberately the same words the approval card uses: this is that card read
  * back, and the two must not describe the same batch differently.
  */
-const ACTION_HEADING = 'Requested action';
-const INSTRUCTIONS_HEADING = 'Your instructions';
+const ACTION_HEADING = msg('Requested action');
+const INSTRUCTIONS_HEADING = msg('Your instructions');
 
 /**
  * Shared renderer for the {@link BatchOperationView} view model (batch_start).
@@ -55,7 +56,7 @@ export const BatchOperationResultView: React.FC<{ view: BatchOperationView }> = 
                     className="text-xs font-semibold uppercase font-color-secondary"
                     style={{ letterSpacing: '0.06em' }}
                 >
-                    {ACTION_HEADING}
+                    {t(ACTION_HEADING)}
                 </div>
                 <div className="font-color-primary">{view.goal}</div>
             </div>
@@ -71,7 +72,7 @@ export const BatchOperationResultView: React.FC<{ view: BatchOperationView }> = 
                         border: '1px solid var(--tag-orange-tertiary)',
                     }}
                     role="note"
-                    aria-label="What this batch removes or overwrites"
+                    aria-label={t('What this batch removes or overwrites')}
                 >
                     <Icon
                         icon={SecurityWarningIcon}
@@ -90,7 +91,7 @@ export const BatchOperationResultView: React.FC<{ view: BatchOperationView }> = 
                         className="text-xs font-semibold uppercase font-color-secondary"
                         style={{ letterSpacing: '0.06em' }}
                     >
-                        {INSTRUCTIONS_HEADING}
+                        {t(INSTRUCTIONS_HEADING)}
                     </div>
                     <div className="font-color-primary">{instructions}</div>
                 </div>

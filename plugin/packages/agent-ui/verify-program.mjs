@@ -284,6 +284,7 @@ const entryPaths = [
   "src/icons/index.tsx",
   "src/primitives/index.ts",
   "src/host/index.ts",
+  "src/i18n/index.ts",
   "src/chat/index.ts",
   "src/auth/index.ts",
   "src/composer/index.ts",

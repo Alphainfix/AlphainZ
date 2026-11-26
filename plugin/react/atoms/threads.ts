@@ -43,6 +43,7 @@ import { zoteroReferenceKey } from "@beaver/agent-core/types/attachments/apiType
 import { resolveItemReference } from "../../src/utils/libraryIdentity";
 import type { ZoteroItemReference } from "@beaver/agent-core/types/zotero";
 import { clearPendingAnchor } from "../utils/selectionAnchors";
+import { t } from '../../src/utils/i18n';
 
 /**
  * Stores a run ID that ThreadView should scroll to after a thread finishes loading.
@@ -247,12 +248,12 @@ const confirmedMismatchedThreadIds = new Set<string>();
 
 function confirmOpenMismatchedThread(): boolean {
     return getHost().dialogs?.confirm({
-        title: 'Open chat from another Zotero?',
-        text: 'This chat was created with a different Zotero account or database. '
+        title: t('Open chat from another Zotero?'),
+        text: t('This chat was created with a different Zotero account or database. '
             + 'Cited items and links may not work here. Any library changes like '
             + 'editing metadata, adding PDF annotations, or organizing items '
-            + 'may not apply or even change the incorrect Zotero items.',
-        confirmLabel: 'Open Chat',
+            + 'may not apply or even change the incorrect Zotero items.'),
+        confirmLabel: t('Open Chat'),
     }) ?? true;
 }
 
@@ -307,9 +308,9 @@ export const newThreadAtom = atom(
         const hasActiveWork = get(isWSChatPendingAtom) || isRunActive(get(activeRunAtom));
         if (hasActiveWork) {
             if (!options?.skipActiveRunConfirm && !confirmInterruptActiveRun(
-                'Start new chat?',
-                'AlphainZ is still generating a response in this chat. Starting a new chat will stop it.',
-                'Start New Chat',
+                t('Start new chat?'),
+                t('AlphainZ is still generating a response in this chat. Starting a new chat will stop it.'),
+                t('Start New Chat'),
             )) {
                 return;
             }
@@ -483,9 +484,9 @@ export const loadThreadAtom = atom(
         // current thread. Status, not presence — see newThreadAtom.
         const hasActiveWork = get(isWSChatPendingAtom) || isRunActive(get(activeRunAtom));
         if (hasActiveWork && !confirmInterruptActiveRun(
-            'Switch chat?',
-            'AlphainZ is still generating a response in this chat. Switching chats will stop it.',
-            'Switch Chat',
+            t('Switch chat?'),
+            t('AlphainZ is still generating a response in this chat. Switching chats will stop it.'),
+            t('Switch Chat'),
         )) {
             // A canceled load can't fulfill a pending deep-link scroll target.
             set(pendingScrollToRunAtom, null);

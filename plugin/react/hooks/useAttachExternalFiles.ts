@@ -12,6 +12,7 @@ import { requestPlusToolsAtom } from '../atoms/ui';
 import { addPopupMessageAtom } from '../utils/popupMessageUtils';
 import { getPref } from '../../src/utils/prefs';
 import { logger } from '@beaver/agent-core/platform/logger';
+import { t } from '../../src/utils/i18n';
 
 /** A file to attach: a path (file picker, clipboard) or an `nsIFile` (drop). */
 export type ExternalFileSource = string | { path: string };
@@ -97,7 +98,7 @@ export function useAttachExternalFiles() {
             const reject = options.onReject
                 ?? ((message: string) => addPopupMessage({
                     type: 'warning',
-                    title: 'File not added',
+                    title: t('File not added'),
                     text: message,
                     expire: true,
                 }));
@@ -108,7 +109,7 @@ export function useAttachExternalFiles() {
 
             const maxFiles = defaultMaxFiles();
             if (sources.length > maxFiles) {
-                reject(`You can add up to ${maxFiles} files at a time.`);
+                reject(t('You can add up to {count} files at a time.', { count: maxFiles }));
                 return { attached: [], rejectedCount: sources.length };
             }
 

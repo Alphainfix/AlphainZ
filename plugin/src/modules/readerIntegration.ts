@@ -10,8 +10,11 @@
  * All dispatch events via __alphainzEventBus so the webpack bundle can orchestrate the UI flow.
  *
  * Lives in the esbuild bundle — must NOT import from react/store or Jotai. It
- * imports nothing, so the webpack bundle may import its selection reader.
+ * imports only the React-free translation helpers, so the webpack bundle may
+ * import its selection reader.
  */
+
+import { t } from '../utils/i18n';
 
 // Module-level references for cleanup
 let popupHandler: ((event: any) => void) | null = null;
@@ -371,10 +374,10 @@ function onRenderTextSelectionPopup(event: any): void {
     const input = doc.createElement('input');
     input.type = 'text';
     input.className = 'alphain-selection-input';
-    input.setAttribute('placeholder', 'Ask about this…');
+    input.setAttribute('placeholder', t('Ask about this…'));
     // Named for itself: a placeholder is not a label, and it changes after
     // the first question.
-    input.setAttribute('aria-label', 'Ask AlphainZ about the selected text');
+    input.setAttribute('aria-label', t('Ask AlphainZ about the selected text'));
     input.style.cssText =
         'width: 100%; box-sizing: border-box; font: inherit; padding: 3px 6px; line-height: 1.4;';
 
@@ -397,7 +400,7 @@ function onRenderTextSelectionPopup(event: any): void {
     const ask = (prompt: string) => {
         awaitingOutcome = true;
         input.disabled = true;
-        showStatus('Opening AlphainZ…');
+        showStatus(t('Opening AlphainZ…'));
         let settled = false;
         let pickedUp = false;
         let timer: ReturnType<typeof setTimeout> | null = null;
@@ -409,7 +412,7 @@ function onRenderTextSelectionPopup(event: any): void {
                 pickedUp = true;
                 if (timer) clearTimeout(timer);
                 timer = null;
-                showStatus('Sending to AlphainZ…');
+                showStatus(t('Sending to AlphainZ…'));
                 return;
             }
             settled = true;
@@ -422,10 +425,10 @@ function onRenderTextSelectionPopup(event: any): void {
             }
             // Ready for a follow-up about the same passage.
             input.value = '';
-            input.setAttribute('placeholder', 'Ask a follow-up…');
+            input.setAttribute('placeholder', t('Ask a follow-up…'));
             showStatus(outcome.status === 'staged'
-                ? 'An answer is still being written; your question is waiting in the AlphainZ message box.'
-                : 'Sent to AlphainZ →');
+                ? t('An answer is still being written; your question is waiting in the AlphainZ message box.')
+                : t('Sent to AlphainZ →'));
         };
         const dispatched = dispatchSelectionChat({
             prompt,
@@ -436,13 +439,13 @@ function onRenderTextSelectionPopup(event: any): void {
             readerItemID,
         }, settle);
         if (!dispatched) {
-            settle({ status: 'failed', reason: 'AlphainZ is not ready yet. Try again in a moment.' });
+            settle({ status: 'failed', reason: t('AlphainZ is not ready yet. Try again in a moment.') });
             return;
         }
         if (settled || pickedUp) return;
         timer = setTimeout(() => settle({
             status: 'failed',
-            reason: 'AlphainZ did not pick this up. Try again.',
+            reason: t('AlphainZ did not pick this up. Try again.'),
         }), SELECTION_CHAT_ACK_TIMEOUT_MS);
     };
 
@@ -513,7 +516,7 @@ function onCreateViewContextMenu(event: any): void {
     // Flat items — append does not support submenu/groups nesting
     append(
         {
-            label: 'Explain with AlphainZ',
+            label: t('Explain with AlphainZ'),
             disabled: !hasSelection,
             persistent: true,
             onCommand: () => {
@@ -523,7 +526,7 @@ function onCreateViewContextMenu(event: any): void {
             },
         },
         {
-            label: 'Ask AlphainZ...',
+            label: t('Ask AlphainZ...'),
             disabled: !hasSelection,
             persistent: true,
             onCommand: () => {
@@ -622,7 +625,7 @@ function onCreateAnnotationContextMenu(event: any): void {
             // either reopens the conversation or starts one; a menu cannot make
             // that distinction without a cache, and a cache to keep warm was
             // more machinery than a label is worth.
-            label: 'Chat about this highlight',
+            label: t('Chat about this highlight'),
             persistent: true,
             onCommand: () => {
                 dispatchAnchorEvent('alphainChatAboutAnnotation', {
@@ -635,7 +638,7 @@ function onCreateAnnotationContextMenu(event: any): void {
     }
 
     append({
-        label: 'Explain with AlphainZ',
+        label: t('Explain with AlphainZ'),
         persistent: true,
         onCommand: () => {
             dispatchAnnotationAction('explain', annotationKeys, readerItemID);
@@ -648,7 +651,7 @@ function onCreateAnnotationContextMenu(event: any): void {
     // the user choose between them.
     if (!single) {
         append({
-            label: 'Ask AlphainZ...',
+            label: t('Ask AlphainZ...'),
             persistent: true,
             onCommand: () => {
                 dispatchAnnotationAction('ask', annotationKeys, readerItemID);

@@ -17,10 +17,11 @@ import type { ChatProvider } from './types';
 import { EMBEDDING_PRESETS, embeddingProviderFromPreset, type EmbeddingPresetId } from './embeddings';
 import type { StreamEvent } from './types';
 import { childAbortController, isModelRequestError, isQuotaErrorCode, untilAborted } from './sse';
+import { t } from '../../utils/i18n';
 
 export interface VerifyResult {
     ok: boolean;
-    /** Shown to the user; actionable when it fails. */
+    /** Shown to the user, in the interface language; actionable when it fails. */
     message: string;
     /** Round-trip time, when the call completed. */
     ms?: number;
@@ -59,48 +60,48 @@ const REGION_ERROR_CODES = new Set(['unsupported_country_region_territory', 'uns
 export function explainVerifyFailure(error: unknown, providerLabel: string): string {
     if (!isModelRequestError(error)) return error instanceof Error ? error.message : String(error);
 
-    const said = error.detail ? ` ${providerLabel} said: “${error.detail}”` : '';
+    const said = error.detail ? ' ' + t('{provider} said: “{detail}”', { provider: providerLabel, detail: error.detail }) : '';
     // A failed connection is explained by what to check, not by the browser's
     // own error text, which names no cause.
     switch (error.kind) {
         case 'cancelled':
-            return 'Test cancelled.';
+            return t('Test cancelled.');
         case 'network':
-            return `Could not reach ${providerLabel}. Check the network, or the base URL if this is a local server.`;
+            return t('Could not reach {provider}. Check the network, or the base URL if this is a local server.', { provider: providerLabel });
         case 'timeout':
-            return `No answer from ${providerLabel} in time. Check the network and the base URL; a local server may still be loading the model.`;
+            return t('No answer from {provider} in time. Check the network and the base URL; a local server may still be loading the model.', { provider: providerLabel });
         case 'stream':
-            return `The connection to ${providerLabel} broke off. Try again.`;
+            return t('The connection to {provider} broke off. Try again.', { provider: providerLabel });
         default:
             break;
     }
 
     const status = error.status;
     if (status === 401) {
-        return `The key was rejected. Check that you copied all of it, with no stray spaces.${said}`;
+        return t('The key was rejected. Check that you copied all of it, with no stray spaces.') + said;
     }
     if (status === 403) {
         return REGION_ERROR_CODES.has(error.code ?? '')
-            ? `${providerLabel} is not available in your region.${said}`
-            : `The endpoint refused the key (403): it may not have access to this model.${said}`;
+            ? t('{provider} is not available in your region.', { provider: providerLabel }) + said
+            : t('The endpoint refused the key (403): it may not have access to this model.') + said;
     }
     if (status === 402 || isQuotaErrorCode(error.code)) {
-        return `The key works, but the account is out of credit or quota.${said}`;
+        return t('The key works, but the account is out of credit or quota.') + said;
     }
     if (status === 429) {
-        return `The key works, but it is rate limited right now. Try again in a moment.${said}`;
+        return t('The key works, but it is rate limited right now. Try again in a moment.') + said;
     }
     if (status === 404 || error.code === 'model_not_found') {
-        return `The endpoint or model was not found. Check the model name, and the base URL if you set one.${said}`;
+        return t('The endpoint or model was not found. Check the model name, and the base URL if you set one.') + said;
     }
     if (status !== undefined && status >= 500) {
-        return `${providerLabel} had a server problem (${status}). Try again in a moment.${said}`;
+        return t('{provider} had a server problem ({status}). Try again in a moment.', { provider: providerLabel, status }) + said;
     }
     if (status !== undefined && status >= 400) {
-        return `The endpoint rejected the request (${status}).${said}`;
+        return t('The endpoint rejected the request ({status}).', { status }) + said;
     }
     // An error inside a 200 reply: the gateway's own words are the explanation.
-    return error.detail ? `The endpoint rejected the request: ${error.detail}` : error.message;
+    return error.detail ? t('The endpoint rejected the request: {detail}', { detail: error.detail }) : error.message;
 }
 
 /** Run `work` under the Test's deadline and the caller's signal. */
@@ -127,14 +128,14 @@ async function withinDeadline<T>(
 
 function timedOutMessage(label: string, timeoutMs: number | undefined): string {
     const seconds = Math.round((timeoutMs ?? VERIFY_TIMEOUT_MS) / 1000);
-    return `No answer from ${label} within ${seconds} s. Check the network and the base URL; a server on this computer may still be loading the model.`;
+    return t('No answer from {provider} within {seconds} s. Check the network and the base URL; a server on this computer may still be loading the model.', { provider: label, seconds });
 }
 
 /**
  * Budget for the verification request.
  *
  * Small enough to cost nothing worth measuring, but not as small as it could
- * be: an OpenAI gateway behind Apigee rejected a 1-token request outright —
+ * be: an OpenAI-compatible gateway rejected a 1-token request outright —
  * "Could not finish the message because max_tokens ... was reached" — rather
  * than returning a `length`-finished stream, so a budget too tight to complete
  * a reply fails a perfectly good key. Four was enough there; this leaves room
@@ -149,7 +150,7 @@ const VERIFY_MAX_TOKENS = 16;
  * the whole path: key, base URL, model name and auth style together.
  *
  * Success means the response really was a completion stream, not merely that
- * the status was 2xx. A gateway behind Apigee answered an invalid model name
+ * the status was 2xx. One API gateway answered an invalid model name
  * with HTTP 200 and a JSON error body, so a status check alone would report a
  * configuration that cannot answer a single question as working. The stream
  * parser rejects a body with no frames, which is what this relies on.
@@ -166,7 +167,7 @@ export async function verifyChatProvider(
     const preset = PROVIDER_PRESETS[presetId];
     // Hosted endpoints need a key; Ollama runs on this machine and takes none.
     if (presetId !== 'ollama' && !apiKey.trim()) {
-        return { ok: false, message: 'Enter a key first.' };
+        return { ok: false, message: t('Enter a key first.') };
     }
 
     const provider = providerFromPreset(presetId, apiKey.trim(), fetchImpl, {
@@ -188,8 +189,8 @@ export async function verifyCustomEndpoint(
     fetchImpl: FetchLike,
     options: Pick<VerifyOptions, 'signal' | 'timeoutMs'> = {},
 ): Promise<VerifyResult> {
-    if (!endpoint.baseUrl.trim()) return { ok: false, message: 'Enter the base URL first.' };
-    if (!modelId.trim()) return { ok: false, message: 'Add a model under this endpoint first, then test.' };
+    if (!endpoint.baseUrl.trim()) return { ok: false, message: t('Enter the base URL first.') };
+    if (!modelId.trim()) return { ok: false, message: t('Add a model under this endpoint first, then test.') };
     const provider = customProviderFromEndpoint(endpoint, modelId.trim(), fetchImpl, { maxTokens: VERIFY_MAX_TOKENS });
     return verifyWithProvider(provider, endpoint.name || endpoint.baseUrl, options);
 }
@@ -215,7 +216,7 @@ async function verifyWithProvider(
     const ms = Date.now() - started;
 
     if (outcome.timedOut) return { ok: false, message: timedOutMessage(label, options.timeoutMs), ms };
-    if (outcome.cancelled) return { ok: false, message: 'Test cancelled.', ms };
+    if (outcome.cancelled) return { ok: false, message: t('Test cancelled.'), ms };
     const error = failure ?? outcome.error;
     if (error) {
         return {
@@ -224,7 +225,7 @@ async function verifyWithProvider(
             ms,
         };
     }
-    return { ok: true, message: `Connected in ${ms} ms.`, ms };
+    return { ok: true, message: t('Connected in {ms} ms.', { ms }), ms };
 }
 
 /**
@@ -245,7 +246,7 @@ export async function verifyEmbeddingProvider(
 ): Promise<VerifyResult> {
     const preset = EMBEDDING_PRESETS[presetId];
     if (presetId !== 'ollama' && !apiKey.trim()) {
-        return { ok: false, message: 'Enter a key first.' };
+        return { ok: false, message: t('Enter a key first.') };
     }
 
     const provider = embeddingProviderFromPreset(presetId, apiKey.trim(), fetchImpl as any, {
@@ -260,7 +261,7 @@ export async function verifyEmbeddingProvider(
     const ms = Date.now() - started;
 
     if (outcome.timedOut) return { ok: false, message: timedOutMessage(preset.label, options.timeoutMs), ms };
-    if (outcome.cancelled) return { ok: false, message: 'Test cancelled.', ms };
+    if (outcome.cancelled) return { ok: false, message: t('Test cancelled.'), ms };
     if (outcome.error !== undefined || !outcome.value) {
         return { ok: false, message: explainVerifyFailure(outcome.error, preset.label), ms };
     }
@@ -269,9 +270,9 @@ export async function verifyEmbeddingProvider(
     if (result.dimensions !== preset.dimensions) {
         return {
             ok: false,
-            message: `Expected ${preset.dimensions}-dimensional vectors but got ${result.dimensions}. This endpoint ignores the dimensions request, so its vectors will not fit the existing index.`,
+            message: t('Expected {expected}-dimensional vectors but got {got}. This endpoint ignores the dimensions request, so its vectors will not fit the existing index.', { expected: preset.dimensions, got: result.dimensions }),
             ms,
         };
     }
-    return { ok: true, message: `Connected in ${ms} ms · ${result.dimensions} dimensions.`, ms };
+    return { ok: true, message: t('Connected in {ms} ms · {dimensions} dimensions.', { ms, dimensions: result.dimensions }), ms };
 }

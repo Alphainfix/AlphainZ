@@ -16,6 +16,7 @@ import { useAtomValue } from 'jotai';
 
 import { allRunsAtom } from '@beaver/agent-core/run-state/atoms';
 import type { AgentRun } from '@beaver/agent-core/agents/types';
+import { t, tn } from '../../../src/utils/i18n';
 
 /** `1234` → `1.2k`. Exact below a thousand, where the digits still mean something. */
 export function formatTokens(total: number): string {
@@ -81,10 +82,10 @@ const RunUsageChip: React.FC = () => {
 
     const total = totals.input + totals.output;
     const detail = [
-        `${totals.input.toLocaleString()} in · ${totals.output.toLocaleString()} out`,
-        totals.cached > 0 ? `${totals.cached.toLocaleString()} of the input came from cache` : null,
-        `across ${totals.runs} ${totals.runs === 1 ? 'message' : 'messages'} in this chat`,
-        'Counted by the provider, billed to your own key.',
+        t('{input} in · {output} out', { input: totals.input.toLocaleString(), output: totals.output.toLocaleString() }),
+        totals.cached > 0 ? t('{cached} of the input came from cache', { cached: totals.cached.toLocaleString() }) : null,
+        tn(totals.runs, 'across {count} message in this chat', 'across {count} messages in this chat'),
+        t('Counted by the provider, billed to your own key.'),
     ]
         .filter(Boolean)
         .join('\n');
@@ -95,12 +96,12 @@ const RunUsageChip: React.FC = () => {
                 role="button"
                 tabIndex={0}
                 className="text-sm font-color-tertiary whitespace-nowrap cursor-pointer"
-                aria-label={`${total} tokens used in this chat — click for the breakdown`}
+                aria-label={t('{total} tokens used in this chat — click for the breakdown', { total })}
                 aria-expanded={open}
                 onClick={() => setOpen((v) => !v)}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen((v) => !v); } }}
             >
-                {`${formatTokens(total)} tokens`}
+                {t('{tokens} tokens', { tokens: formatTokens(total) })}
             </span>
             {open && (
                 <span

@@ -22,6 +22,7 @@ import {
 } from '../../../components/agentRuns/AnnotationTooltip';
 import type { ActionStatus } from './agentActionViewHelpers';
 import { stripCommentTags } from '../../../../src/utils/zoteroCommentText';
+import { msg, t, tn } from '../../../../src/utils/i18n';
 
 /** One edit and the annotations it applies to, in wire order. */
 export interface EditGroupView {
@@ -36,8 +37,21 @@ const MAX_COMMENT_PILL_PREVIEW = 40;
 /** Short enough that a move chip stays one compact pill. */
 const MAX_RELOCATION_CHIP = 24;
 
-function plural(count: number): string {
-    return count === 1 ? '' : 's';
+/** Zotero's palette colour names, as an edit names them. */
+const COLOUR_NAMES: Record<string, string> = {
+    yellow: msg('yellow'),
+    red: msg('red'),
+    green: msg('green'),
+    blue: msg('blue'),
+    purple: msg('purple'),
+    magenta: msg('magenta'),
+    orange: msg('orange'),
+    gray: msg('gray'),
+};
+
+/** A colour's name in the reader's language; a name the palette does not know is shown as given. */
+function colourName(colour: string): string {
+    return Object.prototype.hasOwnProperty.call(COLOUR_NAMES, colour) ? t(COLOUR_NAMES[colour]) : colour;
 }
 
 function isNote(snapshot: AnnotationPreviewSnapshot): boolean {
@@ -131,8 +145,8 @@ function relocationTarget(relocation: AnnotationRelocation): string {
     const text = (relocation.text ?? '').trim();
     if (text) return `“${truncateText(text, MAX_RELOCATION_CHIP)}”`;
     const page = relocationPageLabel(relocation);
-    if (page) return `page ${page}`;
-    return 'a new position';
+    if (page) return t('page {page}', { page });
+    return t('a new position');
 }
 
 /**
@@ -192,9 +206,9 @@ const ChangeDescription: React.FC<{
     if (changes?.color != null) {
         chips.push(
             <ChangeChip key="color">
-                <span>Color →</span>
+                <span>{t('Color →')}</span>
                 <Swatch color={ZOTERO_ANNOTATION_PALETTE_COLORS[changes.color]} />
-                <span>{changes.color}</span>
+                <span>{colourName(changes.color)}</span>
             </ChangeChip>,
         );
     }
@@ -207,8 +221,8 @@ const ChangeDescription: React.FC<{
                 style={{ overflowWrap: 'anywhere' }}
             >
                 {comment
-                    ? `Comment → “${commentPillPreview(comment)}”`
-                    : 'Comment cleared'}
+                    ? t('Comment → “{comment}”', { comment: commentPillPreview(comment) })
+                    : t('Comment cleared')}
             </ChangeChip>,
         );
     }
@@ -225,11 +239,11 @@ const ChangeDescription: React.FC<{
 
     if (relocation) {
         chips.push(
-            <ChangeChip key="move">{`Move → ${relocationTarget(relocation)}`}</ChangeChip>,
+            <ChangeChip key="move">{t('Move → {target}', { target: relocationTarget(relocation) })}</ChangeChip>,
         );
     }
 
-    if (!chips.length) return <ChangeChip>No changes</ChangeChip>;
+    if (!chips.length) return <ChangeChip>{t('No changes')}</ChangeChip>;
     return (
         <div className="display-flex flex-row flex-wrap gap-1">
             {chips}
@@ -255,20 +269,25 @@ export function netSummary(
     for (const group of groups) {
         for (const snapshot of group.rows) {
             touched.add(referenceKey(snapshot));
-            if (group.changes?.color != null) note('recolored');
-            if (group.changes?.comment != null) note('comment updated');
+            if (group.changes?.color != null) note(msg('recolored'));
+            if (group.changes?.comment != null) note(msg('comment updated'));
             const { added, removed } = annotationTagDelta(
                 snapshot,
                 group.changes,
             );
-            if (added.length || removed.length) note('tags updated');
-            if (group.relocation) note('moved');
+            if (added.length || removed.length) note(msg('tags updated'));
+            if (group.relocation) note(msg('moved'));
         }
     }
 
     if (!touched.size) return null;
-    const count = `${touched.size} annotation${plural(touched.size)}`;
-    return aspects.length ? `${count}: ${aspects.join(', ')}` : count;
+    const count = tn(touched.size, '{count} annotation', '{count} annotations');
+    return aspects.length
+        ? t('{annotations}: {changes}', {
+            annotations: count,
+            changes: aspects.map((aspect) => t(aspect)).join(', '),
+        })
+        : count;
 }
 
 /**
@@ -367,8 +386,8 @@ export const EditAnnotationsPreview: React.FC<{
                                             key={`${group.key}-${referenceKey(snapshot)}`}
                                             typeLabel={
                                                 note
-                                                    ? 'Sticky Note'
-                                                    : 'Highlight Annotation'
+                                                    ? t('Sticky Note')
+                                                    : t('Highlight Annotation')
                                             }
                                             pageDisplay={page}
                                             body={
@@ -379,7 +398,7 @@ export const EditAnnotationsPreview: React.FC<{
                                                       )
                                                     : title
                                             }
-                                            footerLabel="Click to view in Zotero Reader"
+                                            footerLabel={t('Click to view in Zotero Reader')}
                                             typeIcon={getAnnotationTooltipIcon(
                                                 note ? 'note' : 'highlight',
                                             )}
@@ -409,12 +428,12 @@ export const EditAnnotationsPreview: React.FC<{
                                                     <div className="truncate">
                                                         {title ||
                                                             (note
-                                                                ? 'Sticky note'
-                                                                : 'Highlight')}
+                                                                ? t('Sticky note')
+                                                                : t('Highlight'))}
                                                     </div>
                                                     {page && (
                                                         <div className="font-color-tertiary whitespace-nowrap">
-                                                            {`Page ${page}`}
+                                                            {t('Page {page}', { page })}
                                                         </div>
                                                     )}
                                                 </div>
@@ -429,8 +448,12 @@ export const EditAnnotationsPreview: React.FC<{
 
                 {skipped.length > 0 && (
                     <div className="text-sm font-color-tertiary">
-                        {`${skipped.length} annotation${plural(skipped.length)} skipped: ${skipped[0].reason}`}
-                        {skipped.length > 1 ? ` (+${skipped.length - 1} more)` : ''}
+                        {tn(
+                            skipped.length,
+                            '{count} annotation skipped: {reason}',
+                            '{count} annotations skipped: {reason} (+{more} more)',
+                            { reason: skipped[0].reason, more: skipped.length - 1 },
+                        )}
                     </div>
                 )}
             </div>

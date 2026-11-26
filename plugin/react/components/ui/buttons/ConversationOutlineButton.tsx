@@ -9,6 +9,7 @@ import {
     toggleConversationOutlineAtom,
 } from '../../../atoms/conversationNav';
 import { questionCountLabel } from '../../../utils/conversationTurns';
+import { t } from '../../../../src/utils/i18n';
 
 interface ConversationOutlineButtonProps {
     /** Whether this is the separate window, which has its own outline. */
@@ -31,12 +32,12 @@ const ConversationOutlineButton = React.forwardRef<HTMLButtonElement, Conversati
         if (count === 0) return null;
 
         return (
-            <Tooltip content="Conversation outline" secondaryContent={questionCountLabel(count)} showArrow singleLine>
+            <Tooltip content={t('Conversation outline')} secondaryContent={questionCountLabel(count)} showArrow singleLine>
                 <button
                     ref={ref}
                     type="button"
                     className={`variant-ghost icon-only conversation-outline-button ${isOpen ? 'thread-list-toggle-active' : ''} ${className}`}
-                    aria-label="Conversation outline"
+                    aria-label={t('Conversation outline')}
                     aria-haspopup="dialog"
                     aria-expanded={isOpen}
                     aria-controls={isOpen ? outlineElementId(isWindow) : undefined}

@@ -12,6 +12,8 @@
  * to see what either of them found.
  */
 
+import { t, tn } from '../../utils/i18n';
+
 export interface SyncHealth {
     /** Remote conversations known about but not readable yet (downloading, cloud placeholders). */
     waiting: number;
@@ -82,7 +84,7 @@ export function recordPassHealth(found: Partial<Omit<SyncHealth, 'lastWriteError
 
 /** A mirror write's outcome: a failure is kept until a later write succeeds. */
 export function recordWriteOutcome(ok: boolean, error?: string): void {
-    update({ lastWriteError: ok ? null : (error || 'A conversation could not be written to the sync location') });
+    update({ lastWriteError: ok ? null : (error || t('A conversation could not be written to the sync location')) });
 }
 
 /** Back to nothing known — the backend changed, so the old findings describe another place. */
@@ -96,32 +98,32 @@ export function resetSyncHealth(): void {
  */
 export function syncHealthHint(health: SyncHealth, mode: 'off' | 'zotero' | 'folder'): string | null {
     if (health.folderMissing) {
-        return 'The sync folder is not there: it may have been moved or renamed, or be on a drive '
-            + 'that is not connected. Choose it again in Settings → Advanced → Conversation Sync.';
+        return t('The sync folder is not there: it may have been moved or renamed, or be on a drive '
+            + 'that is not connected. Choose it again in Settings → Advanced → Conversation Sync.');
     }
     if (health.fileSyncOff) {
-        return 'Zotero is not syncing attachment files, so conversations cannot reach your other '
-            + 'computers. Turn on file syncing in Zotero\'s Settings → Sync.';
+        return t('Zotero is not syncing attachment files, so conversations cannot reach your other '
+            + 'computers. Turn on file syncing in Zotero\'s Settings → Sync.');
     }
     if (health.lastWriteError) return health.lastWriteError;
     if (health.stuckUploads > 0) {
-        return 'Zotero has synced since these conversation files were written but has not uploaded '
-            + 'them — its file storage may be full. Check Zotero\'s Settings → Sync.';
+        return t('Zotero has synced since these conversation files were written but has not uploaded '
+            + 'them — its file storage may be full. Check Zotero\'s Settings → Sync.');
     }
     if (health.waiting > 0) {
         return mode === 'zotero'
-            ? 'These conversations have arrived, but their files have not downloaded yet. AlphainZ '
-                + 'asks Zotero for them on every pass; they appear once the download finishes.'
-            : 'Your cloud service has not downloaded these conversation files to this computer yet. '
-                + 'They are imported once they are here.';
+            ? t('These conversations have arrived, but their files have not downloaded yet. AlphainZ '
+                + 'asks Zotero for them on every pass; they appear once the download finishes.')
+            : t('Your cloud service has not downloaded these conversation files to this computer yet. '
+                + 'They are imported once they are here.');
     }
     if (health.conflictCopies > 0) {
-        return 'Your cloud service left conflict copies (like "… 2.json") in the sync folder. They '
-            + 'are not imported; open the folder to compare them and delete the ones you do not need.';
+        return t('Your cloud service left conflict copies (like "… 2.json") in the sync folder. They '
+            + 'are not imported; open the folder to compare them and delete the ones you do not need.');
     }
     if (health.unreadable > 0) {
-        return 'Some conversation files could not be read — damaged, or written by a newer version '
-            + 'of AlphainZ. They are left untouched.';
+        return t('Some conversation files could not be read — damaged, or written by a newer version '
+            + 'of AlphainZ. They are left untouched.');
     }
     return null;
 }
@@ -132,20 +134,20 @@ export function syncHealthHint(health: SyncHealth, mode: 'off' | 'zotero' | 'fol
  */
 export function describeSyncHealth(health: SyncHealth): string[] {
     const out: string[] = [];
-    if (health.folderMissing) out.push('sync folder not found');
-    if (health.fileSyncOff) out.push('Zotero is not syncing files');
-    if (health.lastWriteError) out.push('last change not saved to the sync location');
+    if (health.folderMissing) out.push(t('sync folder not found'));
+    if (health.fileSyncOff) out.push(t('Zotero is not syncing files'));
+    if (health.lastWriteError) out.push(t('last change not saved to the sync location'));
     if (health.stuckUploads > 0) {
-        out.push(`${health.stuckUploads} not uploaded by Zotero`);
+        out.push(t('{count} not uploaded by Zotero', { count: health.stuckUploads }));
     }
     if (health.waiting > 0) {
-        out.push(`${health.waiting} waiting to download`);
+        out.push(t('{count} waiting to download', { count: health.waiting }));
     }
     if (health.conflictCopies > 0) {
-        out.push(`${health.conflictCopies} conflict cop${health.conflictCopies === 1 ? 'y' : 'ies'} ignored`);
+        out.push(tn(health.conflictCopies, '{count} conflict copy ignored', '{count} conflict copies ignored'));
     }
     if (health.unreadable > 0) {
-        out.push(`${health.unreadable} unreadable`);
+        out.push(t('{count} unreadable', { count: health.unreadable }));
     }
     return out;
 }

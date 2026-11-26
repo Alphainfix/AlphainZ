@@ -28,6 +28,7 @@ import { localDeleteThread, localRenameThread } from '../../../atoms/loadLocalTh
 import { isLocalBrain } from '../../../../src/services/llm/agentConfig';
 import { clearRecentChatsCache } from '../../RecentChats';
 import { clearThreadListCache } from '../../ThreadListView';
+import { t } from '../../../../src/utils/i18n';
 
 interface ThreadMenuButtonProps {
     className?: string;
@@ -36,7 +37,7 @@ interface ThreadMenuButtonProps {
 
 const ThreadMenuButton: React.FC<ThreadMenuButtonProps> = ({
     className = '',
-    ariaLabel = 'Chat actions',
+    ariaLabel = t('Chat actions'),
 }) => {
     const [, forceUpdate] = useState({});
     // 'root' or the destination list for "Save chat as note".
@@ -60,7 +61,7 @@ const ThreadMenuButton: React.FC<ThreadMenuButtonProps> = ({
         const currentName = store.get(currentThreadNameAtom);
         const threads = store.get(recentThreadsAtom);
         const threadName = currentName
-            || (threads as ThreadData[]).find(t => t.id === threadId)?.name
+            || (threads as ThreadData[]).find(th => th.id === threadId)?.name
             || null;
         return { threadId, threadName };
     };
@@ -182,11 +183,11 @@ const ThreadMenuButton: React.FC<ThreadMenuButtonProps> = ({
         if (!threadId) return;
 
         // Native text-input dialog for renaming (no in-panel edit UI needed here).
-        const input = { value: threadName || 'Unnamed conversation' };
+        const input = { value: threadName || t('Unnamed conversation') };
         const confirmed = Services.prompt.prompt(
             Zotero.getMainWindow() as any,
-            'Rename chat',
-            'Enter a new name for this chat:',
+            t('Rename chat'),
+            t('Enter a new name for this chat:'),
             input,
             null as unknown as string,
             { value: false },
@@ -204,7 +205,7 @@ const ThreadMenuButton: React.FC<ThreadMenuButtonProps> = ({
             // Reflect the new name immediately in the current-thread and recent-thread state
             store.set(currentThreadNameAtom, newName);
             store.set(recentThreadsAtom, (prev: ThreadData[]) =>
-                prev.map(t => (t.id === threadId ? { ...t, name: newName } : t)),
+                prev.map(th => (th.id === threadId ? { ...th, name: newName } : th)),
             );
             // Invalidate caches so chat lists refetch fresh names
             clearThreadListCache();
@@ -222,8 +223,8 @@ const ThreadMenuButton: React.FC<ThreadMenuButtonProps> = ({
         // chat history and Delete here are the same action.
         const buttonIndex = Zotero.Prompt.confirm({
             window: Zotero.getMainWindow(),
-            title: 'Delete chat?',
-            text: 'This chat moves to the archive. You can restore it from Chat history → Archive.',
+            title: t('Delete chat?'),
+            text: t('This chat moves to the archive. You can restore it from Chat history → Archive.'),
             button0: Zotero.Prompt.BUTTON_TITLE_YES,
             button1: Zotero.Prompt.BUTTON_TITLE_NO,
             defaultButton: 1,
@@ -234,7 +235,7 @@ const ThreadMenuButton: React.FC<ThreadMenuButtonProps> = ({
             if (isLocalBrain()) await localDeleteThread(threadId);
             else await threadService.deleteThread(threadId);
             // Drop it from the recent-thread list and invalidate caches
-            store.set(recentThreadsAtom, (prev: ThreadData[]) => prev.filter(t => t.id !== threadId));
+            store.set(recentThreadsAtom, (prev: ThreadData[]) => prev.filter(th => th.id !== threadId));
             clearThreadListCache();
             clearRecentChatsCache(threadId);
             // This menu always targets the current thread, so switch to a new chat.
@@ -255,7 +256,7 @@ const ThreadMenuButton: React.FC<ThreadMenuButtonProps> = ({
             const here = destinationValue(currentDestination());
             return [
                 {
-                    label: '‹ Save chat as note',
+                    label: t('‹ Save chat as note'),
                     isGroupHeader: true,
                     onClick: () => {},
                 },
@@ -275,23 +276,23 @@ const ThreadMenuButton: React.FC<ThreadMenuButtonProps> = ({
 
         const items: MenuItem[] = [
             {
-                label: 'Copy entire chat',
+                label: t('Copy entire chat'),
                 onClick: handleCopyThread,
                 disabled: !hasRuns,
             },
             {
-                label: 'Save chat as note…',
+                label: t('Save chat as note…'),
                 onClick: () => setView('note-destination'),
                 keepOpen: true,
                 disabled: !hasRuns,
             },
             {
-                label: 'Save chat as child note',
+                label: t('Save chat as child note'),
                 onClick: handleSaveAsChildNote,
                 disabled: !hasParent || !hasRuns,
             },
             {
-                label: 'Copy link to chat',
+                label: t('Copy link to chat'),
                 onClick: handleCopyThreadUrl,
                 disabled: !threadId,
             },
@@ -301,12 +302,12 @@ const ThreadMenuButton: React.FC<ThreadMenuButtonProps> = ({
                 isDivider: true,
             },
             {
-                label: 'Rename chat',
+                label: t('Rename chat'),
                 onClick: handleRenameChat,
                 disabled: !threadId,
             },
             {
-                label: 'Delete chat',
+                label: t('Delete chat'),
                 onClick: handleDeleteChat,
                 disabled: !threadId,
             },
@@ -322,7 +323,7 @@ const ThreadMenuButton: React.FC<ThreadMenuButtonProps> = ({
             ariaLabel={ariaLabel}
             variant="ghost"
             toggleCallback={handleMenuToggle}
-            tooltipContent="Chat actions"
+            tooltipContent={t('Chat actions')}
             showArrow={true}
         />
     );

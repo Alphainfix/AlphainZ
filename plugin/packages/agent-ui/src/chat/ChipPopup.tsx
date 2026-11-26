@@ -1,6 +1,7 @@
 import React from 'react';
 import { Icon, InformationCircleIcon } from '../icons';
 import Tooltip from '../primitives/Tooltip';
+import { t } from '../i18n';
 
 /**
  * Hover-card for a request chip.
@@ -10,13 +11,21 @@ import Tooltip from '../primitives/Tooltip';
  */
 
 /**
- * Second line of the card. `prefix` (e.g. "Attached to ") stays upright; `text`
- * is the body and is italicized only when it is parent bibliographic identity.
+ * Second line of the card. `prefix` and `suffix` (the words around the parent
+ * in "Attached to <parent>") stay upright; `text` is the body and is italicized
+ * only when it is parent bibliographic identity.
  */
 export interface ChipPopupSubtitle {
     prefix?: string | null;
     text: string;
+    suffix?: string | null;
     italic?: boolean;
+}
+
+/** "Attached to <parent>" in the reader's language, with the parent italicized. */
+export function attachedToSubtitle(parent: string): ChipPopupSubtitle {
+    const [prefix, suffix = ''] = t('Attached to {parent}').split('{parent}');
+    return { prefix, text: parent, suffix, italic: true };
 }
 
 /** Footer hint describing what clicking the chip does. */
@@ -87,6 +96,7 @@ export const ChipPopupCard: React.FC<ChipPopupContent> = ({ icon, title, subtitl
                     >
                         {subtitle.prefix}
                         {subtitle.italic ? <span className="font-italic">{subtitle.text}</span> : subtitle.text}
+                        {subtitle.suffix}
                     </span>
                 )}
                 {status && (
@@ -141,6 +151,7 @@ const ChipListPopupCard: React.FC<ChipListPopupContent> = ({ rows, footer }) => 
                             >
                                 {row.subtitle.prefix}
                                 {row.subtitle.italic ? <span className="font-italic">{row.subtitle.text}</span> : row.subtitle.text}
+                                {row.subtitle.suffix}
                             </span>
                         )}
                     </span>

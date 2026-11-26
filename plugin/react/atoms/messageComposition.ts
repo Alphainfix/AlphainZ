@@ -20,6 +20,7 @@ import { currentNoteItemAtom } from "./zoteroContext";
 import type { SlashCommandDescriptor } from "@beaver/agent-ui/composer/slashCommands";
 import { libraryRefForLibraryID } from "../../src/utils/libraryIdentity";
 import { isBeaverAuthoredAnnotation } from "../../src/constants/annotations";
+import { t } from '../../src/utils/i18n';
 
 
 /**
@@ -688,18 +689,18 @@ async function validateItemsInBackground(
             set(currentMessageItemsAtom, validItems);
 
             // Show error message with custom content
-            let title = `${rejectedItems.length} Items Removed`;
+            let title = t('{count} Items Removed', { count: rejectedItems.length });
             if (rejectedItems.length === 1) {
-                const label = rejectedItems[0].item.isAttachment() ? 'File Removed' : 'Item Removed';
+                const label = rejectedItems[0].item.isAttachment() ? t('File Removed') : t('Item Removed');
                 const name = rejectedItems[0].item.isAnnotation()
-                    ? 'Annotation'
-                    : rejectedItems[0].item.isNote() ? 'Note' : `"${rejectedItems[0].item.getDisplayTitle()}"`
+                    ? t('Annotation')
+                    : rejectedItems[0].item.isNote() ? t('Note') : `"${rejectedItems[0].item.getDisplayTitle()}"`
                 title = `${label} ${truncateText(name, 60)}`
             }
             
             const invalidItemsData = rejectedItems.map(({ item, validation }) => ({
                 item,
-                reason: validation?.reason || 'Unknown error'
+                reason: validation?.reason || t('Unknown error')
             }));
             
             const popupMessageId = items.map((item) => item.key).join(',');
@@ -764,8 +765,8 @@ export const updateMessageItemsFromZoteroSelectionAtom = atom(
                 id: EXCLUDED_LIBRARY_SELECTION_POPUP_ID,
                 libraryIDs: excludedItems.map((item) => item.libraryID),
                 title: excludedItems.length === 1
-                    ? 'Item Not Added'
-                    : `${excludedItems.length} Items Not Added`,
+                    ? t('Item Not Added')
+                    : t('{count} Items Not Added', { count: excludedItems.length }),
             });
         }
 
@@ -831,7 +832,7 @@ export const notifyReaderLibraryExcludedAtom = atom(
         set(addExcludedLibraryPopupAtom, {
             id: EXCLUDED_LIBRARY_READER_POPUP_ID,
             libraryIDs: [libraryAndKey.libraryID],
-            title: 'File Not Added',
+            title: t('File Not Added'),
             // The file stays open, so the notice stays until the user leaves
             // the tab or dismisses it, matching other reader-tab popups.
             expire: false,

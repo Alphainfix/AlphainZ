@@ -71,6 +71,7 @@ import {
     getToolGroupRunApprovalLabel,
     getToolGroupRunApprovalScope,
 } from '../../../atoms/runApprovalPolicy';
+import { t } from '../../../../src/utils/i18n';
 
 export { STATUS_CONFIGS, getOverallStatus } from './agentActionViewHelpers';
 export type { ActionStatus } from './agentActionViewHelpers';
@@ -489,7 +490,7 @@ export const AgentActionView: React.FC<AgentActionViewProps> = ({
                 !!action?.result_data?.library_id &&
                 !!action?.result_data?.zotero_key
             ),
-            tooltip: 'Open note',
+            tooltip: t('Open note'),
             onClick: () => {
                 // Resolve through the device-portable library_ref so a note created
                 // in a group library on another computer opens the right local item.
@@ -507,7 +508,7 @@ export const AgentActionView: React.FC<AgentActionViewProps> = ({
                 action?.status === 'applied' &&
                 action?.result_data?.created?.length > 0
             ),
-            tooltip: 'Open annotation',
+            tooltip: t('Open annotation'),
             onClick: async () => {
                 const firstCreated = action!.result_data!.created[0];
                 const resolved = await resolveItemReference({
@@ -533,7 +534,7 @@ export const AgentActionView: React.FC<AgentActionViewProps> = ({
         if (!revealRef.library_id || !revealRef.zotero_key) return null;
 
         return {
-            tooltip: 'Reveal in Zotero',
+            tooltip: t('Reveal in Zotero'),
             onClick: () => {
                 revealSource({
                     library_id: revealRef.library_id,
@@ -603,7 +604,7 @@ export const AgentActionView: React.FC<AgentActionViewProps> = ({
         const recordLabel = [
             getActionLabel(toolName, previewData?.actionData ?? action?.proposed_data),
             actionTitle,
-            config.label,
+            t(config.label),
         ]
             .filter((part) => !!part)
             .join(' · ');
@@ -710,7 +711,7 @@ export const AgentActionView: React.FC<AgentActionViewProps> = ({
                             <span className="font-color-primary font-medium">{actionLabel}</span>
                             {actionTitle && <span className="font-color-secondary ml-15">{actionTitle}</span>}
                             {waitsForReview && (
-                                <span className="font-color-tertiary ml-15">Waiting for your review</span>
+                                <span className="font-color-tertiary ml-15">{t('Waiting for your review')}</span>
                             )}
                             {headerLinkAction && (
                                 <>
@@ -742,13 +743,13 @@ export const AgentActionView: React.FC<AgentActionViewProps> = ({
                     className="display-flex flex-row items-center gap-25 mr-2 mt-015"
                     style={{ visibility: !(isAwaitingApproval || status === 'pending') ? 'visible' : 'hidden' }}
                 >
-                    <Tooltip content={isExpanded ? 'Collapse' : 'Expand'} showArrow singleLine>
+                    <Tooltip content={isExpanded ? t('Collapse') : t('Expand')} showArrow singleLine>
                         <IconButton
                             icon={ChevronIcon}
                             variant="ghost-secondary"
                             iconClassName="scale-12"
                             onClick={toggleExpanded}
-                            ariaLabel={isExpanded ? `Collapse ${decisionTarget}` : `Expand ${decisionTarget}`}
+                            ariaLabel={isExpanded ? t('Collapse {target}', { target: decisionTarget }) : t('Expand {target}', { target: decisionTarget })}
                         />
                     </Tooltip>
                 </div>
@@ -756,7 +757,7 @@ export const AgentActionView: React.FC<AgentActionViewProps> = ({
                 {((isAwaitingApproval || status === 'pending') && !isProcessing && !isConfirmAction && !hasNoActionData) && (
                     <div className="display-flex flex-row items-center gap-25 mr-3 mt-015">
                         {(!isProcessing || clickedButton === 'reject') && (
-                            <Tooltip content="Reject" showArrow singleLine>
+                            <Tooltip content={t('Reject')} showArrow singleLine>
                                 <IconButton
                                     icon={CancelIcon}
                                     variant="ghost-secondary"
@@ -764,12 +765,12 @@ export const AgentActionView: React.FC<AgentActionViewProps> = ({
                                     onClick={isAwaitingApproval ? handleReject : handleRejectPending}
                                     disabled={isProcessing}
                                     loading={isProcessing && clickedButton === 'reject'}
-                                    ariaLabel={`Reject ${decisionTarget}`}
+                                    ariaLabel={t('Reject {target}', { target: decisionTarget })}
                                 />
                             </Tooltip>
                         )}
                         {(!isProcessing || clickedButton === 'approve') && (
-                            <Tooltip content="Apply" showArrow singleLine>
+                            <Tooltip content={t('Apply')} showArrow singleLine>
                                 <IconButton
                                     icon={TickIcon}
                                     variant="ghost-secondary"
@@ -777,7 +778,7 @@ export const AgentActionView: React.FC<AgentActionViewProps> = ({
                                     onClick={isAwaitingApproval ? handleApprove : handleApplyPending}
                                     disabled={isProcessing}
                                     loading={isProcessing && clickedButton === 'approve'}
-                                    ariaLabel={`Apply ${decisionTarget}`}
+                                    ariaLabel={t('Apply {target}', { target: decisionTarget })}
                                 />
                             </Tooltip>
                         )}
@@ -799,7 +800,7 @@ export const AgentActionView: React.FC<AgentActionViewProps> = ({
                         />
                     ) : (
                         <div className="text-sm font-color-secondary">
-                            No preview available
+                            {t('No preview available')}
                         </div>
                     )}
 
@@ -813,7 +814,7 @@ export const AgentActionView: React.FC<AgentActionViewProps> = ({
                                 disabled={preferenceToolName === 'delete_annotations'}
                                 tooltipContent={
                                     preferenceToolName === 'delete_annotations'
-                                        ? 'Deleting annotations has its own rule, under Settings → Permissions → Annotation Deletion'
+                                        ? t('Deleting annotations has its own rule, under Settings → Permissions → Annotation Deletion')
                                         : undefined
                                 }
                             />
@@ -827,7 +828,7 @@ export const AgentActionView: React.FC<AgentActionViewProps> = ({
                                 loading={isProcessing && clickedButton === 'reject'}
                                 disabled={isProcessing}
                             >
-                                Reject
+                                {t('Reject')}
                             </Button>
                         )}
 
@@ -837,7 +838,7 @@ export const AgentActionView: React.FC<AgentActionViewProps> = ({
                                 onClick={handleRevealNote}
                                 disabled={isProcessing}
                             >
-                                Reveal
+                                {t('Reveal')}
                             </Button>
                         )}
 
@@ -848,7 +849,7 @@ export const AgentActionView: React.FC<AgentActionViewProps> = ({
                                 loading={isProcessing && clickedButton === 'undo'}
                                 disabled={isProcessing}
                             >
-                                {toolName === 'create_note' ? 'Delete' : 'Undo'}
+                                {toolName === 'create_note' ? t('Delete') : t('Undo')}
                             </Button>
                         )}
 
@@ -859,7 +860,7 @@ export const AgentActionView: React.FC<AgentActionViewProps> = ({
                                 onClick={handleRetry}
                                 loading={isProcessing}
                             >
-                                {isUndoRetry ? 'Retry Undo' : 'Try Again'}
+                                {isUndoRetry ? t('Retry Undo') : t('Try Again')}
                             </Button>
                         )}
 
@@ -880,7 +881,7 @@ export const AgentActionView: React.FC<AgentActionViewProps> = ({
                                     loading={isProcessing && clickedButton === 'approve'}
                                     disabled={isProcessing}
                                 >
-                                    <span>{isConfirmAction ? 'Confirm' : 'Apply'}</span>
+                                    <span>{isConfirmAction ? t('Confirm') : t('Apply')}</span>
                                 </Button>
                             )
                         )}

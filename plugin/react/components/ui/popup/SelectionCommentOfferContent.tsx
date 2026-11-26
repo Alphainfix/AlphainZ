@@ -25,6 +25,7 @@ import { ALPHAIN_ANCHOR_COLOR } from '../../../../src/constants/annotations';
 import type { CommentSaveResult } from '../../../utils/selectionChatComment';
 import { ZoteroIcon, ZOTERO_ICONS } from '../../icons/ZoteroIcon';
 import { RichCommentText } from './RichCommentText';
+import { t } from '../../../../src/utils/i18n';
 
 /** Enough to judge the answer without the card taking over the sidebar. */
 const PREVIEW_MAX_HEIGHT = 132;
@@ -37,7 +38,7 @@ type SaveOutcome = boolean | CommentSaveResult | void;
  * or said nothing. A bare `false` carries no reason, so none is made up.
  */
 function saveFailureText(outcome: SaveOutcome): string | null {
-    if (outcome === false) return 'The answer was not saved.';
+    if (outcome === false) return t('The answer was not saved.');
     if (outcome && typeof outcome === 'object' && outcome.saved === false) return outcome.message;
     return null;
 }
@@ -89,7 +90,7 @@ const SelectionCommentOfferContent: React.FC<SelectionCommentOfferContentProps> 
         }
         void pending
             .then((outcome) => setFailure(saveFailureText(outcome)))
-            .catch(() => setFailure('The answer was not saved.'))
+            .catch(() => setFailure(t('The answer was not saved.')))
             .finally(() => setSaving(false));
     };
 
@@ -108,9 +109,9 @@ const SelectionCommentOfferContent: React.FC<SelectionCommentOfferContentProps> 
                     style={{ marginTop: 2 }}
                 />
                 <div className="display-flex flex-row min-w-0 flex-1 justify-between gap-3">
-                    <div className="truncate">{highlightText || 'Highlighted passage'}</div>
+                    <div className="truncate">{highlightText || t('Highlighted passage')}</div>
                     {pageLabel && (
-                        <div className="font-color-tertiary whitespace-nowrap">{`Page ${pageLabel}`}</div>
+                        <div className="font-color-tertiary whitespace-nowrap">{t('Page {pageLabel}', { pageLabel })}</div>
                     )}
                 </div>
             </div>
@@ -129,10 +130,10 @@ const SelectionCommentOfferContent: React.FC<SelectionCommentOfferContentProps> 
             <div className="display-flex flex-row gap-2 pt-2">
                 <div className="flex-1" />
                 <Button variant="outline" onClick={onDismiss} disabled={saving}>
-                    Not now
+                    {t('Not now')}
                 </Button>
                 <Button variant="solid" onClick={handleSave} loading={saving} disabled={saving}>
-                    Save
+                    {t('Save')}
                 </Button>
             </div>
         </div>

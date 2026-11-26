@@ -29,29 +29,31 @@ import {
     getExternalFilesStats,
     revealExternalFilesDir,
 } from "../../../src/services/externalFiles";
+import { t, tn } from '../../../src/utils/i18n';
+import { tr } from '../../utils/i18nNodes';
 
 /** What joining a sync location did, in the words of the Export row. */
 export function describeJoinOutcome(outcome: JoinOutcome): string {
     const parts: string[] = [];
-    if (outcome.adoptedSettings) parts.push('Settings taken from your other computer');
+    if (outcome.adoptedSettings) parts.push(t('Settings taken from your other computer'));
     const exported = outcome.exported;
     if (exported) {
-        let line = exported.written > 0
-            ? `Exported ${exported.written} conversation${exported.written === 1 ? '' : 's'}`
-            : 'Nothing new to export';
-        if (exported.upToDate > 0) line += `; ${exported.upToDate} already there`;
+        const pieces = [exported.written > 0
+            ? tn(exported.written, 'Exported {count} conversation', 'Exported {count} conversations')
+            : t('Nothing new to export')];
+        if (exported.upToDate > 0) pieces.push(t('{count} already there', { count: exported.upToDate }));
         if (exported.skipped > 0) {
-            line += `; ${exported.skipped} left alone (newer on another computer, or still downloading)`;
+            pieces.push(t('{count} left alone (newer on another computer, or still downloading)', { count: exported.skipped }));
         }
-        if (exported.failed > 0) line += `; ${exported.failed} failed — see the debug log`;
-        parts.push(line);
+        if (exported.failed > 0) pieces.push(t('{count} failed — see the debug log', { count: exported.failed }));
+        parts.push(pieces.join(t('; ')));
     }
-    return parts.length > 0 ? `${parts.join('. ')}.` : 'Sync is on.';
+    return parts.length > 0 ? t('{text}.', { text: parts.join(t('. ')) }) : t('Sync is on.');
 }
 
 /** "3 files, 12.4 MB" style summary for the external files row. */
 function formatStorageStats(count: number, totalBytes: number): string {
-    const files = `${count} file${count === 1 ? '' : 's'}`;
+    const files = tn(count, '{count} file', '{count} files');
     if (totalBytes <= 0) return files;
     const mb = totalBytes / 1024 / 1024;
     const size = mb >= 1 ? `${mb.toFixed(1)} MB` : `${Math.max(1, Math.round(totalBytes / 1024))} KB`;
@@ -106,7 +108,7 @@ const AdvancedSection: React.FC = () => {
             return;
         }
         setThreadExporting(true);
-        setThreadExportStatus('Syncing with the new location…');
+        setThreadExportStatus(t('Syncing with the new location…'));
         try {
             setThreadExportStatus(describeJoinOutcome(await joinSyncBackend()));
         } catch (error) {
@@ -135,7 +137,7 @@ const AdvancedSection: React.FC = () => {
             ...(needsPicker
                 ? {
                     pickFolder: async () => {
-                        const picked = await pickFolder('Choose the sync folder');
+                        const picked = await pickFolder(t('Choose the sync folder'));
                         return picked.ok ? picked.path : null;
                     },
                 }
@@ -155,7 +157,7 @@ const AdvancedSection: React.FC = () => {
             await applySyncMode('folder');
             return;
         }
-        const picked = await pickFolder('Choose the sync folder');
+        const picked = await pickFolder(t('Choose the sync folder'));
         if (!picked.ok) return;
         const changed = picked.path !== String(getPref('conversationSyncFolderPath') ?? '');
         setPref('conversationSyncFolderPath', picked.path);
@@ -202,12 +204,12 @@ const AdvancedSection: React.FC = () => {
         const stats = externalFileStats ?? { count: 0, totalBytes: 0 };
         const buttonIndex = Zotero.Prompt.confirm({
             window: Zotero.getMainWindow(),
-            title: 'Delete External Files?',
+            title: t('Delete External Files?'),
             text:
-                `Delete ${formatStorageStats(stats.count, stats.totalBytes)} attached to past chats?\n\n` +
-                'AlphainZ will no longer be able to read these files in past conversations. ' +
-                'Files can be re-attached at any time.',
-            button0: 'Delete',
+                t('Delete {files} attached to past chats?', { files: formatStorageStats(stats.count, stats.totalBytes) }) + '\n\n' +
+                t('AlphainZ will no longer be able to read these files in past conversations. ' +
+                'Files can be re-attached at any time.'),
+            button0: t('Delete'),
             // Cancel at button1 so Escape/dialog-close routes here.
             button1: Zotero.Prompt.BUTTON_TITLE_CANCEL,
             defaultButton: 1,
@@ -363,20 +365,18 @@ const AdvancedSection: React.FC = () => {
 
             {/* ===== LONG CONVERSATIONS ===== */}
             <div className="display-flex flex-row items-center gap-2" style={{ marginTop: '20px', marginBottom: '6px', paddingLeft: '2px' }}>
-                <div className="text-lg font-color-primary font-bold">Long Conversations</div>
+                <div className="text-lg font-color-primary font-bold">{t('Long Conversations')}</div>
             </div>
             <div className="text-base font-color-secondary mb-2" style={{ paddingLeft: '2px' }}>
-                Every message sends the chat so far to the model again, so a long chat costs more
-                and answers more slowly. These options shorten what is sent. Your chats stay
-                complete on screen and on this computer either way.
+                {t('Every message sends the chat so far to the model again, so a long chat costs more and answers more slowly. These options shorten what is sent. Your chats stay complete on screen and on this computer either way.')}
             </div>
             <SettingsGroup>
                 <SettingsRow
-                    title="Compact old exchanges automatically"
-                    description="When a chat gets long, its older exchanges are summarized (one extra small request) and the model reads the summary instead of them. A marker in the chat shows where; click it to read or discard the summary"
+                    title={t('Compact old exchanges automatically')}
+                    description={t('When a chat gets long, its older exchanges are summarized (one extra small request) and the model reads the summary instead of them. A marker in the chat shows where; click it to read or discard the summary')}
                     onClick={handleCompactionToggle}
                     control={
-                        <input type="checkbox" aria-label="Compact old exchanges automatically"
+                        <input type="checkbox" aria-label={t('Compact old exchanges automatically')}
                             checked={compactionEnabled}
                             onChange={handleCompactionToggle}
                             onClick={(e) => e.stopPropagation()}
@@ -384,51 +384,51 @@ const AdvancedSection: React.FC = () => {
                     }
                 />
                 <SettingsRow
-                    title="Compact after"
-                    description="Summarize once a chat has more than this many exchanges. Without a summary the model is sent only the last 10 exchanges and sees nothing older"
+                    title={t('Compact after')}
+                    description={t('Summarize once a chat has more than this many exchanges. Without a summary the model is sent only the last 10 exchanges and sees nothing older')}
                     control={
                         <select
-                            aria-label="Compact after this many exchanges"
+                            aria-label={t('Compact after this many exchanges')}
                             value={compactAfterRuns}
                             disabled={!compactionEnabled}
                             onChange={(e) => handleAfterRunsChange(Number(e.target.value))}
                             onClick={(e) => e.stopPropagation()}
                             style={{ cursor: compactionEnabled ? 'pointer' : 'default' }}
                         >
-                            <option value={6}>6 exchanges</option>
-                            <option value={8}>8 exchanges</option>
-                            <option value={10}>10 exchanges</option>
-                            <option value={12}>12 exchanges</option>
-                            <option value={15}>15 exchanges</option>
+                            <option value={6}>{t('6 exchanges')}</option>
+                            <option value={8}>{t('8 exchanges')}</option>
+                            <option value={10}>{t('10 exchanges')}</option>
+                            <option value={12}>{t('12 exchanges')}</option>
+                            <option value={15}>{t('15 exchanges')}</option>
                         </select>
                     }
                 />
                 <SettingsRow
-                    title="Compact sooner above"
-                    description="Also summarize before that many exchanges once the earlier chat and the attached context sent with each message reach this size (at least 3 exchanges at a time)"
+                    title={t('Compact sooner above')}
+                    description={t('Also summarize before that many exchanges once the earlier chat and the attached context sent with each message reach this size (at least 3 exchanges at a time)')}
                     control={
                         <select
-                            aria-label="Compact sooner above this size"
+                            aria-label={t('Compact sooner above this size')}
                             value={compactionThreshold}
                             disabled={!compactionEnabled}
                             onChange={(e) => handleThresholdChange(Number(e.target.value))}
                             onClick={(e) => e.stopPropagation()}
                             style={{ cursor: compactionEnabled ? 'pointer' : 'default' }}
                         >
-                            <option value={40_000}>40k tokens</option>
-                            <option value={60_000}>60k tokens</option>
-                            <option value={80_000}>80k tokens</option>
-                            <option value={100_000}>100k tokens</option>
-                            <option value={150_000}>150k tokens</option>
+                            <option value={40_000}>{t('40k tokens')}</option>
+                            <option value={60_000}>{t('60k tokens')}</option>
+                            <option value={80_000}>{t('80k tokens')}</option>
+                            <option value={100_000}>{t('100k tokens')}</option>
+                            <option value={150_000}>{t('150k tokens')}</option>
                         </select>
                     }
                 />
                 <SettingsRow
-                    title="Trim tool detail from old turns"
-                    description="In exchanges older than the last two, long tool inputs and results are shortened before they are sent. Your questions and the answers in those exchanges are not shortened"
+                    title={t('Trim tool detail from old turns')}
+                    description={t('In exchanges older than the last two, long tool inputs and results are shortened before they are sent. Your questions and the answers in those exchanges are not shortened')}
                     onClick={handlePruneToggle}
                     control={
-                        <input type="checkbox" aria-label="Trim tool detail from old turns"
+                        <input type="checkbox" aria-label={t('Trim tool detail from old turns')}
                             checked={pruneOldTools}
                             onChange={handlePruneToggle}
                             onClick={(e) => e.stopPropagation()}
@@ -442,22 +442,22 @@ const AdvancedSection: React.FC = () => {
 
             {/* ===== INPUT ===== */}
             <div className="display-flex flex-row items-center gap-2" style={{ marginTop: '20px', marginBottom: '6px', paddingLeft: '2px' }}>
-                <div className="text-lg font-color-primary font-bold">Input Box</div>
+                <div className="text-lg font-color-primary font-bold">{t('Input Box')}</div>
             </div>
             <SettingsGroup>
                 <SettingsRow
-                    title="Editor engine"
-                    description="The native text box keeps the cursor where you put it (recommended). The older rich editor draws command chips inline, but its cursor can jump while you type. Takes effect after restarting Zotero"
+                    title={t('Editor engine')}
+                    description={t('The native text box keeps the cursor where you put it (recommended). The older rich editor draws command chips inline, but its cursor can jump while you type. Takes effect after restarting Zotero')}
                     control={
                         <select
-                            aria-label="Composer engine"
+                            aria-label={t('Composer engine')}
                             value={composerEngine}
                             onChange={(e) => handleComposerEngineChange(e.target.value)}
                             onClick={(e) => e.stopPropagation()}
                             style={{ cursor: 'pointer' }}
                         >
-                            <option value="textarea">Native text box</option>
-                            <option value="lexical">Rich editor (legacy)</option>
+                            <option value="textarea">{t('Native text box')}</option>
+                            <option value="lexical">{t('Rich editor (legacy)')}</option>
                         </select>
                     }
                 />
@@ -468,47 +468,42 @@ const AdvancedSection: React.FC = () => {
 
             {/* ===== STORAGE ===== */}
             <div className="display-flex flex-row items-center gap-2" style={{ marginTop: '20px', marginBottom: '6px', paddingLeft: '2px' }}>
-                <div className="text-lg font-color-primary font-bold">Conversation Sync</div>
+                <div className="text-lg font-color-primary font-bold">{t('Conversation Sync')}</div>
             </div>
             <div className="text-base font-color-secondary mb-2" style={{ paddingLeft: '2px' }}>
-                Keeps your conversations and settings on your other machines — either as JSON
-                attachments in your Zotero library (your existing Zotero sync carries them), or
-                as plain files in a folder you choose (put it inside iCloud Drive, OneDrive or
-                any synced folder; the plugin never talks to the cloud itself). One at a time.
-                When you switch, you are asked whether to keep the copies in the old place;
-                conversations on this computer are always kept.
+                {t('Keeps your conversations and settings on your other machines — either as JSON attachments in your Zotero library (your existing Zotero sync carries them), or as plain files in a folder you choose (put it inside iCloud Drive, OneDrive or any synced folder; the plugin never talks to the cloud itself). One at a time. When you switch, you are asked whether to keep the copies in the old place; conversations on this computer are always kept.')}
             </div>
             <SettingsGroup>
                 <SettingsRow
-                    title="Off"
-                    description="Conversations stay on this computer only"
+                    title={t('Off')}
+                    description={t('Conversations stay on this computer only')}
                     onClick={() => void applySyncMode('off')}
                     control={
-                        <input type="radio" name="conversation-sync-mode" aria-label="Sync off"
+                        <input type="radio" name="conversation-sync-mode" aria-label={t('Sync off')}
                             checked={syncMode === 'off'}
                             onChange={() => void applySyncMode('off')}
                             onClick={(e) => e.stopPropagation()} />
                     }
                 />
                 <SettingsRow
-                    title="Through Zotero sync"
-                    description={`Stored under a "${CONVERSATIONS_TITLE}" item in My Library`}
+                    title={t('Through Zotero sync')}
+                    description={t('Stored under a "{conversationsTitle}" item in My Library', { conversationsTitle: CONVERSATIONS_TITLE })}
                     onClick={() => void applySyncMode('zotero')}
                     control={
-                        <input type="radio" name="conversation-sync-mode" aria-label="Sync through Zotero"
+                        <input type="radio" name="conversation-sync-mode" aria-label={t('Sync through Zotero')}
                             checked={syncMode === 'zotero'}
                             onChange={() => void applySyncMode('zotero')}
                             onClick={(e) => e.stopPropagation()} />
                     }
                 />
                 <SettingsRow
-                    title="Synced folder"
+                    title={t('Synced folder')}
                     description={syncMode === 'folder' && syncFolderPath
                         ? syncFolderPath
-                        : 'Plain JSON files in a folder you choose, such as one in iCloud Drive or OneDrive'}
+                        : t('Plain JSON files in a folder you choose, such as one in iCloud Drive or OneDrive')}
                     onClick={() => void applySyncMode('folder')}
                     control={
-                        <input type="radio" name="conversation-sync-mode" aria-label="Sync to a folder"
+                        <input type="radio" name="conversation-sync-mode" aria-label={t('Sync to a folder')}
                             checked={syncMode === 'folder'}
                             onChange={() => void applySyncMode('folder')}
                             onClick={(e) => e.stopPropagation()} />
@@ -516,25 +511,25 @@ const AdvancedSection: React.FC = () => {
                 />
                 {syncMode === 'folder' && (
                     <SettingsRow
-                        title="Folder"
-                        description={syncFolderPath || 'No folder chosen yet'}
+                        title={t('Folder')}
+                        description={syncFolderPath || t('No folder chosen yet')}
                         control={
                             <div className="display-flex flex-row gap-2">
                                 <Button variant="outline" onClick={() => void handleChooseFolder()}>
-                                    Choose…
+                                    {t('Choose…')}
                                 </Button>
                                 <Button variant="outline" disabled={!syncFolderPath}
                                     onClick={() => { try { Zotero.File.reveal(syncFolderPath); } catch (e) { logger(`reveal: ${e}`, 1); } }}>
-                                    Show Folder
+                                    {t('Show Folder')}
                                 </Button>
                             </div>
                         }
                     />
                 )}
                 <SettingsRow
-                    title="Export all conversations now"
+                    title={t('Export all conversations now')}
                     description={threadExportStatus
-                        ?? 'Writes each conversation on this computer that the sync location is missing or has an older copy of'}
+                        ?? t('Writes each conversation on this computer that the sync location is missing or has an older copy of')}
                     onClick={handleExportAllThreads}
                     disabled={syncMode === 'off' || threadExporting}
                     control={
@@ -543,24 +538,24 @@ const AdvancedSection: React.FC = () => {
                             disabled={syncMode === 'off' || threadExporting}
                             onClick={(e) => { e.stopPropagation(); void handleExportAllThreads(); }}
                         >
-                            {threadExporting ? 'Exporting…' : 'Export'}
+                            {threadExporting ? t('Exporting…') : t('Export')}
                         </Button>
                     }
                 />
             </SettingsGroup>
 
             <div className="display-flex flex-row items-center gap-2" style={{ marginTop: '20px', marginBottom: '6px', paddingLeft: '2px' }}>
-                <div className="text-lg font-color-primary font-bold">Storage</div>
+                <div className="text-lg font-color-primary font-bold">{t('Storage')}</div>
             </div>
             <div className="text-base font-color-secondary mb-2" style={{ paddingLeft: '2px' }}>
-                Data AlphainZ stores on this computer. This data is not deleted automatically including when the plugin is removed.
+                {t('Data AlphainZ stores on this computer. This data is not deleted automatically including when the plugin is removed.')}
             </div>
             <SettingsGroup>
                 <SettingsRow
-                    title="External Files"
+                    title={t('External Files')}
                     description={
                         <>
-                            Copies of external files you attach to chats.
+                            {t('Copies of external files you attach to chats.')}
                             {externalFileStats && externalFileStats.count > 0 && (
                                 <span className="display-flex mt-1">
                                     {formatStorageStats(externalFileStats.count, externalFileStats.totalBytes)}
@@ -577,21 +572,21 @@ const AdvancedSection: React.FC = () => {
                                 loading={isDeletingExternalFiles}
                                 style={{ padding: '4px 6px' }}
                             >
-                                Delete All…
+                                {t('Delete All…')}
                             </Button>
                             <Button
                                 variant="outline"
                                 onClick={handleShowExternalFilesFolder}
                                 style={{ padding: '4px 6px' }}
                             >
-                                Show Folder
+                                {t('Show Folder')}
                             </Button>
                         </div>
                     }
                 />
                 <SettingsRow
-                    title="Document Cache"
-                    description="Text extracted from PDFs and other documents, stored to avoid re-processing files"
+                    title={t('Document Cache')}
+                    description={t('Text extracted from PDFs and other documents, stored to avoid re-processing files')}
                     hasBorder
                     control={
                         <Button
@@ -602,7 +597,7 @@ const AdvancedSection: React.FC = () => {
                             loading={isDeletingCache}
                             style={{ padding: '4px 6px' }}
                         >
-                            {cacheDeleted ? 'Deleted' : 'Delete Cache'}
+                            {cacheDeleted ? t('Deleted') : t('Delete Cache')}
                         </Button>
                     }
                 />
@@ -612,22 +607,22 @@ const AdvancedSection: React.FC = () => {
             {process.env.NODE_ENV === 'development' && (
                 <>
                     <div className="display-flex flex-row items-center gap-2" style={{ marginTop: '20px', marginBottom: '6px', paddingLeft: '2px' }}>
-                        <div className="text-lg font-color-primary font-bold">Connected Apps</div>
-                        <span className="text-xs font-color-secondary px-15 py-05 rounded-md bg-quinary border-quinary">Experimental</span>
+                        <div className="text-lg font-color-primary font-bold">{t('Connected Apps')}</div>
+                        <span className="text-xs font-color-secondary px-15 py-05 rounded-md bg-quinary border-quinary">{t('Experimental')}</span>
                     </div>
                     <div className="text-base font-color-secondary mb-2" style={{ paddingLeft: '2px' }}>
-                        Lets AlphainZ in other apps access your Zotero library while Zotero is running.
+                        {t('Lets AlphainZ in other apps access your Zotero library while Zotero is running.')}
                     </div>
                     <SettingsGroup>
                         <SettingsRow
-                            title="Allow Library Access"
-                            description="AlphainZ chats started in connected apps can search and read this Zotero library"
+                            title={t('Allow Library Access')}
+                            description={t('AlphainZ chats started in connected apps can search and read this Zotero library')}
                             onClick={handleDataProviderToggle}
                             control={
                                 <div className="display-flex flex-row items-center gap-2">
                                     <input
                                         type="checkbox"
-                                        aria-label="Allow Library Access"
+                                        aria-label={t('Allow Library Access')}
                                         checked={dataProviderEnabled}
                                         onChange={handleDataProviderToggle}
                                         onClick={(e) => e.stopPropagation()}
@@ -642,27 +637,27 @@ const AdvancedSection: React.FC = () => {
 
             {/* ===== MCP SERVER ===== */}
             <div className="display-flex flex-row items-center gap-2" style={{ marginTop: '20px', marginBottom: '6px', paddingLeft: '2px' }}>
-                <div className="text-lg font-color-primary font-bold">MCP Server</div>
-                <span className="text-xs font-color-secondary px-15 py-05 rounded-md bg-quinary border-quinary">Experimental</span>
+                <div className="text-lg font-color-primary font-bold">{t('MCP Server')}</div>
+                <span className="text-xs font-color-secondary px-15 py-05 rounded-md bg-quinary border-quinary">{t('Experimental')}</span>
             </div>
             <div className="text-base font-color-secondary mb-2" style={{ paddingLeft: '2px' }}>
-                The MCP server lets AI coding tools like Claude Code, Cursor, and Windsurf search and access your Zotero library.
-                {' '}See our <DocLink path="mcp-server">MCP server guide</DocLink> for setup instructions.
+                {t('The MCP server lets AI coding tools like Claude Code, Cursor, and Windsurf search and access your Zotero library.')}
+                {' '}{tr('See our {guide} for setup instructions.', { guide: <DocLink path="mcp-server">{t('MCP server guide')}</DocLink> })}
             </div>
             <SettingsGroup>
                 <SettingsRow
-                    title="Enable MCP Server"
-                    description={`Endpoint at localhost:${mcpServerPort}`}
+                    title={t('Enable MCP Server')}
+                    description={t('Endpoint at localhost:{port}', { port: String(mcpServerPort) })}
                     onClick={handleMcpServerToggle}
                     disabled={!isMcpServerSupported}
                     tooltip={isMcpServerSupported
-                        ? 'Expose your Zotero library to MCP-compatible AI tools'
-                        : 'Only available with AlphainZ Pro'}
+                        ? t('Expose your Zotero library to MCP-compatible AI tools')
+                        : t('Only available with AlphainZ Pro')}
                     control={
                         <div className="display-flex flex-row items-center gap-2">
                             <input
                                 type="checkbox"
-                                aria-label="Enable MCP Server"
+                                aria-label={t('Enable MCP Server')}
                                 checked={mcpServerEnabled}
                                 onChange={handleMcpServerToggle}
                                 onClick={(e) => e.stopPropagation()}
@@ -673,19 +668,19 @@ const AdvancedSection: React.FC = () => {
                     }
                 />
                 <SettingsRow
-                    title="Enable Create Note Tool"
-                    description="Allow MCP clients to create Zotero notes. Changing setting requires reloading of the MCP server."
+                    title={t('Enable Create Note Tool')}
+                    description={t('Allow MCP clients to create Zotero notes. Changing setting requires reloading of the MCP server.')}
                     onClick={handleMcpCreateNoteToolToggle}
                     hasBorder
                     disabled={!isMcpServerSupported}
                     tooltip={isMcpServerSupported
-                        ? 'Advertise and allow the create_note MCP tool'
-                        : 'Only available with AlphainZ Pro'}
+                        ? t('Advertise and allow the create_note MCP tool')
+                        : t('Only available with AlphainZ Pro')}
                     control={
                         <div className="display-flex flex-row items-center gap-2">
                             <input
                                 type="checkbox"
-                                aria-label="Enable Create Note Tool"
+                                aria-label={t('Enable Create Note Tool')}
                                 checked={mcpCreateNoteToolEnabled}
                                 onChange={handleMcpCreateNoteToolToggle}
                                 onClick={(e) => e.stopPropagation()}
@@ -696,10 +691,10 @@ const AdvancedSection: React.FC = () => {
                     }
                 />
                 <SettingsRow
-                    title="Config for HTTP Clients"
+                    title={t('Config for HTTP Clients')}
                     description={
                         <span className="display-flex flex-col gap-05" style={{ opacity: mcpServerEnabled ? 1 : 0.45 }}>
-                            <span>For clients that support HTTP directly (e.g., Claude Code, Cursor).</span>
+                            <span>{t('For clients that support HTTP directly (e.g., Claude Code, Cursor).')}</span>
                             {/* <span style={{ fontFamily: 'monospace', fontSize: '11px' }}>{mcpEndpointUrl}</span> */}
                         </span>
                     }
@@ -713,15 +708,15 @@ const AdvancedSection: React.FC = () => {
                             disabled={!mcpServerEnabled}
                             style={{ padding: '4px 6px' }}
                         >
-                            {mcpHttpCopied ? 'Copied' : 'Copy'}
+                            {mcpHttpCopied ? t('Copied') : t('Copy')}
                         </Button>
                     }
                 />
                 <SettingsRow
-                    title="Config for HTTPS-Only Clients"
+                    title={t('Config for HTTPS-Only Clients')}
                     description={
                         <span style={{ opacity: mcpServerEnabled ? 1 : 0.45 }}>
-                            For clients that only connect to HTTPS endpoints (e.g., Claude Desktop). Requires Node.js.
+                            {t('For clients that only connect to HTTPS endpoints (e.g., Claude Desktop). Requires Node.js.')}
                         </span>
                     }
                     hasBorder
@@ -734,7 +729,7 @@ const AdvancedSection: React.FC = () => {
                             disabled={!mcpServerEnabled}
                             style={{ padding: '4px 6px' }}
                         >
-                            {mcpCopied ? 'Copied' : 'Copy'}
+                            {mcpCopied ? t('Copied') : t('Copy')}
                         </Button>
                     }
                 />

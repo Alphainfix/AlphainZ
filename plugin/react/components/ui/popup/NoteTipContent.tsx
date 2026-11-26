@@ -3,6 +3,7 @@ import { CancelIcon } from '../../icons/icons';
 import IconButton from '@beaver/agent-ui/primitives/IconButton';
 import Button from '@beaver/agent-ui/primitives/Button';
 import { eventManager } from '../../../events/eventManager';
+import { t } from '../../../../src/utils/i18n';
 
 interface NoteTipContentProps {
     onDismiss: () => void;
@@ -37,12 +38,12 @@ const NoteTipContent: React.FC<NoteTipContentProps> = ({ onDismiss }) => {
 
             {/* Primary text */}
             <div className="font-color-secondary text-base">
-                Use AlphainZ as a writing assistant for your Zotero notes.
+                {t('Use AlphainZ as a writing assistant for your Zotero notes.')}
             </div>
 
             {/* Secondary text */}
             <div className="font-color-tertiary text-base">
-                Summarize papers, draft sections, and find citations while you write.
+                {t('Summarize papers, draft sections, and find citations while you write.')}
             </div>
 
             {/* CTA button */}
@@ -52,7 +53,7 @@ const NoteTipContent: React.FC<NoteTipContentProps> = ({ onDismiss }) => {
                 className="items-center"
                 style={{ padding: '4px 6px', width: '100%', alignItems: 'center', justifyContent: 'center', fontSize: "0.95rem" }}
             >
-                Open AlphainZ &rarr;
+                {t('Open AlphainZ →')}
             </Button>
         </div>
     );

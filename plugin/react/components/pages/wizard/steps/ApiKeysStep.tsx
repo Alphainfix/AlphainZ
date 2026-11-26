@@ -8,6 +8,7 @@ import { OllamaGuide } from '../../../preferences/OllamaGuide';
 import { getPref, setPref } from '../../../../../src/utils/prefs';
 import { verifyChatProvider } from '../../../../../src/services/llm/verifyKey';
 import { catalogueFor } from '../../../../../src/services/llm/providerOverrides';
+import { t } from '../../../../../src/utils/i18n';
 
 /** `fetch` bound to its global — see the note in agentConfig. */
 const boundFetch = ((url: string, init?: any) => fetch(url, init)) as any;
@@ -75,22 +76,22 @@ const KeyRow: React.FC<{ vendor: Vendor; onTested: (vendor: Vendor, ok: boolean)
     return (
         <SettingsRow
             stacked
-            title={vendor.label}
+            title={t(vendor.label)}
             description={
                 test === 'error' && testMessage
                     ? <span className="font-color-red" role="alert">{testMessage}</span>
                     : test === 'ok'
-                        ? <span className="font-color-green" role="status">Key works — saved.</span>
+                        ? <span className="font-color-green" role="status">{t('Key works — saved.')}</span>
                         // One line here; the provider's full note on hover.
-                        : <span title={vendor.note}>{vendor.summary ?? vendor.note ?? ''}</span>
+                        : <span title={vendor.note ? t(vendor.note) : undefined}>{t(vendor.summary ?? vendor.note ?? '')}</span>
             }
             control={
                 !showsInput ? (
                     <div className="display-flex flex-row items-center gap-2 flex-wrap">
-                        <span className="text-sm font-color-green">Already set ✓</span>
-                        <Button variant="outline" onClick={() => setEditing(true)}>Change</Button>
+                        <span className="text-sm font-color-green">{t('Already set ✓')}</span>
+                        <Button variant="outline" onClick={() => setEditing(true)}>{t('Change')}</Button>
                         <Button variant="outline" onClick={() => void runTest(storedKey(vendor.keyPref))} loading={test === 'testing'}>
-                            Test
+                            {t('Test')}
                         </Button>
                     </div>
                 ) : (
@@ -98,7 +99,7 @@ const KeyRow: React.FC<{ vendor: Vendor; onTested: (vendor: Vendor, ok: boolean)
                         <input
                             type="password"
                             className="flex-1 min-w-0 py-1 px-2 preference-input text-sm"
-                            placeholder={`${vendor.label} API key`}
+                            placeholder={t('{label} API key', { label: t(vendor.label) })}
                             value={draft}
                             onPaste={() => {
                                 // The paste arrives as the next change; a paste
@@ -118,11 +119,11 @@ const KeyRow: React.FC<{ vendor: Vendor; onTested: (vendor: Vendor, ok: boolean)
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') commit(draft);
                             }}
-                            aria-label={`${vendor.label} API key`}
+                            aria-label={t('{label} API key', { label: t(vendor.label) })}
                         />
                         {draft.trim() && (
                             <Button variant="outline" onClick={() => void runTest(commit(draft))} loading={test === 'testing'}>
-                                Test
+                                {t('Test')}
                             </Button>
                         )}
                     </div>
@@ -161,16 +162,15 @@ const ApiKeysStep: React.FC = () => {
     return (
         <>
             <div className="text-base font-color-secondary mb-2">
-                One key is enough to start — DeepSeek is the recommended first pick. Keys are
-                stored locally in Zotero's preferences and are never synced anywhere.
+                {t('One key is enough to start — DeepSeek is the recommended first pick. Keys are stored locally in Zotero\'s preferences and are never synced anywhere.')}
             </div>
             <SettingsGroup>
                 {VENDORS.map((vendor) => <KeyRow key={vendor.id} vendor={vendor} onTested={onTested} />)}
             </SettingsGroup>
             <div className="mt-2 text-sm font-color-secondary">
-                No key at all?{' '}
+                {t('No key at all?')}{' '}
                 <a className="text-link cursor-pointer" onClick={() => setShowLocal((v) => !v)}>
-                    {showLocal ? 'Hide the local option' : 'Run a model on this computer with Ollama'}
+                    {showLocal ? t('Hide the local option') : t('Run a model on this computer with Ollama')}
                 </a>
             </div>
             {showLocal && (

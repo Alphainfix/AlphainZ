@@ -21,6 +21,8 @@ import {
     subscribeOllamaPulls,
     type OllamaStatus,
 } from '../../utils/ollama';
+import { t, tn } from '../../../src/utils/i18n';
+import { tr } from '../../utils/i18nNodes';
 
 const boundFetch = (url: string, init?: any) => fetch(url, init);
 
@@ -144,13 +146,13 @@ export const OllamaGuide: React.FC<OllamaGuideProps> = ({
             <div className="display-flex flex-row items-center gap-2 flex-wrap">
                 <span className={`text-sm ${running ? 'font-color-green' : 'font-color-secondary'}`}>
                     {status === null
-                        ? 'Checking Ollama…'
+                        ? t('Checking Ollama…')
                         : running
-                            ? `Ollama ${status.version ?? ''} is running · ${status.models.length} model${status.models.length === 1 ? '' : 's'} installed`
-                            : 'Ollama is not running on this computer.'}
+                            ? tn(status.models.length, 'Ollama {version} is running · {count} model installed', 'Ollama {version} is running · {count} models installed', { version: status.version ?? '' })
+                            : t('Ollama is not running on this computer.')}
                 </span>
                 <Button variant="ghost-secondary" style={{ padding: '2px 6px' }} onClick={() => void check()} disabled={checking}>
-                    Check again
+                    {t('Check again')}
                 </Button>
                 {!running && status !== null && (
                     <Button
@@ -158,15 +160,13 @@ export const OllamaGuide: React.FC<OllamaGuideProps> = ({
                         style={{ padding: '2px 6px' }}
                         onClick={() => Zotero.launchURL('https://ollama.com/download')}
                     >
-                        Install Ollama
+                        {t('Install Ollama')}
                     </Button>
                 )}
             </div>
             {!running && status !== null && (
                 <div className="text-sm font-color-tertiary">
-                    Install it from ollama.com, open the app once, and it keeps running in the
-                    background (menu bar / tray) — including after a restart. No account is needed;
-                    models download anonymously from Ollama’s library.
+                    {t('Install it from ollama.com, open the app once, and it keeps running in the background (menu bar / tray) — including after a restart. No account is needed; models download anonymously from Ollama’s library.')}
                 </div>
             )}
 
@@ -187,15 +187,15 @@ export const OllamaGuide: React.FC<OllamaGuideProps> = ({
                             <span className="text-sm font-color-tertiary">{model.size}</span>
                             <div className="flex-1" />
                             {installed ? (
-                                <span className="text-sm font-color-green">Installed ✓</span>
+                                <span className="text-sm font-color-green">{t('Installed ✓')}</span>
                             ) : pulling ? (
                                 <Button
                                     variant="ghost-secondary"
                                     style={{ padding: '2px 6px' }}
                                     onClick={() => cancelOllamaPull(root, model.name)}
-                                    ariaLabel={`Cancel downloading ${model.name}`}
+                                    ariaLabel={t('Cancel downloading {name}', { name: model.name })}
                                 >
-                                    Cancel
+                                    {t('Cancel')}
                                 </Button>
                             ) : (
                                 <Button
@@ -204,31 +204,31 @@ export const OllamaGuide: React.FC<OllamaGuideProps> = ({
                                     onClick={() => pull(model.name)}
                                     disabled={!running || tooOld}
                                     title={!running
-                                        ? 'Start Ollama first'
+                                        ? t('Start Ollama first')
                                         : tooOld
-                                            ? `Needs Ollama ${minimum} or later`
-                                            : `Download ${model.name} through Ollama`}
+                                            ? t('Needs Ollama {minimum} or later', { minimum })
+                                            : t('Download {name} through Ollama', { name: model.name })}
                                 >
-                                    {stopped ? 'Resume download' : 'Get it'}
+                                    {stopped ? t('Resume download') : t('Get it')}
                                 </Button>
                             )}
                         </div>
                         {tooOld && (
                             <div className="display-flex flex-row items-center gap-2 flex-wrap text-sm font-color-yellow" role="status">
                                 <span>
-                                    {`This model needs Ollama ${minimum} or later; this one is ${status?.version}. `
-                                        + 'Update Ollama (its menu: Check for Updates, or download it again), then Check again.'}
+                                    {t('This model needs Ollama {minimum} or later; this one is {version}.', { minimum, version: status?.version ?? '' })}{' '}
+                                    {t('Update Ollama (its menu: Check for Updates, or download it again), then Check again.')}
                                 </span>
                                 <Button
                                     variant="outline"
                                     style={{ padding: '2px 6px' }}
                                     onClick={() => Zotero.launchURL('https://ollama.com/download')}
                                 >
-                                    Update Ollama
+                                    {t('Update Ollama')}
                                 </Button>
                             </div>
                         )}
-                        {!compact && <div className="text-sm font-color-secondary">{model.purpose}</div>}
+                        {!compact && <div className="text-sm font-color-secondary">{t(model.purpose)}</div>}
                         {pulling && (
                             <>
                                 <ProgressBar progress={pullState?.percent ?? 0} />
@@ -245,10 +245,10 @@ export const OllamaGuide: React.FC<OllamaGuideProps> = ({
                         )}
                         {!installed && !pulling && (
                             <div className="display-flex flex-row items-center gap-2 text-sm font-color-tertiary">
-                                <span>or in a terminal:</span>
+                                <span>{t('or in a terminal:')}</span>
                                 <code>{command}</code>
                                 <Button variant="ghost-secondary" style={{ padding: '1px 5px' }} onClick={() => void copy(command)}>
-                                    {copied === command ? 'Copied' : 'Copy'}
+                                    {copied === command ? t('Copied') : t('Copy')}
                                 </Button>
                             </div>
                         )}
@@ -259,15 +259,14 @@ export const OllamaGuide: React.FC<OllamaGuideProps> = ({
             {/* 3. What chat models need */}
             {showChat && !compact && (
                 <div className="text-sm font-color-tertiary">
-                    Chat models need a larger context than Ollama’s default: set “Context length” to
-                    32k in the Ollama app’s settings, or run{' '}
-                    <code>launchctl setenv OLLAMA_CONTEXT_LENGTH 32768</code>{' '}
-                    <Button variant="ghost-secondary" style={{ padding: '1px 5px' }} onClick={() => void copy('launchctl setenv OLLAMA_CONTEXT_LENGTH 32768')}>
-                        {copied === 'launchctl setenv OLLAMA_CONTEXT_LENGTH 32768' ? 'Copied' : 'Copy'}
-                    </Button>{' '}
-                    and reopen Ollama. Installed chat models then appear in the model list as
-                    “Ollama (local) · …”. They are sent text only; one that reads images can be marked
-                    “Reads figures” on the Ollama card under Settings → Model → Providers.
+                    {tr('Chat models need a larger context than Ollama’s default: set “Context length” to 32k in the Ollama app’s settings, or run {command} {copy} and reopen Ollama. Installed chat models then appear in the model list as “Ollama (local) · …”. They are sent text only; one that reads images can be marked “Reads figures” on the Ollama card under Settings → Model → Providers.', {
+                        command: <code>launchctl setenv OLLAMA_CONTEXT_LENGTH 32768</code>,
+                        copy: (
+                            <Button variant="ghost-secondary" style={{ padding: '1px 5px' }} onClick={() => void copy('launchctl setenv OLLAMA_CONTEXT_LENGTH 32768')}>
+                                {copied === 'launchctl setenv OLLAMA_CONTEXT_LENGTH 32768' ? t('Copied') : t('Copy')}
+                            </Button>
+                        ),
+                    })}
                 </div>
             )}
         </div>

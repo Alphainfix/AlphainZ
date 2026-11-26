@@ -1,5 +1,6 @@
 import type { ContentKind } from '@beaver/agent-core/extract/document/shared/contentKinds';
 import type { ItemValidationState } from '../atoms/itemValidation';
+import { joinAlternatives, joinList, msg, t } from '../../src/utils/i18n';
 
 /**
  * Shared, UI-facing copy for attachment readability across every surface that
@@ -28,26 +29,26 @@ export interface AttachmentReadabilityInfo {
 
 /** Plural nouns for unsupported content kinds, used in "Beaver doesn't support …". */
 const UNSUPPORTED_KIND_NOUNS: Partial<Record<ContentKind, string>> = {
-    snapshot: 'web snapshots',
-    linked_url: 'web links',
-    word: 'Word documents',
-    spreadsheet: 'spreadsheets',
-    presentation: 'presentations',
-    audio: 'audio files',
-    video: 'videos',
-    archive: 'archives',
+    snapshot: msg('web snapshots'),
+    linked_url: msg('web links'),
+    word: msg('Word documents'),
+    spreadsheet: msg('spreadsheets'),
+    presentation: msg('presentations'),
+    audio: msg('audio files'),
+    video: msg('videos'),
+    archive: msg('archives'),
 };
 
 /** Kind labels composed into "{Kind} attachments are not supported". */
 const UNSUPPORTED_ATTACHMENT_KIND_LABELS: Partial<Record<ContentKind, string>> = {
-    snapshot: 'Snapshot',
-    linked_url: 'Web link',
+    snapshot: msg('Snapshot'),
+    linked_url: msg('Web link'),
     word: 'Word',
-    spreadsheet: 'Spreadsheet',
-    presentation: 'Presentation',
-    audio: 'Audio',
-    video: 'Video',
-    archive: 'Archive',
+    spreadsheet: msg('Spreadsheet'),
+    presentation: msg('Presentation'),
+    audio: msg('Audio'),
+    video: msg('Video'),
+    archive: msg('Archive@@attachment kind'),
 };
 
 /** Content kinds whose failure is intrinsic to the file type, not the instance. */
@@ -73,33 +74,21 @@ function isTypeProblem(info: AttachmentReadabilityInfo): boolean {
     return !!info.contentKind && TYPE_PROBLEM_KINDS.has(info.contentKind);
 }
 
-function joinOr(parts: string[]): string {
-    if (parts.length <= 1) return parts[0] ?? '';
-    if (parts.length === 2) return `${parts[0]} or ${parts[1]}`;
-    return `${parts.slice(0, -1).join(', ')}, or ${parts[parts.length - 1]}`;
-}
-
-function joinAnd(parts: string[]): string {
-    if (parts.length <= 1) return parts[0] ?? '';
-    if (parts.length === 2) return `${parts[0]} and ${parts[1]}`;
-    return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
-}
-
 function unsupportedKindsLabel(kinds: ContentKind[]): string {
-    const nouns = Array.from(new Set(kinds.map((k) => UNSUPPORTED_KIND_NOUNS[k] ?? 'these files')));
-    return `AlphainZ doesn't support ${joinOr(nouns)}`;
+    const nouns = Array.from(new Set(kinds.map((k) => t(UNSUPPORTED_KIND_NOUNS[k] ?? 'these files'))));
+    return t("AlphainZ doesn't support {kinds}", { kinds: joinAlternatives(nouns) });
 }
 
 function unsupportedAttachmentsLabel(issues: AttachmentReadabilityInfo[]): string {
     const labels: string[] = [];
     for (const issue of issues) {
         const kind = issue.contentKind;
-        if (!kind) return 'Some attachments are not supported';
+        if (!kind) return t('Some attachments are not supported');
         const label = UNSUPPORTED_ATTACHMENT_KIND_LABELS[kind];
-        if (!label) return 'Some attachments are not supported';
-        if (!labels.includes(label)) labels.push(label);
+        if (!label) return t('Some attachments are not supported');
+        if (!labels.includes(t(label))) labels.push(t(label));
     }
-    return `${joinAnd(labels)} attachments are not supported`;
+    return t('{kinds} attachments are not supported', { kinds: joinList(labels) });
 }
 
 /**
@@ -116,52 +105,52 @@ export function summarizeUnsupportedAttachments(infos: AttachmentReadabilityInfo
 export function attachmentIssueLabel(info: AttachmentReadabilityInfo): string {
     switch (info.statusCode) {
         case 'pdf_needs_ocr':
-            return 'Scanned PDF — needs a vision model';
+            return t('Scanned PDF — needs a vision model');
         case 'pdf_encrypted':
-            return 'PDF is password-protected';
+            return t('PDF is password-protected');
         case 'pdf_invalid':
         case 'pdf_parser_crash':
         case 'pdf_unreadable':
         case 'pdf_analysis_error':
-            return "PDF couldn't be read";
+            return t("PDF couldn't be read");
         case 'file_too_large':
-            return 'File is too large to read';
+            return t('File is too large to read');
         case 'file_not_local':
         case 'file_not_local_remote':
-            return "File isn't downloaded";
+            return t("File isn't downloaded");
         case 'epub_no_text':
         case 'epub_invalid':
-            return "EPUB couldn't be read";
+            return t("EPUB couldn't be read");
     }
 
     const kind = info.contentKind;
     // PDFs over the page limit are blocked without a distinctive status code.
     if (kind === 'pdf' && info.pageCount != null) {
-        return `PDF is too long (${info.pageCount} pages)`;
+        return t('PDF is too long ({count} pages)', { count: info.pageCount });
     }
     if (kind === 'image') {
-        return 'Image needs a vision model';
+        return t('Image needs a vision model');
     }
     if (isTypeProblem(info)) {
         return unsupportedKindsLabel([kind!]);
     }
-    return "Couldn't be read";
+    return t("Couldn't be read");
 }
 
 /** Kind adjective composed into "Beaver can't read {X} attachments". */
 const KIND_DESCRIPTOR: Partial<Record<ContentKind, string>> = {
     pdf: 'PDF',
     epub: 'EPUB',
-    text: 'text',
-    image: 'image',
-    snapshot: 'snapshot',
-    linked_url: 'web link',
+    text: msg('text'),
+    image: msg('image'),
+    snapshot: msg('snapshot'),
+    linked_url: msg('web link'),
     word: 'Word',
-    spreadsheet: 'spreadsheet',
-    presentation: 'presentation',
-    audio: 'audio',
-    video: 'video',
-    archive: 'archive',
+    spreadsheet: msg('spreadsheet'),
+    presentation: msg('presentation'),
+    audio: msg('audio'),
+    video: msg('video'),
+    archive: msg('archive'),
 };
 
 /**
@@ -170,9 +159,10 @@ const KIND_DESCRIPTOR: Partial<Record<ContentKind, string>> = {
  * and reads naturally; otherwise it is the plain kind. Empty when unknown.
  */
 function attachmentDescriptor(info: AttachmentReadabilityInfo): string {
-    if (info.statusCode === 'pdf_needs_ocr') return 'scanned PDF';
-    if (info.statusCode === 'pdf_encrypted') return 'password-protected PDF';
-    return (info.contentKind && KIND_DESCRIPTOR[info.contentKind]) || '';
+    if (info.statusCode === 'pdf_needs_ocr') return t('scanned PDF');
+    if (info.statusCode === 'pdf_encrypted') return t('password-protected PDF');
+    const kind = info.contentKind && KIND_DESCRIPTOR[info.contentKind];
+    return kind ? t(kind) : '';
 }
 
 export interface RegularItemReadabilitySummary {
@@ -226,12 +216,12 @@ export function summarizeRegularItemReadability(
         const descriptor = attachmentDescriptor(lead);
         if (usable) {
             label = descriptor
-                ? `Some ${descriptor} attachments can't be read`
-                : "Some attachments can't be read";
+                ? t("Some {kind} attachments can't be read", { kind: descriptor })
+                : t("Some attachments can't be read");
         } else {
             label = descriptor
-                ? `AlphainZ can't read ${descriptor} attachments`
-                : "AlphainZ can't read the attachments";
+                ? t("AlphainZ can't read {kind} attachments", { kind: descriptor })
+                : t("AlphainZ can't read the attachments");
         }
     }
 

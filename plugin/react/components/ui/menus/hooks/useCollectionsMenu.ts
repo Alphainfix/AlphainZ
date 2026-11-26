@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { SearchMenuItem } from '@beaver/agent-ui/primitives/SearchMenu';
 import { CollectionMenuItemContext, createCollectionMenuItem } from '../utils/menuItemFactories';
 import { getActiveZoteroLibraryId } from '../../../../../src/utils/zoteroUtils';
+import { t } from '../../../../../src/utils/i18n';
 
 interface UseCollectionsMenuOptions {
     isActive: boolean;
@@ -102,10 +103,10 @@ export const useCollectionsMenu = ({
         const items = filteredCollections.map((collection) =>
             createCollectionMenuItem(collection, collectionMenuItemContext, searchQuery)
         );
-        let headerLabel = 'Select Collections';
+        let headerLabel = t('Select Collections');
         if (activeLibraryId) {
             const library = Zotero.Libraries.get(activeLibraryId);
-            headerLabel = library ? `Collections in ${library.name}` : headerLabel;
+            headerLabel = library ? t('Collections in {library}', { library: library.name }) : headerLabel;
         }
         const header: SearchMenuItem = { label: headerLabel, isGroupHeader: true, onClick: () => {} };
         if (verticalPosition === 'above') {

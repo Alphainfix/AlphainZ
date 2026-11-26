@@ -11,14 +11,14 @@ import { stripCommentTags, toZoteroCommentText, toZoteroCommentTextOrNull } from
 describe('toZoteroCommentText', () => {
     it('converts formulas, emphasis and bullets, and drops citation tags', () => {
         expect(
-            toZoteroCommentText('**Key**: $t_2^*$ limits it <citation id="u-A" page="3"/>.\n- one\n- `two`'),
-        ).toBe('<b>Key</b>: t<sub>2</sub><sup>*</sup> limits it.\n• one\n• two');
+            toZoteroCommentText('**Key**: $x_2^*$ limits it <citation id="u-A" page="3"/>.\n- one\n- `two`'),
+        ).toBe('<b>Key</b>: x<sub>2</sub><sup>*</sup> limits it.\n• one\n• two');
     });
 
     it('is idempotent, so converting at proposal and again at execution is harmless', () => {
-        const once = toZoteroCommentText('the $\\gamma_w N$ term, *roughly* $10^{-6}$ m');
+        const once = toZoteroCommentText('the $\\alpha_s N$ term, *roughly* $10^{-6}$ m');
         expect(toZoteroCommentText(once)).toBe(once);
-        expect(once).toBe('the γ<sub>w</sub> N term, <i>roughly</i> 10<sup>-6</sup> m');
+        expect(once).toBe('the α<sub>s</sub> N term, <i>roughly</i> 10<sup>-6</sup> m');
     });
 
     it('leaves prose, prices and identifiers alone', () => {
@@ -31,7 +31,7 @@ describe('toZoteroCommentText', () => {
     });
 
     it('strips the tags again for a surface that cannot render them', () => {
-        expect(stripCommentTags('t<sub>2</sub><sup>*</sup> and <b>x</b>')).toBe('t2* and x');
+        expect(stripCommentTags('x<sub>2</sub><sup>*</sup> and <b>y</b>')).toBe('x2* and y');
     });
 
     it('passes null and non-strings through as null', () => {

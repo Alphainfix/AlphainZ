@@ -11,6 +11,7 @@ import { ZoteroItemReference, CollectionReference, AttachmentInfo } from "../typ
 import { ToolReturnPart } from "../agents/types";
 import { logger } from "../platform/logger";
 import { resolveLibraryRefForLibraryID, resolveObjectIdReference } from "../identity/libraryRef";
+import { t } from "../i18n/translate";
 
 // ============================================================================
 // Summary Types (from backend)
@@ -892,7 +893,7 @@ export function extractReadTextLineRangeLabel(
 
     const start = Math.min(...data.lines.map(range => range.start_line));
     const end = Math.max(...data.lines.map(range => range.end_line));
-    return start === end ? `line ${start}` : `lines ${start}-${end}`;
+    return start === end ? t('line {line}', { line: start }) : t('lines {lines}', { lines: `${start}-${end}` });
 }
 
 /**

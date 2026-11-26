@@ -4,6 +4,7 @@ import { EMBEDDING_OPTIONS } from '../../../preferences/ModelSettingsSection';
 import { getPref, setPref } from '../../../../../src/utils/prefs';
 import { embeddingKeyFor } from '../../../../../src/services/llm/agentConfig';
 import { OllamaGuide } from '../../../preferences/OllamaGuide';
+import { t } from '../../../../../src/utils/i18n';
 
 /**
  * Step ③: whether the library gets a meaning-based index.
@@ -26,27 +27,24 @@ const IndexStep: React.FC = () => {
     return (
         <>
             <div className="text-base font-color-secondary mb-2">
-                The search index is what lets the agent find papers by meaning, not just by
-                keyword. It reads titles, abstracts and PDF text through an embedding model —
-                that costs a small amount of that provider's quota (Ollama runs locally and is
-                free). Skip it and keyword search still works.
-                {wasAlreadySet && <span className="font-color-green"> Already set ✓</span>}
+                {t('The search index is what lets the agent find papers by meaning, not just by keyword. It reads titles, abstracts and PDF text through an embedding model — that costs a small amount of that provider\'s quota (Ollama runs locally and is free). Skip it and keyword search still works.')}
+                {wasAlreadySet && <span className="font-color-green">{' '}{t('Already set ✓')}</span>}
             </div>
             <SettingsGroup>
                 {EMBEDDING_OPTIONS.map((option) => (
                     <SettingsRow
                         key={option.id || 'off'}
-                        title={option.label}
+                        title={t(option.label)}
                         description={option.id === '' ? '' : option.id === 'ollama'
-                            ? 'Free, and nothing leaves this computer — needs the Ollama app (0.40 or later) and '
-                                + 'the EmbeddingGemma 2 model, 671 MB (set up below)'
+                            ? t('Free, and nothing leaves this computer — needs the Ollama app (0.40 or later) and '
+                                + 'the EmbeddingGemma 2 model, 671 MB (set up below)')
                             : option.keyPref && !embeddingKeyFor(option.id)
-                                ? 'Needs that vendor’s API key (step 1)'
+                                ? t('Needs that vendor’s API key (step 1)')
                                 : option.id === 'google'
-                                    ? 'Gemini Embedding 2, with your Google key — the Gemini card’s'
+                                    ? t('Gemini Embedding 2, with the Google key from the Gemini card in step 1')
                                     : ''}
                         onClick={() => choose(option.id)}
-                        control={<input type="radio" name="wizard-embedding" aria-label={option.label}
+                        control={<input type="radio" name="wizard-embedding" aria-label={t(option.label)}
                             checked={provider === option.id}
                             onChange={() => choose(option.id)}
                             onClick={(e) => e.stopPropagation()} />}

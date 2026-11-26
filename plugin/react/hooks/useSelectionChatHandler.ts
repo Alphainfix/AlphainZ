@@ -68,6 +68,7 @@ import {
 import { continueOrStartThread, deliverPrompt } from '../utils/readerChatDelivery';
 import { useEventSubscription } from './useEventSubscription';
 import { revealChatForReaderQuestion } from './useToggleSidebar';
+import { t } from '../../src/utils/i18n';
 
 /** The attachment the reader has open, loading it if the store is behind. */
 async function resolveAttachment(readerItemID: number): Promise<Zotero.Item | null> {
@@ -125,21 +126,21 @@ export function refuseReaderQuestion(
             store.set(addExcludedLibraryPopupAtom, {
                 id: EXCLUDED_LIBRARY_READER_POPUP_ID,
                 libraryIDs: [libraryID],
-                title: 'Not asked',
+                title: t('Not asked'),
                 // As long as the reader's notice would stay: until the user
                 // leaves the tab or dismisses it.
                 expire: false,
             });
         }
-        return 'This library is excluded from AlphainZ. You can change that in AlphainZ Settings.';
+        return t('This library is excluded from AlphainZ. You can change that in AlphainZ Settings.');
     }
     // Not excluded, just not readable yet: the libraries are still being read.
-    const reason = 'AlphainZ is still reading your Zotero libraries. Try again in a moment.';
+    const reason = t('AlphainZ is still reading your Zotero libraries. Try again in a moment.');
     if (notify) {
         store.set(addPopupMessageAtom, {
             id: READER_QUESTION_NOT_ASKED_POPUP_ID,
             type: 'warning',
-            title: 'Not asked',
+            title: t('Not asked'),
             text: reason,
             expire: true,
             duration: 4000,
@@ -296,7 +297,7 @@ function deliverAndFollowRun<T>(
 function notSentReason(errorBefore: unknown): string {
     const error = store.get(wsErrorAtom);
     const message = error && error !== errorBefore ? String(error.message ?? '').trim() : '';
-    return message || 'AlphainZ did not send this question. Try again in a moment.';
+    return message || t('AlphainZ did not send this question. Try again in a moment.');
 }
 
 /** The popup event as the reader integration sends it, with its reply channel. */
@@ -342,7 +343,7 @@ export async function askFromSelectionPopup(
         const attachment = await resolveAttachment(readerItemID);
         if (!attachment) {
             logger(`useSelectionChatHandler: attachment ${readerItemID} not found`, 1);
-            respond({ status: 'failed', reason: 'AlphainZ could not find this file in your library.' });
+            respond({ status: 'failed', reason: t('AlphainZ could not find this file in your library.') });
             return;
         }
 
@@ -434,7 +435,7 @@ export async function askFromSelectionPopup(
         }
     } catch (error) {
         logger(`useSelectionChatHandler: selection chat failed: ${error}`, 1);
-        respond({ status: 'failed', reason: 'Something went wrong. Try again.' });
+        respond({ status: 'failed', reason: t('Something went wrong. Try again.') });
     }
 }
 

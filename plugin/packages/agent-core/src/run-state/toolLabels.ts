@@ -1,7 +1,8 @@
 import { ToolCallStatus } from './atoms';
 import { ToolCallPart } from '../agents/types';
-import { parseArgs, TOOL_BASE_LABELS } from './toolCallRequest';
+import { parseArgs, toolBaseLabel } from './toolCallRequest';
 import { isItemRow, type ToolResultView } from './toolResultViews';
+import { msg, t, tn } from '../i18n/translate';
 
 // The request-side reference extraction lives in `toolCallRequest`; re-exported
 // here so label consumers can take it from this module.
@@ -29,22 +30,82 @@ export interface ToolCallLabelOptions {
 }
 
 const CAPABILITY_LABELS: Record<string, string> = {
-    zotero_library_management: 'Library Management',
-    zotero_metadata_editing: 'Metadata Editing',
-    zotero_note_editing: 'Note Editing',
-    zotero_annotations: 'Annotations',
-    external_literature: 'External Literature',
-    beaver_help: 'AlphainZ Help',
+    zotero_library_management: msg('Library Management'),
+    zotero_metadata_editing: msg('Metadata Editing'),
+    zotero_note_editing: msg('Note Editing'),
+    zotero_annotations: msg('Annotations'),
+    external_literature: msg('External Literature'),
+    beaver_help: msg('AlphainZ Help'),
 };
 
 function humanizeCapabilityId(id: string): string {
     const spaced = id.replace(/[_-]+/g, ' ').trim();
-    return spaced ? spaced.charAt(0).toUpperCase() + spaced.slice(1) : 'capability';
+    return spaced ? spaced.charAt(0).toUpperCase() + spaced.slice(1) : t('capability');
+}
+
+/** A table entry for `key`, ignoring names the object inherits. */
+function lookup(table: Record<string, string>, key: string): string | undefined {
+    return Object.prototype.hasOwnProperty.call(table, key) ? table[key] : undefined;
 }
 
 function capabilityLabel(id: string): string {
-    return CAPABILITY_LABELS[id] ?? humanizeCapabilityId(id);
+    const label = lookup(CAPABILITY_LABELS, id);
+    return label !== undefined ? t(label) : humanizeCapabilityId(id);
 }
+
+/** The label for a tool with no entry in the base-label table. */
+const FALLBACK_TOOL_LABEL = msg('Calling function');
+
+/*
+ * The shapes a tool-call label is built from. Each is one translatable
+ * template, so a language can reorder the parts or use its own punctuation.
+ */
+
+/** "<label>: <detail>". */
+function withDetail(label: string, detail: string): string {
+    return t('{label}: {detail}', { label, detail });
+}
+
+/** "<label>: "<text>"" — the detail is something the agent typed, quoted. */
+function withQuote(label: string, text: string): string {
+    return t('{label}: "{text}"', { label, text });
+}
+
+/** "<label>: <name>, <locator>", or "<label>: <name>" without a locator. */
+function withNameAndLocator(label: string, name: string, locator: string): string {
+    return locator ? t('{label}: {name}, {locator}', { label, name, locator }) : withDetail(label, name);
+}
+
+/** A page locator: "p. 5" or "p. 5-10". */
+function pageLocator(pages: string | number): string {
+    return t('p. {pages}', { pages });
+}
+
+/** Highlight colours a label names, as the agent passes them. Other values are shown as given. */
+const HIGHLIGHT_COLOUR_LABELS: Record<string, string> = {
+    yellow: msg('yellow'),
+    red: msg('red'),
+    green: msg('green'),
+    blue: msg('blue'),
+    purple: msg('purple'),
+    magenta: msg('magenta'),
+    orange: msg('orange'),
+    gray: msg('gray'),
+};
+
+function colourLabel(colour: string): string {
+    const label = lookup(HIGHLIGHT_COLOUR_LABELS, colour);
+    return label !== undefined ? t(label) : colour;
+}
+
+/** Annotation types in the plural, as a find_annotations label names them. */
+const ANNOTATION_TYPE_PLURALS: Record<string, string> = {
+    highlight: msg('highlights'),
+    note: msg('notes'),
+    underline: msg('underlines'),
+    image: msg('images'),
+    ink: msg('inks'),
+};
 
 /** Tools whose label headlines a single item's bibliographic name. */
 const SINGLE_ITEM_NAME_TOOLS = new Set([
@@ -115,64 +176,63 @@ function getViewLocationLabel(view: ToolResultView | null | undefined, toolName:
 }
 
 /**
- * Parenthetical count suffix for a completed tool-call label, derived from the
- * view model. Per-tool wording (not a single number): read/view/read_note carry
- * their locator inline and get no suffix; search/list use "(N results/collections/
- * tags)"; attachment_search uses match count; lookup_work uses "(N found)";
+ * What a completed tool-call label adds in parentheses, derived from the view
+ * model. Per-tool wording (not a single number): read/view/read_note carry
+ * their locator inline and get nothing; search/list say "N results/collections/
+ * tags"; attachment_search gives the match count; lookup_work says "N found";
  * batch_operation carries the batch's population line, or how it stopped.
- * Returns null when there is nothing to append.
+ * Returns null when there is nothing to add.
  */
-export function getToolResultLabelSuffix(
+function getToolResultLabelDetail(
     view: ToolResultView | null | undefined,
     toolName: string,
 ): string | null {
     if (!view) return null;
     // Single-item read/view/read_note carry the locator inline — no count suffix.
     if (SINGLE_ITEM_NAME_TOOLS.has(toolName)) return null;
-    const plural = (n: number, noun: string) => `${n} ${noun}${n === 1 ? '' : 's'}`;
     switch (view.view_type) {
         case 'item_list': {
             const n = view.items.length;
-            return n ? ` (${plural(n, 'result')})` : null;
+            return n ? tn(n, '{count} result', '{count} results') : null;
         }
         case 'collection_list': {
             const n = view.total_count;
-            return n ? ` (${plural(n, 'collection')})` : null;
+            return n ? tn(n, '{count} collection', '{count} collections') : null;
         }
         case 'tag_list': {
             const n = view.total_count;
-            return n ? ` (${plural(n, 'tag')})` : null;
+            return n ? tn(n, '{count} tag', '{count} tags') : null;
         }
         case 'attachment_search': {
             const n = view.total_matches;
-            return n ? ` (${n} match${n === 1 ? '' : 'es'})` : null;
+            return n ? tn(n, '{count} match', '{count} matches') : null;
         }
         case 'annotation_list': {
             const n = view.annotations.length;
-            return n ? ` (${plural(n, 'annotation')})` : null;
+            return n ? tn(n, '{count} annotation', '{count} annotations') : null;
         }
         case 'external_reference_list': {
             if (toolName === 'lookup_work') {
                 const n = view.found_count ?? view.references.length;
-                return n != null ? ` (${n} found)` : null;
+                return n != null ? t('{count} found', { count: n }) : null;
             }
             const n = view.references.length;
-            return n ? ` (${plural(n, 'result')})` : null;
+            return n ? tn(n, '{count} result', '{count} results') : null;
         }
         case 'batch_operation': {
             // A batch that has ended says how; one still running says how big
-            // it is. Both strings are backend copy, appended verbatim.
+            // it is. Both strings are backend copy, shown verbatim.
             if (view.status && view.status !== 'active' && view.status_label) {
-                return ` (${view.status_label})`;
+                return view.status_label;
             }
-            return view.scope_primary ? ` (${view.scope_primary})` : null;
+            return view.scope_primary || null;
         }
         case 'user_question': {
             // The backend omits the default status — treat absent as answered.
             const status = view.status ?? 'answered';
-            if (status === 'cancelled') return ' (skipped)';
-            if (status === 'no_response') return ' (no response)';
-            return ' (answered)';
+            if (status === 'cancelled') return t('skipped');
+            if (status === 'no_response') return t('no response');
+            return t('answered');
         }
         default:
             return null;
@@ -180,10 +240,22 @@ export function getToolResultLabelSuffix(
 }
 
 /**
+ * Parenthetical suffix for a completed tool-call label — " (3 results)" — or
+ * null when there is nothing to append. See {@link getToolResultLabelDetail}.
+ */
+export function getToolResultLabelSuffix(
+    view: ToolResultView | null | undefined,
+    toolName: string,
+): string | null {
+    const detail = getToolResultLabelDetail(view, toolName);
+    return detail ? ` (${detail})` : null;
+}
+
+/**
  * Labels for skill names.
  */
 const SKILL_NAME_LABELS: Record<string, string> = {
-    'library-management': 'Library management',
+    'library-management': msg('Library management'),
 };
 
 /**
@@ -246,15 +318,14 @@ function detectReadFileType(path: string): 'tool_result' | 'skill' | 'skill_reso
  */
 function skillNameFromPath(path: string): string {
     const skillKey = path.match(/\/skills\/([^/]+)/i)?.[1];
-    if (!skillKey) return 'skill';
-    return (
-        SKILL_NAME_LABELS[skillKey] ??
-        skillKey
-            .replace(/-/g, ' ')
-            .split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ')
-    );
+    if (!skillKey) return t('skill');
+    const label = lookup(SKILL_NAME_LABELS, skillKey);
+    if (label !== undefined) return t(label);
+    return skillKey
+        .replace(/-/g, ' ')
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
 }
 
 /**
@@ -361,8 +432,8 @@ export function getToolCallLabel(
     opts?: ToolCallLabelOptions,
 ): string {
     const main = computeMainLabel(part, status, opts);
-    const suffix = getToolResultLabelSuffix(opts?.view ?? null, part.tool_name);
-    return suffix ? `${main}${suffix}` : main;
+    const detail = getToolResultLabelDetail(opts?.view ?? null, part.tool_name);
+    return detail ? t('{label} ({detail})', { label: main, detail }) : main;
 }
 
 /**
@@ -376,11 +447,11 @@ function computeMainLabel(
     opts?: ToolCallLabelOptions,
 ): string {
     const toolName = part.tool_name;
-    const baseLabel = TOOL_BASE_LABELS[toolName] ?? 'Calling function';
+    const baseLabel = toolBaseLabel(toolName) ?? t(FALLBACK_TOOL_LABEL);
 
     // Progress messages take precedence when present
     if (status === 'in_progress' && part.progress) {
-        return `${baseLabel}: ${part.progress}`;
+        return withDetail(baseLabel, part.progress);
     }
 
     const args = parseArgs(part);
@@ -399,7 +470,7 @@ function computeMainLabel(
         case 'fulltext_search': {
             const query = args.query_semantic as string | undefined;
             if (query) {
-                return `${baseLabel}: "${truncate(query, 40)}"`;
+                return withQuote(baseLabel, truncate(query, 40));
             }
             return baseLabel;
         }
@@ -407,7 +478,7 @@ function computeMainLabel(
         case 'fulltext_search_keywords': {
             const queries = args.query_primary as string[] | undefined;
             if (queries && queries.length > 0) {
-                return `${baseLabel}: "${truncate(queries[0], 40)}"`;
+                return withQuote(baseLabel, truncate(queries[0], 40));
             }
             return baseLabel;
         }
@@ -417,7 +488,7 @@ function computeMainLabel(
         case 'item_search_by_topic': {
             const topic = args.topic_query as string | undefined;
             if (topic) {
-                return `${baseLabel}: "${truncate(topic, 40)}"`;
+                return withQuote(baseLabel, truncate(topic, 40));
             }
             return baseLabel;
         }
@@ -426,12 +497,14 @@ function computeMainLabel(
             const parts: string[] = [];
             if (args.author_query) parts.push(args.author_query as string);
             if (args.title_query) parts.push(args.title_query as string);
-            if (args.publication_query) parts.push(`in ${args.publication_query}`);
+            if (args.publication_query) {
+                parts.push(t('in {publication}', { publication: args.publication_query as string }));
+            }
             const yearLabel = formatYearFilter(args.year_filter);
             if (yearLabel) parts.push(yearLabel);
 
             if (parts.length > 0) {
-                return `${baseLabel}: ${truncate(parts.join(' '), 50)}`;
+                return withDetail(baseLabel, truncate(parts.join(' '), 50));
             }
             return baseLabel;
         }
@@ -450,7 +523,7 @@ function computeMainLabel(
             // Tag parameter (pure, arg-derived)
             const tag = args.tag as string | undefined;
             if (tag) {
-                parts.push(`tag "${truncate(tag, 20)}"`);
+                parts.push(t('tag "{tag}"', { tag: truncate(tag, 20) }));
             }
 
             // Show library name only when no collection/tag filter and library is specified
@@ -461,9 +534,9 @@ function computeMainLabel(
             }
 
             if (parts.length > 0) {
-                return `${baseLabel}: ${truncate(parts.join(' '), 50)}`;
+                return withDetail(baseLabel, truncate(parts.join(' '), 50));
             }
-            return `${baseLabel}`;
+            return baseLabel;
         }
 
         // === Reading tools ===
@@ -472,7 +545,7 @@ function computeMainLabel(
             const query = args.query as string | undefined;
             const label = description || (query ? truncate(query, 50) : null);
             if (label) {
-                return `${baseLabel}: ${label}`;
+                return withDetail(baseLabel, label);
             }
             return baseLabel;
         }
@@ -481,7 +554,7 @@ function computeMainLabel(
         case 'find_in_attachments': {
             const query = args.query as string | undefined;
             if (query) {
-                return `${baseLabel}: "${truncate(query, 40)}"`;
+                return withQuote(baseLabel, truncate(query, 40));
             }
             return baseLabel;
         }
@@ -492,15 +565,15 @@ function computeMainLabel(
                 const fileType = detectReadFileType(path);
                 switch (fileType) {
                     case 'tool_result':
-                        return 'Retrieving previous results';
+                        return t('Retrieving previous results');
                     case 'skill':
                     case 'skill_resource':
-                        return `Loading skill: ${truncate(skillNameFromPath(path), 30)}`;
+                        return t('Loading skill: {skill}', { skill: truncate(skillNameFromPath(path), 30) });
                     case 'documentation':
-                        return 'Reading documentation';
+                        return t('Reading documentation');
                     case 'unknown':
                     default:
-                        return `${baseLabel}: ${truncate(path, 40)}`;
+                        return withDetail(baseLabel, truncate(path, 40));
                 }
             }
             return baseLabel;
@@ -516,7 +589,7 @@ function computeMainLabel(
             if (path && !/^\/?docs\//i.test(path.trim())) {
                 const fileType = detectReadFileType(path);
                 if (fileType === 'skill' || fileType === 'skill_resource') {
-                    return `Loading skill: ${truncate(skillNameFromPath(path), 30)}`;
+                    return t('Loading skill: {skill}', { skill: truncate(skillNameFromPath(path), 30) });
                 }
             }
             return baseLabel;
@@ -530,18 +603,18 @@ function computeMainLabel(
             // Requested page range from args (fallback when no completed view)
             let argRange = '';
             if (startPage !== undefined && endPage !== undefined) {
-                argRange = startPage === endPage ? `p. ${startPage}` : `p. ${startPage}-${endPage}`;
+                argRange = startPage === endPage ? pageLocator(startPage) : pageLocator(`${startPage}-${endPage}`);
             } else if (startPage !== undefined) {
-                argRange = `p. ${startPage}+`;
+                argRange = t('p. {page}+', { page: startPage });
             } else if (endPage !== undefined) {
-                argRange = `p. 1-${endPage}`;
+                argRange = pageLocator(`1-${endPage}`);
             }
 
             // Prefer the completed view's actual locator; the locator is shown only
             // alongside a resolved item name (never a bare page range).
             const locator = viewLocator ?? argRange;
             if (resolvedName) {
-                return locator ? `${baseLabel}: ${resolvedName}, ${locator}` : `${baseLabel}: ${resolvedName}`;
+                return withNameAndLocator(baseLabel, resolvedName, locator);
             }
             return baseLabel;
         }
@@ -555,25 +628,31 @@ function computeMainLabel(
          */
         case 'read_document': {
             const pages = args.pages as string | number | undefined;
-            const range = pages != null && String(pages).trim() ? `p. ${String(pages).trim()}` : '';
+            const range = pages != null && String(pages).trim() ? pageLocator(String(pages).trim()) : '';
             const locator = viewLocator ?? range;
             if (resolvedName) {
-                return locator ? `${baseLabel}: ${resolvedName}, ${locator}` : `${baseLabel}: ${resolvedName}`;
+                return withNameAndLocator(baseLabel, resolvedName, locator);
             }
-            return locator ? `${baseLabel}: ${locator}` : baseLabel;
+            return locator ? withDetail(baseLabel, locator) : baseLabel;
         }
 
         case 'search_in_document': {
             const query = args.query as string | undefined;
-            if (query && resolvedName) return `${baseLabel}: "${truncate(query, 32)}" in ${resolvedName}`;
-            if (query) return `${baseLabel}: "${truncate(query, 40)}"`;
+            if (query && resolvedName) {
+                return t('{label}: "{query}" in {name}', {
+                    label: baseLabel,
+                    query: truncate(query, 32),
+                    name: resolvedName,
+                });
+            }
+            if (query) return withQuote(baseLabel, truncate(query, 40));
             return baseLabel;
         }
 
         case 'search_library_fulltext':
         case 'search_web_literature': {
             const query = args.query as string | undefined;
-            if (query) return `${baseLabel}: "${truncate(query, 48)}"`;
+            if (query) return withQuote(baseLabel, truncate(query, 48));
             return baseLabel;
         }
 
@@ -583,23 +662,30 @@ function computeMainLabel(
             const colour = args.color as string | undefined;
             const text = args.text as string | undefined;
             const page = args.page as number | undefined;
-            const head = colour ? `Proposing a ${colour} highlight` : baseLabel;
-            const where = resolvedName
-                ? page != null ? ` in ${resolvedName}, p. ${page}` : ` in ${resolvedName}`
-                : page != null ? `, p. ${page}` : '';
-            if (text) return `${head}${where}: "${truncate(text, 60)}"`;
-            return `${head}${where}`;
+            const head = colour ? t('Proposing a {color} highlight', { color: colourLabel(colour) }) : baseLabel;
+            const placed = resolvedName
+                ? page != null
+                    ? t('{label} in {name}, {locator}', { label: head, name: resolvedName, locator: pageLocator(page) })
+                    : t('{label} in {name}', { label: head, name: resolvedName })
+                : page != null
+                    ? t('{label}, {locator}', { label: head, locator: pageLocator(page) })
+                    : head;
+            if (text) return withQuote(placed, truncate(text, 60));
+            return placed;
         }
 
         case 'add_papers_to_library': {
             const papers = Array.isArray(args.papers) ? args.papers : [];
             const first = papers[0] as Record<string, unknown> | undefined;
             const title = typeof first?.title === 'string' ? first.title : null;
-            if (papers.length === 1 && title) return `${baseLabel}: ${truncate(title, 56)}`;
+            if (papers.length === 1 && title) return withDetail(baseLabel, truncate(title, 56));
             if (papers.length > 1 && title) {
-                return `${baseLabel}: ${truncate(title, 40)} and ${papers.length - 1} more`;
+                return withDetail(
+                    baseLabel,
+                    t('{title} and {count} more', { title: truncate(title, 40), count: papers.length - 1 }),
+                );
             }
-            if (papers.length) return `${baseLabel}: ${papers.length} papers`;
+            if (papers.length) return withDetail(baseLabel, t('{count} papers', { count: papers.length }));
             return baseLabel;
         }
 
@@ -612,7 +698,7 @@ function computeMainLabel(
          */
         case 'organize_items': {
             const count = Array.isArray(args.item_ids) ? args.item_ids.length : 0;
-            const subject = count === 1 ? '1 item' : `${count} items`;
+            const subject = tn(count, '{count} item', '{count} items');
             const list = (value: unknown) =>
                 Array.isArray(value) ? value.map((v) => String(v)).filter(Boolean) : [];
             const addTags = list(args.add_tags);
@@ -621,29 +707,34 @@ function computeMainLabel(
             const removeCollections = list(args.remove_from_collections);
 
             const parts: string[] = [];
-            if (addTags.length) parts.push(`+${addTags.map((t) => `#${t}`).join(' ')}`);
-            if (removeTags.length) parts.push(`−${removeTags.map((t) => `#${t}`).join(' ')}`);
+            if (addTags.length) parts.push(`+${addTags.map((tag) => `#${tag}`).join(' ')}`);
+            if (removeTags.length) parts.push(`−${removeTags.map((tag) => `#${tag}`).join(' ')}`);
             if (addCollections.length) {
-                parts.push(
-                    `into ${addCollections.length === 1 ? '1 collection' : `${addCollections.length} collections`}`,
-                );
+                parts.push(tn(addCollections.length, 'into {count} collection', 'into {count} collections'));
             }
             if (removeCollections.length) {
-                parts.push(
-                    `out of ${removeCollections.length === 1 ? '1 collection' : `${removeCollections.length} collections`}`,
-                );
+                parts.push(tn(removeCollections.length, 'out of {count} collection', 'out of {count} collections'));
             }
             if (!count) return baseLabel;
             return parts.length
-                ? `${baseLabel}: ${subject} ${truncate(parts.join(', '), 60)}`
-                : `${baseLabel}: ${subject}`;
+                ? t('{label}: {items} {changes}', {
+                    label: baseLabel,
+                    items: subject,
+                    changes: truncate(parts.join(', '), 60),
+                })
+                : withDetail(baseLabel, subject);
         }
 
         case 'create_collection': {
             const name = typeof args.name === 'string' ? args.name : '';
             const count = Array.isArray(args.item_ids) ? args.item_ids.length : 0;
-            if (name && count) return `${baseLabel} "${truncate(name, 40)}" with ${count} item${count === 1 ? '' : 's'}`;
-            if (name) return `${baseLabel} "${truncate(name, 48)}"`;
+            if (name && count) {
+                return tn(count, '{label} "{name}" with {count} item', '{label} "{name}" with {count} items', {
+                    label: baseLabel,
+                    name: truncate(name, 40),
+                });
+            }
+            if (name) return t('{label} "{name}"', { label: baseLabel, name: truncate(name, 48) });
             return baseLabel;
         }
 
@@ -664,16 +755,18 @@ function computeMainLabel(
             // Requested locator from args (fallback when no completed view).
             let argRange = '';
             if (pageRangeValue) {
-                argRange = `p. ${pageRangeValue}`;
+                argRange = pageLocator(pageRangeValue);
             } else if (lineRangeValue) {
-                argRange = lineRangeValue.includes('-') ? `lines ${lineRangeValue}` : `line ${lineRangeValue}`;
+                argRange = lineRangeValue.includes('-')
+                    ? t('lines {lines}', { lines: lineRangeValue })
+                    : t('line {line}', { line: lineRangeValue });
             }
 
             // The completed view's actual locator wins over the requested range;
             // the locator is shown only alongside a resolved item name.
             const locator = viewLocator ?? argRange;
             if (resolvedName) {
-                return locator ? `${baseLabel}: ${resolvedName}, ${locator}` : `${baseLabel}: ${resolvedName}`;
+                return withNameAndLocator(baseLabel, resolvedName, locator);
             }
             return baseLabel;
         }
@@ -687,11 +780,11 @@ function computeMainLabel(
                 typeof pagesArg === 'string' && /^\d+(-\d+)?$/.test(pagesArg.trim())
                     ? pagesArg.trim()
                     : null;
-            const argRange = pageRangeValue ? `p. ${pageRangeValue}` : '';
+            const argRange = pageRangeValue ? pageLocator(pageRangeValue) : '';
 
             const locator = viewLocator ?? argRange;
             if (resolvedName) {
-                return locator ? `${baseLabel}: ${resolvedName}, ${locator}` : `${baseLabel}: ${resolvedName}`;
+                return withNameAndLocator(baseLabel, resolvedName, locator);
             }
             return baseLabel;
         }
@@ -699,7 +792,7 @@ function computeMainLabel(
         // === Annotation tools ===
         case 'get_annotations': {
             if (resolvedName) {
-                return `${baseLabel}: ${resolvedName}`;
+                return withDetail(baseLabel, resolvedName);
             }
             return baseLabel;
         }
@@ -707,31 +800,35 @@ function computeMainLabel(
         case 'find_annotations': {
             // Scoped (single-source) calls headline the source name.
             if (resolvedName) {
-                return `${baseLabel}: ${resolvedName}`;
+                return withDetail(baseLabel, resolvedName);
             }
 
             const color = args.color as string | undefined;
             const annotationType = args.annotation_type as string | undefined;
             if (color || annotationType) {
-                const label = [color, annotationType ? `${annotationType}s` : 'annotations']
-                    .filter(Boolean)
-                    .join(' ');
-                return `${baseLabel}: ${truncate(label, 40)}`;
+                const typePlural = annotationType ? lookup(ANNOTATION_TYPE_PLURALS, annotationType) : undefined;
+                const kinds = annotationType
+                    ? typePlural !== undefined ? t(typePlural) : `${annotationType}s`
+                    : t('annotations');
+                const label = color
+                    ? t('{color} {annotations}', { color: colourLabel(color), annotations: kinds })
+                    : kinds;
+                return withDetail(baseLabel, truncate(label, 40));
             }
 
             const tag = args.tag as string | undefined;
             if (tag) {
-                return `${baseLabel}: tagged "${truncate(tag, 30)}"`;
+                return withDetail(baseLabel, t('tagged "{tag}"', { tag: truncate(tag, 30) }));
             }
 
             const text = args.text_contains as string | undefined;
             if (text) {
-                return `${baseLabel}: "${truncate(text, 40)}"`;
+                return withQuote(baseLabel, truncate(text, 40));
             }
 
             const collection = args.collection as string | undefined;
             if (collection) {
-                return `${baseLabel}: ${truncate(collection, 40)}`;
+                return withDetail(baseLabel, truncate(collection, 40));
             }
 
             return baseLabel;
@@ -743,10 +840,10 @@ function computeMainLabel(
             const count = Array.isArray(attachmentIds) ? attachmentIds.length : 0;
             const label = args.label as string | undefined;
             if (label) {
-                return `${baseLabel}: ${truncate(label, 60)}`;
+                return withDetail(baseLabel, truncate(label, 60));
             }
             if (count > 0) {
-                return `${baseLabel}: ${count} paper${count === 1 ? '' : 's'}`;
+                return withDetail(baseLabel, tn(count, '{count} paper', '{count} papers'));
             }
             return baseLabel;
         }
@@ -757,7 +854,7 @@ function computeMainLabel(
             const query = args.query as string | undefined;
             const label = searchLabel || (query ? truncate(query, 60) : null);
             if (label) {
-                return `${baseLabel}: ${label}`;
+                return withDetail(baseLabel, label);
             }
             return baseLabel;
         }
@@ -775,7 +872,7 @@ function computeMainLabel(
             const hasInvalidIdentifiers = args.identifiers !== undefined && identifiers === null;
             const hasInvalidTitles = args.titles !== undefined && titles === null;
             if (hasInvalidIdentifiers || hasInvalidTitles) {
-                return `${baseLabel}: Invalid query`;
+                return withDetail(baseLabel, t('Invalid query'));
             }
             
             // Count total queries
@@ -787,7 +884,7 @@ function computeMainLabel(
             if (totalCount === 1) {
                 const singleLabel = identifier || title || identifiers?.[0] || titles?.[0];
                 if (singleLabel) {
-                    return `${baseLabel}: ${truncate(singleLabel, 40)}`;
+                    return withDetail(baseLabel, truncate(singleLabel, 40));
                 }
             }
             
@@ -795,7 +892,7 @@ function computeMainLabel(
             if (totalCount > 1) {
                 return status === 'completed'
                     ? baseLabel
-                    : `${baseLabel}: ${totalCount} queries`;
+                    : withDetail(baseLabel, t('{count} queries', { count: totalCount }));
             }
             
             return baseLabel;
@@ -816,32 +913,40 @@ function computeMainLabel(
                 const operator = firstCond.operator || 'is';
                 const value = firstCond.value ?? '';
                 
-                // Map operators to readable symbols/text
-                const operatorLabels: Record<string, string> = {
+                // Operators shown as a symbol, and operators shown in words.
+                const operatorSymbols: Record<string, string> = {
                     'is': '=',
                     'isNot': '≠',
-                    'contains': 'contains',
-                    'doesNotContain': 'does not contain',
-                    'beginsWith': 'begins with',
                     'isLessThan': '<',
                     'isGreaterThan': '>',
-                    'isBefore': 'before',
-                    'isAfter': 'after',
-                    'isInTheLast': 'in the last',
                 };
-                
-                const operatorLabel = operatorLabels[operator] || operator;
+                const operatorWords: Record<string, string> = {
+                    'contains': msg('contains'),
+                    'doesNotContain': msg('does not contain'),
+                    'beginsWith': msg('begins with'),
+                    'isBefore': msg('before'),
+                    'isAfter': msg('after'),
+                    'isInTheLast': msg('in the last'),
+                };
+                // An operator the tables do not know is shown as given.
+                const symbol = lookup(operatorSymbols, operator)
+                    ?? (['<', '>', '=', '≠'].includes(operator) ? operator : undefined);
+                const words = lookup(operatorWords, operator);
                 
                 // Format the condition based on operator type
                 if (value === '' && (operator === 'doesNotContain' || operator === 'is')) {
                     // Special case: empty field search
-                    return `${baseLabel}: ${field} is empty`;
-                } else if (['<', '>', '=', '≠'].includes(operatorLabel)) {
+                    return withDetail(baseLabel, t('{field} is empty', { field }));
+                } else if (symbol !== undefined) {
                     // Symbolic operators
-                    return `${baseLabel}: ${field} ${operatorLabel} "${truncate(value, 25)}"`;
+                    return withDetail(baseLabel, `${field} ${symbol} "${truncate(value, 25)}"`);
                 } else {
                     // Text operators
-                    return `${baseLabel}: "${field}" ${operatorLabel} "${truncate(value, 20)}"`;
+                    return withDetail(baseLabel, t('"{field}" {operator} "{value}"', {
+                        field,
+                        operator: words !== undefined ? t(words) : operator,
+                        value: truncate(value, 20),
+                    }));
                 }
             }
             return baseLabel;
@@ -853,18 +958,16 @@ function computeMainLabel(
             const parentKey = args.parent_collection as string | undefined;
             if (parentKey) {
                 if (opts?.enrich?.collectionName) {
-                    return `${baseLabel} in "${opts.enrich.collectionName}"`;
+                    return t('{label} in "{name}"', { label: baseLabel, name: opts.enrich.collectionName });
                 }
-                return `${baseLabel}: subcollections`;
+                return withDetail(baseLabel, t('subcollections'));
             }
 
             // Show library name when listing top-level collections
             if (libraryParam != null) {
-                return opts?.enrich?.libraryName
-                    ? `${baseLabel}: "${opts.enrich.libraryName}"`
-                    : `${baseLabel}: "${libraryParam}"`;
+                return withQuote(baseLabel, opts?.enrich?.libraryName || String(libraryParam));
             }
-            return `${baseLabel}`;
+            return baseLabel;
         }
 
         case 'list_tags': {
@@ -873,24 +976,22 @@ function computeMainLabel(
             const collectionKey = args.collection_key as string | undefined;
             if (collectionKey) {
                 if (opts?.enrich?.collectionName) {
-                    return `${baseLabel} in "${opts.enrich.collectionName}"`;
+                    return t('{label} in "{name}"', { label: baseLabel, name: opts.enrich.collectionName });
                 }
-                return `${baseLabel} in collection`;
+                return t('{label} in collection', { label: baseLabel });
             }
 
             // Show library name when listing all tags in a library
             if (libraryParam != null) {
-                return opts?.enrich?.libraryName
-                    ? `${baseLabel}: "${opts.enrich.libraryName}"`
-                    : `${baseLabel}: "${libraryParam}"`;
+                return withQuote(baseLabel, opts?.enrich?.libraryName || String(libraryParam));
             }
-            return `${baseLabel}`;
+            return baseLabel;
         }
 
         case 'manage_tags': {
             const tag = args.tag as string | undefined;
             if (tag) {
-                return `${baseLabel}: "${truncate(tag, 20)}"`;
+                return withQuote(baseLabel, truncate(tag, 20));
             }
             return baseLabel;
         }
@@ -898,7 +999,7 @@ function computeMainLabel(
         case 'manage_collections': {
             const collection = args.collection as string | undefined;
             if (collection) {
-                return `${baseLabel}: "${truncate(collection, 20)}"`;
+                return withQuote(baseLabel, truncate(collection, 20));
             }
             return baseLabel;
         }
@@ -907,7 +1008,7 @@ function computeMainLabel(
         case 'read_note': {
             // resolvedName is the note title (from the view, or host-resolved).
             if (resolvedName) {
-                return `${baseLabel}: "${truncate(resolvedName, 30)}"`;
+                return withQuote(baseLabel, truncate(resolvedName, 30));
             }
             return baseLabel;
         }
@@ -922,9 +1023,9 @@ function computeMainLabel(
             // args.id is the stable, persisted capability id (e.g. "zotero_annotations").
             const id = args.id as string | undefined;
             if (id) {
-                return `Loading tools: ${truncate(capabilityLabel(id), 30)}`;
+                return t('Loading tools: {capability}', { capability: truncate(capabilityLabel(id), 30) });
             }
-            return 'Loading tools';
+            return t('Loading tools');
         }
 
         case 'search_tools': {
@@ -932,7 +1033,7 @@ function computeMainLabel(
             const queries = normalizeListParam(args.queries)
                 ?? (typeof args.keywords === 'string' ? [args.keywords] : null);
             if (queries && queries[0]) {
-                return `${baseLabel}: "${truncate(queries[0], 40)}"`;
+                return withQuote(baseLabel, truncate(queries[0], 40));
             }
             return baseLabel;
         }

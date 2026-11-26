@@ -1,5 +1,7 @@
 import { format, isToday, isYesterday, isThisWeek, isThisMonth, parseISO } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
+import { zhCN } from 'date-fns/locale/zh-CN';
+import { currentUiLanguage, msg, t } from '../../src/utils/i18n';
 
 // Re-export date-fns functions
 export { isToday, isYesterday, isThisWeek, isThisMonth };
@@ -34,34 +36,37 @@ export function convertUTCToLocal(dateString: string): Date {
  * @returns Formatted string
  */
 export function formatRelativeDate(date: Date) {
+    const chinese = currentUiLanguage() === 'zh-CN';
+    const time = format(date, chinese ? 'HH:mm' : 'h:mma');
     if (isToday(date)) {
-        return `Today at ${format(date, 'h:mma')}`;
+        return t('Today at {time}', { time });
     } else if (isYesterday(date)) {
-        return `Yesterday at ${format(date, 'h:mma')}`;
+        return t('Yesterday at {time}', { time });
     } else if (isThisWeek(date)) {
-        return `${format(date, 'EEEE')} at ${format(date, 'h:mma')}`;
+        const weekday = chinese ? format(date, 'EEEE', { locale: zhCN }) : format(date, 'EEEE');
+        return t('{weekday} at {time}', { weekday, time });
     } else {
-        return format(date, 'MMM d, yyyy');
+        return chinese ? format(date, 'yyyy年M月d日') : format(date, 'MMM d, yyyy');
     }
 }
 
 /**
  * Groups a thread based on its creation date
  * @param dateString - UTC date string
- * @returns The group name ('Today', 'Yesterday', etc.)
+ * @returns The group name ('Today', 'Yesterday', etc.), in English; shown through `t`
  */
 export function getDateGroup(dateString: string): string {
     const date = convertUTCToLocal(dateString);
     
     if (isToday(date)) {
-        return 'Today';
+        return msg('Today');
     } else if (isYesterday(date)) {
-        return 'Yesterday';
+        return msg('Yesterday');
     } else if (isThisWeek(date)) {
-        return 'This Week';
+        return msg('This Week');
     } else if (isThisMonth(date)) {
-        return 'This Month';
+        return msg('This Month');
     } else {
-        return 'Older';
+        return msg('Older');
     }
 }

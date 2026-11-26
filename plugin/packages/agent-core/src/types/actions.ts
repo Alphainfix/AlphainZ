@@ -18,6 +18,7 @@
  */
 
 import type { BeaverClientType } from "../protocol/agentProtocol";
+import { msg, t } from "../i18n/translate";
 
 // ---------------------------------------------------------------------------
 // Core types
@@ -157,28 +158,30 @@ export type ActionLastUsedMap = Record<string, string>;
 // Labels & descriptions for target types
 // ---------------------------------------------------------------------------
 
+/** English; shown through `t`. */
 export const TARGET_TYPE_LABELS: Record<ActionTargetType, string> = {
-    items: "Items",
-    attachment: "Attachment",
-    note: "Note",
-    collection: "Collection",
-    global: "Anywhere",
+    items: msg("Items"),
+    attachment: msg("Attachment"),
+    note: msg("Note"),
+    collection: msg("Collection"),
+    global: msg("Anywhere"),
 };
 
+/** English; shown through `t`. */
 export const TARGET_TYPE_DESCRIPTIONS: Record<ActionTargetType, string> = {
-    global: "Works anywhere, no context needed",
-    items: "Works with library items",
-    attachment: "Works with PDF, EPUB, and snapshot attachments",
-    note: "Works with Zotero notes",
-    collection: "Works with collections",
+    global: msg("Works anywhere, no context needed"),
+    items: msg("Works with library items"),
+    attachment: msg("Works with PDF, EPUB, and snapshot attachments"),
+    note: msg("Works with Zotero notes"),
+    collection: msg("Works with collections"),
 };
 
-/** Labels for known categories. Not exhaustive — use {@link categoryLabel}. */
+/** Labels for known categories, in English. Not exhaustive — use {@link categoryLabel}. */
 export const CATEGORY_LABELS: Record<string, string | undefined> = {
-    research: "Research",
-    write: "Write",
-    organize: "Organize",
-    annotate: "Annotate",
+    research: msg("Research"),
+    write: msg("Write"),
+    organize: msg("Organize"),
+    annotate: msg("Annotate"),
 } satisfies Record<KnownActionCategory, string>;
 
 /**
@@ -200,10 +203,11 @@ const titleCaseCategory = (category: string): string =>
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(" ");
 
-/** Known label, title-cased id for unknown categories, or "Uncategorized". */
+/** Known label (translated), title-cased id for unknown categories, or "Uncategorized". */
 export const categoryLabel = (category: ActionCategory | undefined): string => {
-    if (!category) return "Uncategorized";
-    return CATEGORY_LABEL_LOOKUP.get(category) ?? titleCaseCategory(category);
+    if (!category) return t("Uncategorized");
+    const known = CATEGORY_LABEL_LOOKUP.get(category);
+    return known ? t(known) : titleCaseCategory(category);
 };
 
 // ---------------------------------------------------------------------------
@@ -219,12 +223,12 @@ export interface TargetPreset {
 }
 
 export const TARGET_PRESETS: TargetPreset[] = [
-    { id: "global", label: "Anywhere", description: "Works anywhere, no context needed", targets: ["global"] },
-    { id: "items", label: "Item", description: "Works with library items", targets: ["items"] },
-    { id: "attachment", label: "Attachment", description: "Works with PDF, EPUB, and snapshot attachments", targets: ["attachment"] },
-    { id: "items-attachment", label: "Item or attachment", description: "Works with library items and file attachments", targets: ["items", "attachment"] },
-    { id: "note", label: "Note", description: "Works with Zotero notes", targets: ["note"] },
-    { id: "collection", label: "Collection", description: "Works with collections", targets: ["collection"] },
+    { id: "global", label: msg("Anywhere"), description: msg("Works anywhere, no context needed"), targets: ["global"] },
+    { id: "items", label: msg("Item"), description: msg("Works with library items"), targets: ["items"] },
+    { id: "attachment", label: msg("Attachment"), description: msg("Works with PDF, EPUB, and snapshot attachments"), targets: ["attachment"] },
+    { id: "items-attachment", label: msg("Item or attachment"), description: msg("Works with library items and file attachments"), targets: ["items", "attachment"] },
+    { id: "note", label: msg("Note"), description: msg("Works with Zotero notes"), targets: ["note"] },
+    { id: "collection", label: msg("Collection"), description: msg("Works with collections"), targets: ["collection"] },
 ];
 
 /** Order-insensitive equality of two target sets. */
@@ -235,15 +239,18 @@ export const sameTargets = (a: ActionTargetType[], b: ActionTargetType[]): boole
 export const findTargetPreset = (targets: ActionTargetType[]): TargetPreset | undefined =>
     TARGET_PRESETS.find(p => sameTargets(p.targets, targets));
 
-/** Display label for a target set: the preset label, or the joined kind labels
- *  for a custom (hand-edited) set. */
-export const targetsLabel = (targets: ActionTargetType[]): string =>
-    findTargetPreset(targets)?.label ?? targets.map(t => TARGET_TYPE_LABELS[t]).join(" or ");
+/** Display label for a target set, translated: the preset label, or the joined
+ *  kind labels for a custom (hand-edited) set. */
+export const targetsLabel = (targets: ActionTargetType[]): string => {
+    const preset = findTargetPreset(targets);
+    if (preset) return t(preset.label);
+    return targets.map(target => t(TARGET_TYPE_LABELS[target])).join(t(" or "));
+};
 
-/** Description for a target set: the preset description, or the primary
- *  kind's description for a custom set. */
+/** Description for a target set, translated: the preset description, or the
+ *  primary kind's description for a custom set. */
 export const targetsDescription = (targets: ActionTargetType[]): string =>
-    findTargetPreset(targets)?.description ?? TARGET_TYPE_DESCRIPTIONS[targets[0]];
+    t(findTargetPreset(targets)?.description ?? TARGET_TYPE_DESCRIPTIONS[targets[0]]);
 
 // ---------------------------------------------------------------------------
 // Validators & normalization

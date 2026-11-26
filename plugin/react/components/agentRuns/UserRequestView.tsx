@@ -19,6 +19,7 @@ import { TextareaComposer } from '@beaver/agent-ui/composer/TextareaComposer';
 import { getHost } from '@beaver/agent-ui/host';
 import { useSlashMenu } from '../../hooks/useSlashMenu';
 import { useActionPopupResolver } from '../../hooks/useActionPopupResolver';
+import { t } from '../../../src/utils/i18n';
 
 interface UserRequestViewProps {
     userPrompt: BeaverAgentPrompt;
@@ -395,8 +396,8 @@ export const UserRequestView: React.FC<UserRequestViewProps> = ({
                         searchQuery={slashSearchQuery}
                         setSearchQuery={setSlashSearchQuery}
                         onSearch={() => {}}
-                        noResultsText="No actions found"
-                        placeholder="Search actions..."
+                        noResultsText={t('No actions found')}
+                        placeholder={t('Search actions...')}
                         closeOnSelect={false}
                         showSearchInput={false}
                         selectOnTab={true}
@@ -415,8 +416,8 @@ export const UserRequestView: React.FC<UserRequestViewProps> = ({
                                 onPillsChange={setEditedPills}
                                 onSubmit={handleEditorSubmit}
                                 resolveAction={resolveAction}
-                                placeholder="Edit your message..."
-                                ariaLabel="Edit message"
+                                placeholder={t('Edit your message...')}
+                                ariaLabel={t('Edit message')}
                                 onKeyDown={handleEditorKeyDown}
                                 suspendKeyboardNavigation={isSlashMenuOpen}
                                 onContentEditableRef={(el) => {
@@ -436,7 +437,7 @@ export const UserRequestView: React.FC<UserRequestViewProps> = ({
                                     style={{ padding: '2px 5px' }}
                                     onClick={() => setIsEditing(false)}
                                 >
-                                    Cancel
+                                    {t('Cancel')}
                                 </Button>
                                 <Button
                                     type="submit"
@@ -445,7 +446,7 @@ export const UserRequestView: React.FC<UserRequestViewProps> = ({
                                     onClick={handleSubmit}
                                     disabled={editedContent.length === 0 || isPending || !selectedModel || isSlashMenuOpen}
                                 >
-                                    <span>Send <span className="opacity-50">⏎</span></span>
+                                    <span>{t('Send')}{' '}<span className="opacity-50">⏎</span></span>
                                 </Button>
                             </div>
                         </div>

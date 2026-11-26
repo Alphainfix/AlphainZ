@@ -4,6 +4,7 @@ import { embeddingIndexStateAtom, isEmbeddingIndexingAtom } from "../../../atoms
 import { ProgressBar } from "../../status/ProgressBar";
 import { CheckmarkIcon, SpinnerIcon } from "../../status/icons";
 import { ZapIcon } from "../../icons/icons";
+import { t } from '../../../../src/utils/i18n';
 
 interface EmbeddingIndexProgressProps {
     /** Whether to show as compact inline version */
@@ -29,18 +30,18 @@ const EmbeddingIndexProgress: React.FC<EmbeddingIndexProgressProps> = ({ compact
 
     const getStatusText = (): string => {
         if (indexState.status === 'error') {
-            return `Error: ${indexState.error || 'Unknown error'}`;
+            return t('Error: {message}', { message: indexState.error || t('Unknown error') });
         }
         if (isIndexing) {
             if (indexState.totalItems > 0) {
-                return `Indexing ${indexState.indexedItems.toLocaleString()} of ${indexState.totalItems.toLocaleString()} items...`;
+                return t('Indexing {done} of {total} items...', { done: indexState.indexedItems.toLocaleString(), total: indexState.totalItems.toLocaleString() });
             }
-            return "Indexing your library...";
+            return t("Indexing your library...");
         }
         if (indexState.progress >= 100 || (indexState.status === 'idle' && indexState.phase === 'incremental')) {
-            return "Indexing complete";
+            return t("Indexing complete");
         }
-        return "Ready to index";
+        return t("Ready to index");
     };
 
     // Compact inline version for showing during button loading state
@@ -67,12 +68,12 @@ const EmbeddingIndexProgress: React.FC<EmbeddingIndexProgressProps> = ({ compact
                     {/* Title and status */}
                     <div className="display-flex flex-row items-center gap-3 w-full min-w-0">
                         <div className={`${isComplete ? 'font-color-secondary' : 'font-color-tertiary'} text-lg`}>
-                            {isComplete ? "Library Indexed" : "Indexing Library"}
+                            {isComplete ? t('Library Indexed') : t('Indexing Library')}
                         </div>
                         <div className="flex-1"/>
                         {indexState.totalItems > 0 && (
                             <div className="font-color-tertiary text-base">
-                                {`${indexState.totalItems.toLocaleString()} Items`}
+                                {t('{totalItems} Items', { totalItems: indexState.totalItems.toLocaleString() })}
                             </div>
                         )}
                     </div>
@@ -106,7 +107,7 @@ const EmbeddingIndexProgress: React.FC<EmbeddingIndexProgressProps> = ({ compact
             {!isComplete && indexState.status !== 'error' && (
                 <div className="display-flex flex-row gap-2 items-center font-color-tertiary text-sm">
                     <ZapIcon size={14} />
-                    <span>Indexing takes less than a minute</span>
+                    <span>{t('Indexing takes less than a minute')}</span>
                 </div>
             )}
         </div>

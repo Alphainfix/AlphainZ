@@ -12,6 +12,7 @@ import { isThreadListViewAtom, userScrolledAtom, windowUserScrolledAtom } from '
 import { useCurrentTurnIndex } from '../../hooks/useCurrentTurn';
 import { jumpToRun } from '../../utils/conversationNavigation';
 import { answerSnippet, filterTurns, highlightSegments } from '../../utils/conversationTurns';
+import { t } from '../../../src/utils/i18n';
 
 interface ConversationOutlineProps {
     /** Whether this is the separate window, which has its own outline and scroll state. */
@@ -157,11 +158,11 @@ const OutlinePanel: React.FC<OutlinePanelProps> = ({ isWindow, containerRef, but
                 id={outlineElementId(isWindow)}
                 className="thread-overlay-panel"
                 role="dialog"
-                aria-label="Conversation outline"
+                aria-label={t('Conversation outline')}
                 onKeyDown={handleKeyDown}
             >
                 <div className="display-flex flex-col flex-1 min-h-0">
-                    <div className="thread-overlay-title mb-1">Questions</div>
+                    <div className="thread-overlay-title mb-1">{t('Questions')}</div>
 
                     <div className="px-3 pb-2">
                         <div className="thread-search-wrapper">
@@ -171,12 +172,12 @@ const OutlinePanel: React.FC<OutlinePanelProps> = ({ isWindow, containerRef, but
                                 type="text"
                                 className="thread-search-input"
                                 role="combobox"
-                                aria-label="Search questions and answers"
+                                aria-label={t('Search questions and answers')}
                                 aria-controls={listId}
                                 aria-expanded="true"
                                 aria-autocomplete="list"
                                 aria-activedescendant={activeIndex !== null ? optionId(activeIndex) : undefined}
-                                placeholder="Search questions..."
+                                placeholder={t('Search questions...')}
                                 value={query}
                                 onChange={(event) => {
                                     setQuery(event.target.value);
@@ -187,7 +188,7 @@ const OutlinePanel: React.FC<OutlinePanelProps> = ({ isWindow, containerRef, but
                     </div>
 
                     {results.length > 0 ? (
-                        <div ref={listRef} id={listId} className="flex-1 overflow-y-auto px-1" role="listbox" aria-label="Questions">
+                        <div ref={listRef} id={listId} className="flex-1 overflow-y-auto px-1" role="listbox" aria-label={t('Questions')}>
                             {results.map((turn) => {
                                 const isActive = turn.index === activeIndex;
                                 const isCurrent = turn.index === current;
@@ -198,7 +199,9 @@ const OutlinePanel: React.FC<OutlinePanelProps> = ({ isWindow, containerRef, but
                                         role="option"
                                         aria-selected={isActive}
                                         aria-current={isCurrent ? 'location' : undefined}
-                                        aria-label={`Question ${turn.index + 1}: ${turn.question}${isCurrent ? ', current question' : ''}`}
+                                        aria-label={isCurrent
+                                            ? t('Question {number}: {question}, current question', { number: turn.index + 1, question: turn.question })
+                                            : t('Question {number}: {question}', { number: turn.index + 1, question: turn.question })}
                                         data-turn-index={turn.index}
                                         className={`thread-list-item ${isActive ? 'thread-list-item-hovered' : ''}`}
                                         // Keep focus in the search field, as a listbox under a combobox does.
@@ -215,7 +218,7 @@ const OutlinePanel: React.FC<OutlinePanelProps> = ({ isWindow, containerRef, but
                                                 <span className="min-w-0 truncate">
                                                     <Highlighted text={answerSnippet(turn, filter)} query={filter} />
                                                 </span>
-                                                {isCurrent && <span className="flex-shrink-0">(current)</span>}
+                                                {isCurrent && <span className="flex-shrink-0">{t('(current)')}</span>}
                                             </div>
                                         </div>
                                     </div>
@@ -224,7 +227,7 @@ const OutlinePanel: React.FC<OutlinePanelProps> = ({ isWindow, containerRef, but
                         </div>
                     ) : (
                         <div id={listId} className="display-flex items-center justify-center py-6" role="status">
-                            <span className="font-color-tertiary text-sm">No matching questions</span>
+                            <span className="font-color-tertiary text-sm">{t('No matching questions')}</span>
                         </div>
                     )}
                 </div>

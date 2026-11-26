@@ -14,6 +14,7 @@
 
 import { atom } from 'jotai';
 import { getPref, setPref } from '../../src/utils/prefs';
+import { msg } from '../../src/utils/i18n';
 import { logger } from '@beaver/agent-core/platform/logger';
 import {
     NO_STANDING_APPROVAL_GROUPS,
@@ -60,9 +61,9 @@ const DEFAULT_GROUP_PREFERENCES: Record<string, DeferredToolPreference> = {
 // =============================================================================
 
 export const DEFERRED_TOOL_PREFERENCE_LABELS: Record<DeferredToolPreference, string> = {
-    'always_ask': 'Always ask',
-    'always_apply': 'Always apply',
-    'continue_without_applying': 'Always review later',
+    'always_ask': msg('Always ask'),
+    'always_apply': msg('Always apply'),
+    'continue_without_applying': msg('Always review later'),
 };
 
 /*
@@ -72,9 +73,9 @@ export const DEFERRED_TOOL_PREFERENCE_LABELS: Record<DeferredToolPreference, str
  * to review at the end of the answer.
  */
 export const DEFERRED_TOOL_PREFERENCE_DESCRIPTIONS: Record<DeferredToolPreference, string> = {
-    'always_ask': 'Show each change and wait for your approval',
-    'always_apply': 'Make the change without asking (the riskiest ones still ask)',
-    'continue_without_applying': "Don't ask now; list the changes after the answer for you to apply or reject",
+    'always_ask': msg('Show each change and wait for your approval'),
+    'always_apply': msg('Make the change without asking (the riskiest ones still ask)'),
+    'continue_without_applying': msg("Don't ask now; list the changes after the answer for you to apply or reject"),
 };
 
 // =============================================================================

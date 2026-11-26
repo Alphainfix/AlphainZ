@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ContextMenu, { MenuItem, MenuPosition } from '@beaver/agent-ui/primitives/ContextMenu';
 import { CancelIcon, DeleteIcon } from '../components/icons/icons';
+import { t } from '../../src/utils/i18n';
 
 interface UseRemoveContextMenuOptions {
     /** Remove just this context item. */
@@ -102,13 +103,13 @@ export function useRemoveContextMenu({
                 ? [{ label: 'divider', isDivider: true, onClick: () => {} }]
                 : []),
             {
-                label: 'Remove',
+                label: t('Remove'),
                 icon: CancelIcon,
                 onClick: () => onRemove(),
             },
             ...(onRemoveAll
                 ? [{
-                    label: 'Remove all',
+                    label: t('Remove all'),
                     icon: DeleteIcon,
                     onClick: () => onRemoveAll(),
                 }]

@@ -18,6 +18,7 @@
 import type { Action, ActionCategory, ActionClient, ActionTargetType } from '@beaver/agent-core/types/actions';
 import { getActionClient } from '@beaver/agent-core/types/actions';
 import { ZOTERO_PLUGIN_CLIENT_TYPE } from '@beaver/agent-core/protocol/agentProtocol';
+import { t } from '../../src/utils/i18n';
 
 // ---------------------------------------------------------------------------
 // Format constants
@@ -170,26 +171,26 @@ type VersionParser = (
 const parseV1: VersionParser = (envelope, currentClient) => {
     const raw = envelope.action;
     if (typeof raw !== 'object' || raw === null) {
-        return { ok: false, error: 'The action data is missing or malformed.' };
+        return { ok: false, error: t('The action data is missing or malformed.') };
     }
     const a = raw as Record<string, unknown>;
 
     if (!isNonEmptyString(a.title)) {
-        return { ok: false, error: 'The action is missing a title.' };
+        return { ok: false, error: t('The action is missing a title.') };
     }
     if (!isNonEmptyString(a.text)) {
-        return { ok: false, error: 'The action is missing a prompt.' };
+        return { ok: false, error: t('The action is missing a prompt.') };
     }
     if (
         !Array.isArray(a.targets) ||
         a.targets.length === 0 ||
-        !a.targets.every(t => typeof t === 'string' && VALID_TARGET_TYPES.has(t))
+        !a.targets.every(target => typeof target === 'string' && VALID_TARGET_TYPES.has(target))
     ) {
-        return { ok: false, error: 'The action does not target anything AlphainZ recognizes.' };
+        return { ok: false, error: t('The action does not target anything AlphainZ recognizes.') };
     }
     // Open vocabulary: keep unknown categories, reject only malformed ones.
     if (a.category !== undefined && !isNonEmptyString(a.category)) {
-        return { ok: false, error: 'The action has a malformed category.' };
+        return { ok: false, error: t('The action has a malformed category.') };
     }
     // Client compatibility. Absent → runs anywhere. Present → must be a
     // non-empty list of client strings that includes the importing client.
@@ -202,11 +203,11 @@ const parseV1: VersionParser = (envelope, currentClient) => {
             a.client.length === 0 ||
             !a.client.every(c => typeof c === 'string' && c.length > 0)
         ) {
-            return { ok: false, error: 'The action has a malformed client list.' };
+            return { ok: false, error: t('The action has a malformed client list.') };
         }
         clients = (a.client as string[]).map(fromFileClientId);
         if (!clients.includes(currentClient)) {
-            return { ok: false, error: `This action is not compatible with the ${currentClient} client.` };
+            return { ok: false, error: t('This action is not compatible with the {client} client.', { client: currentClient }) };
         }
     }
     if (
@@ -215,10 +216,10 @@ const parseV1: VersionParser = (envelope, currentClient) => {
         !isOptionalString(a.id_model) ||
         !isOptionalString(a.argumentHint)
     ) {
-        return { ok: false, error: 'The action has malformed fields.' };
+        return { ok: false, error: t('The action has malformed fields.') };
     }
     if (typeof a.name === 'string' && /\s/.test(a.name)) {
-        return { ok: false, error: 'The action\'s slash command cannot contain whitespace.' };
+        return { ok: false, error: t('The action\'s slash command cannot contain whitespace.') };
     }
 
     // Build a clean Action. The id is carried through as-is (may be empty);
@@ -264,25 +265,25 @@ export const parseShareableAction = (
     try {
         parsed = JSON.parse(json);
     } catch {
-        return { ok: false, error: 'This file is not valid JSON.' };
+        return { ok: false, error: t('This file is not valid JSON.') };
     }
     if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-        return { ok: false, error: 'This file does not contain an action file.' };
+        return { ok: false, error: t('This file does not contain an action file.') };
     }
     const envelope = parsed as Record<string, unknown>;
     if (envelope.kind !== SHAREABLE_ACTION_KIND) {
-        return { ok: false, error: 'This file is not an action file.' };
+        return { ok: false, error: t('This file is not an action file.') };
     }
 
     const version = envelope.version;
     if (typeof version !== 'number' || !Number.isInteger(version) || version < 1) {
-        return { ok: false, error: 'This action file has no valid version.' };
+        return { ok: false, error: t('This action file has no valid version.') };
     }
     const parser = VERSION_PARSERS[version];
     if (!parser) {
         return version > MAX_SUPPORTED_VERSION
-            ? { ok: false, error: 'This action was exported by a newer version of Beaver. Update Beaver to import it.' }
-            : { ok: false, error: `This action file version (${version}) is not supported.` };
+            ? { ok: false, error: t('This action was exported by a newer version of AlphainZ. Update AlphainZ to import it.') }
+            : { ok: false, error: t('This action file version ({version}) is not supported.', { version }) };
     }
     return parser(envelope, currentClient);
 };

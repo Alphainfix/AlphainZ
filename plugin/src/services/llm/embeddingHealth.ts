@@ -18,6 +18,7 @@
 import { getPref, setPref } from '../../utils/prefs';
 import type { EmbeddingRequestOutcome } from './embeddings';
 import { isModelRequestError, isQuotaErrorCode } from './sse';
+import { joinSentences, t } from '../../utils/i18n';
 
 export interface EmbeddingHealth {
     /** The embedding model the failure belongs to; another model's is stale. */
@@ -57,38 +58,42 @@ export function clearEmbeddingHealth(): void {
  * or what to do, since that is the part the user can act on.
  */
 export function describeEmbeddingFailure(error: unknown, label: string): string {
-    const who = label || 'The embedding provider';
+    const who = label || t('The embedding provider');
     if (!isModelRequestError(error)) {
         const text = (error instanceof Error ? error.message : String(error)).replace(/[.\s]+$/, '');
-        return `${who} failed: ${text}.`;
+        return t('{who} failed: {text}.', { who, text });
     }
     const status = error.status;
     if (error.code === 'daily_quota') {
-        const resets = error.retryAfterMs !== undefined
-            ? ` It resets at midnight Pacific time (${resetTimeText(error.retryAfterMs)} here).`
-            : ' It resets at midnight Pacific time.';
-        return `${who} has used up today’s embedding allowance (on a free Google key, about 1000 texts `
-            + `a day).${resets}`;
+        return joinSentences([
+            t('{who} has used up today’s embedding allowance (on a free Google key, about 1000 texts a day).', { who }),
+            error.retryAfterMs !== undefined
+                ? t('It resets at midnight Pacific time ({time} here).', { time: resetTimeText(error.retryAfterMs) })
+                : t('It resets at midnight Pacific time.'),
+        ]);
     }
-    if (error.code === 'invalid_api_key') return `${who} does not accept the API key. Check it under Settings → Model.`;
+    if (error.code === 'invalid_api_key') return t('{who} does not accept the API key. Check it under Settings → Model.', { who });
     if (status === 401 || status === 403) {
-        return `${who} rejected the API key (${status}). Check it under Settings → Model.`;
+        return t('{who} rejected the API key ({status}). Check it under Settings → Model.', { who, status });
     }
     if (isQuotaErrorCode(error.code) || status === 402) {
-        return `${who} reports that the account's quota or balance is used up.`;
+        return t("{who} reports that the account's quota or balance is used up.", { who });
     }
-    if (status === 429) return `${who} is limiting requests right now (429); it should work again in a minute.`;
-    if (status === 404) return `${who} does not offer the embedding model (404).`;
+    if (status === 429) return t('{who} is limiting requests right now (429); it should work again in a minute.', { who });
+    if (status === 404) return t('{who} does not offer the embedding model (404).', { who });
     switch (error.kind) {
         case 'network':
-            return `${who} could not be reached. Check the network, or that the server is running.`;
+            return t('{who} could not be reached. Check the network, or that the server is running.', { who });
         case 'timeout':
-            return `${who} did not answer in time.`;
+            return t('{who} did not answer in time.', { who });
         default:
             break;
     }
-    if (status !== undefined && status >= 500) return `${who} had a server problem (${status}).`;
-    return `${who} failed${status ? ` (${status})` : ''}${error.detail ? `: ${error.detail}` : ''}.`;
+    if (status !== undefined && status >= 500) return t('{who} had a server problem ({status}).', { who, status });
+    if (status && error.detail) return t('{who} failed ({status}): {text}.', { who, status, text: error.detail });
+    if (status) return t('{who} failed ({status}).', { who, status });
+    if (error.detail) return t('{who} failed: {text}.', { who, text: error.detail });
+    return t('{who} failed.', { who });
 }
 
 /** The local clock time a wait of `ms` from now ends at, as "3:00". */

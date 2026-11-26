@@ -3,6 +3,7 @@ import { FeatureStep, ExamplePrompt } from '../../../constants/versionUpdateMess
 import Button from '@beaver/agent-ui/primitives/Button';
 import { ArrowRightIcon } from '../../icons/icons';
 import { parseTextWithLinksAndNewlines } from '../../../utils/parseTextWithLinksAndNewlines';
+import { t } from '../../../../src/utils/i18n';
 
 interface FeatureTourContentProps {
     steps: FeatureStep[];
@@ -74,7 +75,7 @@ const StepIndicator: React.FC<{
                     key={i}
                     onClick={() => onStepClick(i)}
                     className={`step-indicator-dot ${i === currentStep ? 'active' : ''}`}
-                    aria-label={`Go to step ${i + 1}`}
+                    aria-label={t('Go to step {step}', { step: i + 1 })}
                 />
             ))}
         </div>
@@ -142,7 +143,7 @@ const FeatureTourContent: React.FC<FeatureTourContentProps> = ({ steps, onComple
                             Zotero.launchURL(step.learnMoreUrl!);
                         }}
                     >
-                        Learn more →
+                        {t('Learn more →')}
                     </a>
                 )}
                 
@@ -171,7 +172,7 @@ const FeatureTourContent: React.FC<FeatureTourContentProps> = ({ steps, onComple
                                 variant="ghost-secondary" 
                                 onClick={onComplete}
                             >
-                                Skip
+                                {t('Skip')}
                             </Button>
                         )}
                         <Button 
@@ -179,7 +180,7 @@ const FeatureTourContent: React.FC<FeatureTourContentProps> = ({ steps, onComple
                             onClick={handleNext}
                             rightIcon={!isLastStep ? ArrowRightIcon : undefined}
                         >
-                            {isLastStep ? 'Get Started' : 'Next'}
+                            {isLastStep ? t('Get Started') : t('Next')}
                         </Button>
                     </div>
                 </div>

@@ -9,6 +9,7 @@ import { openPreferencesWindow } from '../../src/ui/openPreferencesWindow';
 import { Action, ActionCategory, ActionTargetType, KnownActionCategory } from '@beaver/agent-core/types/actions';
 import { SlashCommandDescriptor, getActionCommand } from '@beaver/agent-ui/composer/slashCommands';
 import { MenuPosition, SearchMenuItem } from '@beaver/agent-ui/primitives/SearchMenu';
+import { t } from '../../src/utils/i18n';
 
 // Category icons match the homepage launcher and Actions preferences. Zap for missing/unknown categories.
 const CATEGORY_ICON_ENTRIES = {
@@ -90,7 +91,7 @@ export function useSlashMenu(
 
         // "Create Action" footer
         const createActionItem: SearchMenuItem = {
-            label: 'Create Action',
+            label: t('Create Action'),
             icon: PlusSignIcon,
             onClick: () => {
                 setIsSlashMenuOpen(false);
@@ -102,7 +103,10 @@ export function useSlashMenu(
         // The typed query matches against both the action title and its
         // /command name (what the pill will actually insert).
         const queryPosition = (a: Action): number => {
-            const inTitle = a.title.toLowerCase().indexOf(query);
+            // The title as shown, and in English, so either language finds it.
+            const shown = t(a.title).toLowerCase().indexOf(query);
+            const english = a.title.toLowerCase().indexOf(query);
+            const inTitle = shown === -1 ? english : english === -1 ? shown : Math.min(shown, english);
             const inCommand = getActionCommand(a).toLowerCase().indexOf(query);
             if (inTitle === -1) return inCommand;
             if (inCommand === -1) return inTitle;
@@ -184,7 +188,7 @@ export function useSlashMenu(
             for (const group of [...globalFirstGroups].reverse()) {
                 for (const action of group.filtered) {
                     items.push({
-                        label: action.title,
+                        label: t(action.title),
                         icon: categoryIcon(action.category),
                         onClick: () => handleSlashSelect(action, group.targetType),
                     });
@@ -207,7 +211,7 @@ export function useSlashMenu(
                 }
                 for (const action of group.filtered) {
                     items.push({
-                        label: action.title,
+                        label: t(action.title),
                         icon: categoryIcon(action.category),
                         onClick: () => handleSlashSelect(action, group.targetType),
                     });

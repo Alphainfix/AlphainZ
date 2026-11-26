@@ -3,6 +3,7 @@ import { ZoteroIcon, ZOTERO_ICONS } from '../../icons/ZoteroIcon';
 import { AnnotationTooltip, getAnnotationTooltipIcon, getAnnotationTypeLabel } from '../AnnotationTooltip';
 import { AnnotationRowView } from '@beaver/agent-core/run-state/toolResultViews';
 import { getHost } from '@beaver/agent-ui/host';
+import { msg, t } from '../../../../src/utils/i18n';
 
 /**
  * Shared, client-agnostic annotation row rendered from an {@link AnnotationRowView}.
@@ -35,6 +36,24 @@ function annotationGlyph(type: string | null | undefined): string {
     }
 }
 
+/** What an annotation with no text or comment is called, by type. */
+const EMPTY_ANNOTATION_LABELS: Record<string, string> = {
+    highlight: msg('Highlight annotation'),
+    underline: msg('Underline annotation'),
+    note: msg('Note annotation'),
+    image: msg('Image annotation'),
+    ink: msg('Ink annotation'),
+    text: msg('Text annotation'),
+};
+
+function emptyAnnotationLabel(type: string | null | undefined): string {
+    if (!type) return t('Annotation');
+    const label = Object.prototype.hasOwnProperty.call(EMPTY_ANNOTATION_LABELS, type)
+        ? EMPTY_ANNOTATION_LABELS[type]
+        : undefined;
+    return label ? t(label) : `${type.charAt(0).toUpperCase()}${type.slice(1)} annotation`;
+}
+
 interface AnnotationResultRowProps {
     row: AnnotationRowView;
     variant: AnnotationRowVariant;
@@ -50,14 +69,12 @@ export const AnnotationResultRow: React.FC<AnnotationResultRowProps> = ({
     isHovered,
     onMouseEnter,
     onMouseLeave,
-    footerLabel = 'Click to view in Zotero Reader',
+    footerLabel = t('Click to view in Zotero Reader'),
 }) => {
-    const placeholder = row.annotation_type
-        ? `${row.annotation_type.charAt(0).toUpperCase()}${row.annotation_type.slice(1)} annotation`
-        : 'Annotation';
+    const placeholder = emptyAnnotationLabel(row.annotation_type);
     const primary = row.text || row.comment || placeholder;
     const hasText = Boolean(row.text);
-    const pageText = row.page_label ? `Page ${row.page_label}` : '';
+    const pageText = row.page_label ? t('Page {page}', { page: row.page_label }) : '';
     const sourceLine = [row.source_display_name, pageText].filter(Boolean).join(', ');
     const tooltipBody = [row.text, row.comment].filter(Boolean).join('\n\n');
 

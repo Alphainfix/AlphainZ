@@ -6,6 +6,8 @@ import { currentMessageContentAtom } from '../../../atoms/messageComposition';
 import { Icon, IdeaIcon, PlusSignIcon } from '../../icons/icons';
 import ArrowLeftIcon from '@beaver/agent-ui/icons/ArrowLeftIcon';
 import Button from '@beaver/agent-ui/primitives/Button';
+import { t } from '../../../../src/utils/i18n';
+import { tr } from '../../../utils/i18nNodes';
 
 
 /** Which onboarding surface produced this panel */
@@ -33,7 +35,7 @@ const BackToSuggestions: React.FC<BackToSuggestionsProps> = ({ onDismiss, backTa
     const messageContent = useAtomValue(currentMessageContentAtom);
 
     const isLauncher = backTarget === 'launcher';
-    const backLabel = isLauncher ? 'Back to starting points' : 'Back to suggestions';
+    const backLabel = isLauncher ? t('Back to starting points') : t('Back to suggestions');
 
     // Auto-dismiss when the user types a follow-up. Capture the initial value
     // so we don't dismiss on the first render if the input is already non-empty
@@ -75,23 +77,21 @@ const BackToSuggestions: React.FC<BackToSuggestionsProps> = ({ onDismiss, backTa
                 style={{fontSize: '0.875rem'}}
             >
                 <Icon icon={IdeaIcon} size={10}/>
-                <span>
-                    Start a new chat anytime with
-                </span>
-                <Icon icon={PlusSignIcon} size={10}/>
-                <span>
-                    (top left) or with
-                </span>
-                <span
-                    style={{
-                        background: 'var(--fill-quinary)',
-                        padding: '1px 3px',
-                        borderRadius: '3px',
-                        fontSize: '0.8em',
-                    }}
-                >
-                    {newChatShortcut}
-                </span>
+                {tr('Start a new chat anytime with {plus} (top left) or with {shortcut}', {
+                    plus: <Icon icon={PlusSignIcon} size={10}/>,
+                    shortcut: (
+                        <span
+                            style={{
+                                background: 'var(--fill-quinary)',
+                                padding: '1px 3px',
+                                borderRadius: '3px',
+                                fontSize: '0.8em',
+                            }}
+                        >
+                            {newChatShortcut}
+                        </span>
+                    ),
+                })}
             </div>
         </div>
     );

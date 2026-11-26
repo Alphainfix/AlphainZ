@@ -19,8 +19,9 @@
 
 import { ModelMessage, ModelResponse, ToolCallPart } from '@beaver/agent-core/agents/types';
 import { isRenderableMessage } from '@beaver/agent-core/agents/messageVisibility';
-import { TOOL_BASE_LABELS } from '@beaver/agent-core/run-state/toolCallRequest';
+import { toolBaseLabel } from '@beaver/agent-core/run-state/toolCallRequest';
 import { WRITE_TOOL_NAMES } from '../../../src/services/llm/writeTools';
+import { t } from '../../../src/utils/i18n';
 
 /** Which tool calls a unit renders. */
 export type ToolSlice = 'none' | 'settled' | 'awaiting';
@@ -262,13 +263,15 @@ export function groupStreamUnits(units: StreamUnit[]): StreamGroup[] {
 export function summarizeGroup(group: StreamGroup): string {
     const counts = new Map<string, number>();
     for (const name of group.toolNames) {
-        const label = TOOL_BASE_LABELS[name] ?? name;
+        const label = toolBaseLabel(name) ?? name;
         counts.set(label, (counts.get(label) ?? 0) + 1);
     }
-    if (counts.size === 0) return 'Thinking';
+    if (counts.size === 0) return t('Thinking');
 
     const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1]);
     const shown = ranked.slice(0, 3).map(([label, n]) => (n > 1 ? `${label} ×${n}` : label));
     const rest = ranked.length - shown.length;
-    return rest > 0 ? `${shown.join(' · ')} · +${rest} more` : shown.join(' · ');
+    return rest > 0
+        ? t('{steps} · +{count} more', { steps: shown.join(' · '), count: rest })
+        : shown.join(' · ');
 }

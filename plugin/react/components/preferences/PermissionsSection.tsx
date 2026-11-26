@@ -2,6 +2,8 @@ import React, { useCallback, useState } from "react";
 import {SettingsGroup, SettingsRow, SectionLabel, SectionHeader, SectionDescription} from "./components/SettingsElements";
 import DeferredToolPreferenceSetting from "./DeferredToolPreferenceSetting";
 import { getPref, setPref } from "../../../src/utils/prefs";
+import { t } from '../../../src/utils/i18n';
+import { tr } from '../../utils/i18nNodes';
 
 
 /**
@@ -67,23 +69,16 @@ const PermissionsSection: React.FC = () => {
 
     return (
         <>
-            <SectionLabel>Writing to your library</SectionLabel>
+            <SectionLabel>{t('Writing to your library')}</SectionLabel>
             <SectionDescription>
-                Off by default. Turned on, AlphainZ may change your library: add highlights and sticky
-                notes to PDFs; write new notes and edit notes you have, including rewriting one whole;
-                correct a paper's title, authors, year and other fields; edit annotations — their
-                colour, comment and tags — and delete them; add papers it found in the literature; and
-                tag items and file them into collections, creating collections as needed. Each kind
-                follows its rule below — out of the box, every change is shown to you first and waits
-                for your approval — and anything applied can be undone from its card in the
-                conversation.
+                {t('Off by default. Turned on, AlphainZ may change your library: add highlights and sticky notes to PDFs; write new notes and edit notes you have, including rewriting one whole; correct a paper\'s title, authors, year and other fields; edit annotations — their colour, comment and tags — and delete them; add papers it found in the literature; and tag items and file them into collections, creating collections as needed. Each kind follows its rule below — out of the box, every change is shown to you first and waits for your approval — and anything applied can be undone from its card in the conversation.')}
             </SectionDescription>
             <SettingsGroup>
                 <SettingsRow
-                    title="Let AlphainZ change your library"
+                    title={t('Let AlphainZ change your library')}
                     description={allowWrites
-                        ? 'On. The rules below decide which changes ask first.'
-                        : 'Off. AlphainZ can read your library but not change it, and says so when asked to.'}
+                        ? t('On. The rules below decide which changes ask first.')
+                        : t('Off. AlphainZ can read your library but not change it, and says so when asked to.')}
                     onClick={handleAllowWritesToggle}
                     control={
                         <input
@@ -97,19 +92,16 @@ const PermissionsSection: React.FC = () => {
                 />
             </SettingsGroup>
 
-            <SectionHeader>Library Modifications</SectionHeader>
+            <SectionHeader>{t('Library Modifications')}</SectionHeader>
             <SectionDescription>
-                How each kind of change is handled. <b>Always ask</b> shows the change on a card and
-                waits for your approval. <b>Always apply</b> makes it without asking — except the
-                riskiest ones, noted per row, which ask anyway. <b>Always review later</b> asks nothing
-                while the answer is written: the changes wait on their cards, each with its own Apply
-                and Reject, and the end of the answer lists them for your review. Adding papers is the
-                one thing that always asks. Anything applied can still be undone from the card in the
-                conversation.
+                {t('How each kind of change is handled.')}{' '}
+                {tr('{ask} shows the change on a card and waits for your approval.', { ask: <b>{t('Always ask')}</b> })}{' '}
+                {tr('{apply} makes it without asking — except the riskiest ones, noted per row, which ask anyway.', { apply: <b>{t('Always apply')}</b> })}{' '}
+                {tr('{later} asks nothing while the answer is written: the changes wait on their cards, each with its own Apply and Reject, and the end of the answer lists them for your review. Adding papers is the one thing that always asks. Anything applied can still be undone from the card in the conversation.', { later: <b>{t('Always review later')}</b> })}
             </SectionDescription>
             {!allowWrites && (
                 <SectionDescription>
-                    Writing to your library is off, so none of these apply until you turn it on above.
+                    {t('Writing to your library is off, so none of these apply until you turn it on above.')}
                 </SectionDescription>
             )}
             {/* Greyed, not locked, while writing is off: the rules can be set
@@ -135,36 +127,36 @@ const PermissionsSection: React.FC = () => {
                 <div style={{ padding: '8px 12px' }}>
                     <DeferredToolPreferenceSetting
                         toolName="create_note"
-                        label="Note Creation"
-                        description="Writing new Zotero notes, filed under the paper they are about"
+                        label={t('Note Creation')}
+                        description={t('Writing new Zotero notes, filed under the paper they are about')}
                     />
                 </div>
                 <div className="border-top-quinary" style={{ padding: '8px 12px' }}>
                     <DeferredToolPreferenceSetting
                         toolName="edit_note"
-                        label="Note Edits"
-                        description="Changing the text of a note that already exists, including rewriting it whole. Under Always apply, a rewrite that would drop or replace much of a longer note still asks."
+                        label={t('Note Edits')}
+                        description={t('Changing the text of a note that already exists, including rewriting it whole. Under Always apply, a rewrite that would drop or replace much of a longer note still asks.')}
                     />
                 </div>
                 <div className="border-top-quinary" style={{ padding: '8px 12px' }}>
                     <DeferredToolPreferenceSetting
                         toolName="create_highlight_annotations"
-                        label="PDF Annotations"
-                        description="Highlights and sticky notes AlphainZ adds to a PDF, and edits to annotations already there — colour, comment, tags. Under Always apply, replacing a comment an annotation already has, or removing all of its tags, still asks. Deleting annotations is the next row."
+                        label={t('PDF Annotations')}
+                        description={t('Highlights and sticky notes AlphainZ adds to a PDF, and edits to annotations already there — colour, comment, tags. Under Always apply, replacing a comment an annotation already has, or removing all of its tags, still asks. Deleting annotations is the next row.')}
                     />
                 </div>
                 <div className="border-top-quinary" style={{ padding: '8px 12px' }}>
                     <DeferredToolPreferenceSetting
                         toolName="delete_annotations"
-                        label="Annotation Deletion"
-                        description="Removing annotations from a PDF, whatever PDF Annotations is set to. This one loses your own work — leave it on Always ask."
+                        label={t('Annotation Deletion')}
+                        description={t('Removing annotations from a PDF, whatever PDF Annotations is set to. This one loses your own work — leave it on Always ask.')}
                     />
                 </div>
                 <div className="border-top-quinary" style={{ padding: '8px 12px' }}>
                     <DeferredToolPreferenceSetting
                         toolName="edit_metadata"
-                        label="Metadata Edits"
-                        description="Correcting an item's title, authors, year, DOI and other fields"
+                        label={t('Metadata Edits')}
+                        description={t('Correcting an item\'s title, authors, year, DOI and other fields')}
                     />
                 </div>
                 <div className="border-top-quinary" style={{ padding: '8px 12px' }}>
@@ -180,26 +172,26 @@ const PermissionsSection: React.FC = () => {
                       * the moment, gone when the run ends.
                       */}
                     <FixedPreferenceRow
-                        label="Item Imports"
-                        description="Adding papers it found in the literature to your library. Every paper is shown to you first; a card can allow the rest of that run."
+                        label={t('Item Imports')}
+                        description={t('Adding papers it found in the literature to your library. Every paper is shown to you first; a card can allow the rest of that run.')}
                         value="Always asks"
                     />
                 </div>
                 <div className="border-top-quinary" style={{ padding: '8px 12px' }}>
                     <DeferredToolPreferenceSetting
                         toolName="create_collection"
-                        label="Item Organization"
-                        description="Creating collections, and adding or removing tags and collections on items"
+                        label={t('Item Organization')}
+                        description={t('Creating collections, and adding or removing tags and collections on items')}
                     />
                 </div>
             </SettingsGroup>
             </div>
 
-            <SectionLabel>System Notifications</SectionLabel>
+            <SectionLabel>{t('System Notifications')}</SectionLabel>
             <SettingsGroup>
                 <SettingsRow
-                    title="Approval Notifications"
-                    description="Show a system notification when AlphainZ is waiting for your decision and is not visible."
+                    title={t('Approval Notifications')}
+                    description={t('Show a system notification when AlphainZ is waiting for your decision and is not visible.')}
                     onClick={handleEnableSystemNotificationsToggle}
                     hasBorder
                     control={
@@ -213,8 +205,8 @@ const PermissionsSection: React.FC = () => {
                     }
                 />
                 <SettingsRow
-                    title="Response Notifications"
-                    description="Show a system notification when a response is ready and AlphainZ is not visible."
+                    title={t('Response Notifications')}
+                    description={t('Show a system notification when a response is ready and AlphainZ is not visible.')}
                     onClick={handleEnableResponseCompleteNotificationsToggle}
                     hasBorder
                     control={
@@ -240,13 +232,13 @@ const PermissionsSection: React.FC = () => {
               * comes to feel untrustworthy. The prefs stay for sync
               * compatibility; the switches are gone.
               */}
-            <SectionLabel>File Access</SectionLabel>
+            <SectionLabel>{t('File Access')}</SectionLabel>
             <SettingsGroup>
                 <SettingsRow
-                    title="Access Remote Files"
-                    description="Download PDF files from the Zotero server when not available locally"
+                    title={t('Access Remote Files')}
+                    description={t('Download PDF files from the Zotero server when not available locally')}
                     onClick={handleAccessRemoteFilesToggle}
-                    tooltip="When enabled, AlphainZ will attempt to download PDFs from the Zotero server or WebDAV if the file is not on your local machine. Disable this if you experience slow responses or don't want remote file downloads."
+                    tooltip={t('When enabled, AlphainZ will attempt to download PDFs from the Zotero server or WebDAV if the file is not on your local machine. Disable this if you experience slow responses or don\'t want remote file downloads.')}
                     control={
                         <input
                             type="checkbox"

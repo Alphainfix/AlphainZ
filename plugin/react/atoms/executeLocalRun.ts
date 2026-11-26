@@ -22,7 +22,6 @@ import {
 } from '../../src/services/llm/agentConfig';
 import { threadCompactionAtom } from './threadCompaction';
 import { runLocalAgent } from '../../src/services/llm/localRunner';
-import { candidateKey, coverageNote, type FulltextCandidate } from '../../src/services/llm/fulltextIndexer';
 import {
     attachedImagesFromPrompt,
     buildRunMessages,
@@ -43,10 +42,8 @@ import {
     recordProposedHighlight,
     recordReadAttachment,
     recordShownLocators,
-    recordShownPassage,
     recordShownSentences,
     sentenceLabelsIn,
-    sentenceRangeNumbers,
     sentenceTextsIn,
 } from '../utils/highlightCitations';
 import { addExternalReferencesToMappingAtom } from '@beaver/agent-core/citations/externalReferences';
@@ -59,7 +56,8 @@ import {
     importDestinationAtom,
     resolveImportDestination,
 } from './importDestination';
-import { indexItemAttachmentsAtom, listAllCandidates } from './fulltextIndex';
+import { indexItemAttachmentsAtom } from './fulltextIndex';
+import { figureSearchAvailable, figuresTool, fulltextTool } from './librarySearchTools';
 import { awaitApproval, nextApprovalId } from '../utils/localApprovals';
 import { awaitAnswer, nextQuestionId, resolveLocalQuestion, type QuestionOutcome } from '../utils/localQuestions';
 import { addPendingQuestionAtom, removePendingQuestionAtom } from '@beaver/agent-core/run-state/pendingQuestions';
@@ -79,14 +77,8 @@ import {
     nearbyLocators,
     resolveLocator,
 } from '../../src/services/llm/sentenceLocators';
-import {
-    buildEmbeddingProviderFromPrefs,
-    currentEmbeddingModelId,
-    isSemanticSearchAvailable,
-} from '../../src/services/llm/agentConfig';
+import { currentEmbeddingModelId, isSemanticSearchAvailable } from '../../src/services/llm/agentConfig';
 import { embeddingFailureSince } from '../../src/services/llm/embeddingHealth';
-import { searchPageImages } from '../../src/services/llm/pageImageIndex';
-import { figureCoverageNoteFor, pageImageProvider } from './pageImageIndex';
 import {
     ASK_USER_QUESTION_TOOL,
     buildHighlightAction,
@@ -101,7 +93,6 @@ import {
     MAX_ORGANIZE_ITEMS,
     WRITE_TOOL_SCHEMAS,
 } from '../../src/services/llm/writeTools';
-import { searchChunks } from '../../src/services/llm/fulltextIndex';
 import {
     libraryRefForLibraryID,
     parseItemReference,
@@ -109,7 +100,7 @@ import {
     resolveObjectId,
 } from '../../src/utils/libraryIdentity';
 import { getBestAttachmentByKind } from '../../src/utils/zoteroItemHelpers';
-import { clampLimit, parseCompositeItemId } from '../../src/services/llm/toolSchemas';
+import { parseCompositeItemId } from '../../src/services/llm/toolSchemas';
 import { flattenProviderResponse } from '../../src/services/llm/zoteroToolDispatch';
 import {
     DEFAULT_MAX_LIBRARY_SEARCHES,
@@ -1068,216 +1059,6 @@ export { isAgentConfigured } from '../../src/services/llm/agentConfig';
  * returned page rects. Here the passage is located in the cached structured
  * extraction, and an ambiguous match is refused rather than guessed.
  */
-/**
- * Full-text passage search over the whole library.
- *
- * Offered only when an embedding provider is configured *and* something has been
- * indexed: a tool that always returns nothing teaches the model the library is
- * empty, which is the same trap the topic tool avoids by being withheld.
- */
-/**
- * One sentence on how much of the library the index covers, or none when it
- * covers all of it.
- *
- * Counting PDFs is cheap next to an embedding round trip, and the alternative is
- * a search that quietly speaks for a quarter of the library as if it spoke for
- * all of it.
- */
-async function fulltextCoverageNote(db: any, modelId: string, listed?: FulltextCandidate[]): Promise<string | null> {
-    try {
-        // Counted over the searchable libraries' PDFs on both sides: passages of
-        // a PDF since deleted, or of an excluded library, cover nothing searched.
-        const [indexed, candidates] = await Promise.all([
-            db.getChunkedAttachmentKeys(modelId) as Promise<Set<string>>,
-            listed ?? listAllCandidates({ titles: false }),
-        ]);
-        const covered = candidates.filter((candidate) => indexed.has(candidateKey(candidate))).length;
-        return coverageNote(covered, candidates.length);
-    } catch {
-        return null;
-    }
-}
-
-/** What a library search says when every library is excluded in the settings. */
-const NO_SEARCHABLE_LIBRARY = 'No library can be searched: every library is excluded in AlphainZ\'s settings.';
-
-function fulltextTool(runId?: string): Record<string, (args: Record<string, unknown>) => Promise<unknown>> {
-    return {
-        search_library_fulltext: async (args) => {
-            const provider = buildEmbeddingProviderFromPrefs();
-            const modelId = currentEmbeddingModelId();
-            const db = (Zotero as any).AlphainZ?.db;
-            if (!provider || !modelId || !db) {
-                throw new Error('Full-text search needs an embedding provider configured.');
-            }
-
-            const libraryIds: number[] = store.get(searchableLibraryIdsAtom);
-            if (libraryIds.length === 0) return { matches: [], note: NO_SEARCHABLE_LIBRARY };
-            // The PDFs in the library now: what is searched, and what coverage
-            // is counted against.
-            const candidates = await listAllCandidates({ titles: false });
-            const hits = await searchChunks({
-                store: db,
-                provider,
-                modelId,
-                query: String(args.query ?? ''),
-                libraryIds,
-                attachments: new Set(candidates.map(candidateKey)),
-                ...(args.limit != null ? { limit: clampLimit(args.limit, 8) } : {}),
-            });
-
-            // Every answer states how much of the library was actually
-            // searched. Without it the model reads a thin result as evidence
-            // the library has nothing on the subject, when the real answer is
-            // that most of the library has never been indexed.
-            const coverage = await fulltextCoverageNote(db, modelId, candidates);
-
-            if (hits.length === 0) {
-                return {
-                    matches: [],
-                    note: `No indexed passage matched.${coverage ? ` ${coverage}` : ''}`,
-                };
-            }
-
-            // Resolved to titles here rather than left as keys: a list of item
-            // keys is not something the model can report back to the user.
-            return {
-                ...(coverage ? { coverage } : {}),
-                matches: hits.map((hit) => {
-                    const parent = hit.parentKey
-                        ? (Zotero.Items.getByLibraryAndKey(hit.libraryId, hit.parentKey) as Zotero.Item | false)
-                        : false;
-                    const attachment = Zotero.Items.getByLibraryAndKey(
-                        hit.libraryId,
-                        hit.attachmentKey,
-                    ) as Zotero.Item | false;
-                    const attachmentId = `${libraryRefForLibraryID(hit.libraryId) ?? hit.libraryId}-${hit.attachmentKey}`;
-                    /*
-                     * The ready-made citation tag, sentence range included when
-                     * the index knows it. Handed to the model finished, the way
-                     * read_document and search_in_document hand theirs over — a
-                     * requirement that has to hold cannot live in the prompt.
-                     *
-                     * The range spans the whole chunk, so the click highlights
-                     * the passage, not one sentence — honest for a semantic
-                     * match, which is over the block. `page` stays in the tag
-                     * so a document indexed before sentence-aware chunking (or
-                     * whose structured cache is gone) degrades to a page jump.
-                     *
-                     * The passage is remembered too (recordShownPassage), so
-                     * a citation carrying this range shows it on its hover
-                     * card — clipped at a word boundary, never mid-word, which
-                     * is what an earlier attempt got wrong.
-                     */
-                    const loc = hit.sentenceStart != null && hit.sentenceEnd != null
-                        ? (hit.sentenceStart === hit.sentenceEnd
-                            ? ` loc="s${hit.sentenceStart}"`
-                            : ` loc="s${hit.sentenceStart}-s${hit.sentenceEnd}"`)
-                        : '';
-                    // Handed out, so it counts as shown when the answer is checked.
-                    if (runId && hit.sentenceStart != null && hit.sentenceEnd != null) {
-                        recordShownLocators(runId, attachmentId, sentenceRangeNumbers(hit.sentenceStart, hit.sentenceEnd));
-                        recordShownPassage(runId, attachmentId, {
-                            start: hit.sentenceStart,
-                            end: hit.sentenceEnd,
-                            page: hit.page,
-                            text: hit.text,
-                        });
-                    }
-                    return {
-                        attachment_id: attachmentId,
-                        title: parent ? parent.getField('title') : attachment ? attachment.getDisplayTitle?.() : null,
-                        page: hit.page,
-                        ...(hit.pageLabel ? { page_label: hit.pageLabel } : {}),
-                        similarity: Number(hit.similarity.toFixed(3)),
-                        cite: `<citation id="${attachmentId}" page="${hit.page}"${loc}/>`,
-                        passage: hit.text.length > 700 ? `${hit.text.slice(0, 700)}…` : hit.text,
-                    };
-                }),
-            };
-        },
-    };
-}
-
-
-/**
- * Whether figure search can be offered for this run: the embedding model takes
- * pictures, its page-image index has something in it, and the chat model can
- * look at what it finds.
- */
-async function figureSearchAvailable(readsImages: boolean): Promise<boolean> {
-    if (!readsImages || !isSemanticSearchAvailable() || getPref('fulltextSearchEnabled') === false) return false;
-    const modelId = currentEmbeddingModelId();
-    const db = (Zotero as any).AlphainZ?.db;
-    if (!modelId || !db?.getPageImagedAttachmentKeys || !pageImageProvider()) return false;
-    try {
-        // Page images of a PDF in a searchable library, not just any row: an
-        // excluded library's, or a deleted PDF's, would offer a search that
-        // can only come back empty.
-        const [done, candidates] = await Promise.all([
-            db.getPageImagedAttachmentKeys(modelId) as Promise<Set<string>>,
-            listAllCandidates({ titles: false }),
-        ]);
-        return candidates.some((candidate) => done.has(candidateKey(candidate)));
-    } catch {
-        return false;
-    }
-}
-
-function figuresTool(): Record<string, (args: Record<string, unknown>) => Promise<unknown>> {
-    return {
-        search_library_figures: async (args) => {
-            const provider = pageImageProvider();
-            const modelId = currentEmbeddingModelId();
-            const db = (Zotero as any).AlphainZ?.db;
-            if (!provider || !modelId || !db) {
-                throw new Error('Figure search needs an embedding model that takes pictures (Google Gemini or Ollama EmbeddingGemma 2).');
-            }
-            const libraryIds: number[] = store.get(searchableLibraryIdsAtom);
-            if (libraryIds.length === 0) return { pages: [], note: NO_SEARCHABLE_LIBRARY };
-            const candidates = await listAllCandidates({ titles: false });
-            // As with passages, every answer says how much of the library was
-            // searched: while page images are still being built, a figure that
-            // is not found may only be in a PDF that has none yet.
-            const [hits, coverage] = await Promise.all([
-                searchPageImages({
-                    store: db,
-                    provider,
-                    modelId,
-                    query: String(args.query ?? ''),
-                    libraryIds,
-                    attachments: new Set(candidates.map(candidateKey)),
-                    ...(args.limit != null ? { limit: clampLimit(args.limit, 6) } : {}),
-                }),
-                figureCoverageNoteFor(modelId, candidates),
-            ]);
-            if (hits.length === 0) {
-                return { pages: [], note: `No indexed page image matched.${coverage ? ` ${coverage}` : ''}` };
-            }
-            return {
-                note: 'Pages, ranked by how closely they look like the description. Look at one with view_page_images '
-                    + 'before saying what it shows.',
-                ...(coverage ? { coverage } : {}),
-                pages: hits.map((hit) => {
-                    const parent = hit.parentKey
-                        ? (Zotero.Items.getByLibraryAndKey(hit.libraryId, hit.parentKey) as Zotero.Item | false)
-                        : false;
-                    const attachment = Zotero.Items.getByLibraryAndKey(hit.libraryId, hit.attachmentKey) as Zotero.Item | false;
-                    const attachmentId = `${libraryRefForLibraryID(hit.libraryId) ?? hit.libraryId}-${hit.attachmentKey}`;
-                    return {
-                        attachment_id: attachmentId,
-                        title: parent ? parent.getField('title') : attachment ? attachment.getDisplayTitle?.() : null,
-                        page: hit.page,
-                        ...(hit.pageLabel ? { page_label: hit.pageLabel } : {}),
-                        similarity: Number(hit.similarity.toFixed(3)),
-                        cite: `<citation id="${attachmentId}" page="${hit.page}"/>`,
-                    };
-                }),
-            };
-        },
-    };
-}
-
 /** What `proposeWrite` did with a change, which is what the model is told. */
 type WriteOutcome =
     | { actionId: string }

@@ -6,6 +6,7 @@ import { parseTextWithLinksAndNewlines } from '../../utils/parseTextWithLinksAnd
 import { RunWarning, dismissWarningAtom, warningTone } from '../../atoms/warnings';
 import type { PreferencePageTab } from '../../atoms/ui';
 import { openPreferencesWindow } from '../../../src/ui/openPreferencesWindow';
+import { msg, t } from '../../../src/utils/i18n';
 
 interface RunWarningDisplayProps {
     warning: RunWarning;
@@ -13,10 +14,10 @@ interface RunWarningDisplayProps {
 
 /** The Settings tab a warning's text sends the user to, for the warnings that name one. */
 const SETTINGS_LINK_BY_TYPE: Record<string, { tab: PreferencePageTab; label: string }> = {
-    semantic_search_unavailable: { tab: 'models', label: 'Open Settings → Model' },
-    semantic_search_failed: { tab: 'models', label: 'Open Settings → Model' },
-    output_limit: { tab: 'advanced', label: 'Open Settings → Advanced' },
-    iteration_limit: { tab: 'advanced', label: 'Open Settings → Advanced' },
+    semantic_search_unavailable: { tab: 'models', label: msg('Open Settings → Model') },
+    semantic_search_failed: { tab: 'models', label: msg('Open Settings → Model') },
+    output_limit: { tab: 'advanced', label: msg('Open Settings → Advanced') },
+    iteration_limit: { tab: 'advanced', label: msg('Open Settings → Advanced') },
 };
 
 /**
@@ -45,7 +46,7 @@ export const RunWarningDisplay: React.FC<RunWarningDisplayProps> = ({ warning })
             onClick={() => openPreferencesWindow(settingsLink.tab)}
             data-warning-action="open-settings"
         >
-            {settingsLink.label}
+            {t(settingsLink.label)}
         </button>
     );
 
@@ -65,8 +66,8 @@ export const RunWarningDisplay: React.FC<RunWarningDisplayProps> = ({ warning })
                     variant="ghost-tertiary"
                     icon={CancelIcon}
                     className="scale-85"
-                    ariaLabel="Hide this notice for the rest of the session"
-                    title="Hide for the rest of the session"
+                    ariaLabel={t('Hide this notice for the rest of the session')}
+                    title={t('Hide for the rest of the session')}
                     onClick={handleDismiss}
                 />
             </div>
@@ -100,7 +101,7 @@ export const RunWarningDisplay: React.FC<RunWarningDisplayProps> = ({ warning })
                             variant="ghost-secondary"
                             icon={CancelIcon}
                             className="mr-1 scale-90 mt-015"
-                            ariaLabel="Dismiss this warning"
+                            ariaLabel={t('Dismiss this warning')}
                             onClick={handleDismiss}
                         />
                     </div>

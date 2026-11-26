@@ -5,6 +5,7 @@ import { UNRESOLVED_LIBRARY_ID } from '../../../../../src/utils/libraryIdentity'
 import { ArrowRightIcon, CSSIcon, FileLinkIcon, Icon } from '../../../icons/icons';
 import { SearchMenuItem } from '@beaver/agent-ui/primitives/SearchMenu';
 import { SourceMenuItemContext, createSourceMenuItem } from '../utils/menuItemFactories';
+import { t } from '../../../../../src/utils/i18n';
 
 interface UseSourcesMenuOptions {
     isActive: boolean;
@@ -110,7 +111,7 @@ export const useSourcesMenu = ({
                 }
                 items.push(await createSourceMenuItem(item, sourceMenuItemContext, searchQuery));
             }
-            return itemSection('Search Results', items);
+            return itemSection(t('Search Results'), items);
         };
 
         /**
@@ -181,7 +182,7 @@ export const useSourcesMenu = ({
 
             if (searchableLibraryIds.length > 1) {
                 filterItems.push({
-                    label: '"Filter by Library"',
+                    label: t('"Filter by Library"'),
                     onClick: async () => {
                         onNavigateToLibraries();
                     },
@@ -189,7 +190,7 @@ export const useSourcesMenu = ({
                         <div className={'display-flex flex-row flex-1 items-start font-color-secondary'}>
                             <div className="display-flex flex-row gap-2">
                                 <CSSIcon name="library" className="icon-16 font-color-secondary scale-90" />
-                                <div>Filter by Library</div>
+                                <div>{t('Filter by Library')}</div>
                             </div>
                             <div className="flex-1" />
                             <Icon icon={ArrowRightIcon} className="scale-12 mt-020" />
@@ -199,7 +200,7 @@ export const useSourcesMenu = ({
             }
 
             filterItems.push({
-                label: '"Filter by Collections"',
+                label: t('"Filter by Collections"'),
                 onClick: async () => {
                     const latestLibraryIdRaw = getActiveZoteroLibraryId();
                     const latestEffectiveLibraryId = getEffectiveLibraryId(latestLibraryIdRaw);
@@ -214,7 +215,7 @@ export const useSourcesMenu = ({
                         <div className="display-flex flex-col gap-05 min-w-0">
                             <div className="display-flex flex-row gap-2">
                                 <CSSIcon name="collection" className="icon-16 font-color-secondary scale-90" />
-                                <div>Filter by Collections</div>
+                                <div>{t('Filter by Collections')}</div>
                             </div>
                         </div>
                         <div className="flex-1" />
@@ -224,7 +225,7 @@ export const useSourcesMenu = ({
             });
 
             filterItems.push({
-                label: '"Filter by Tags"',
+                label: t('"Filter by Tags"'),
                 onClick: async () => {
                     const latestLibraryIdRaw = getActiveZoteroLibraryId();
                     const latestEffectiveLibraryId = getEffectiveLibraryId(latestLibraryIdRaw);
@@ -242,7 +243,7 @@ export const useSourcesMenu = ({
                                     name="tag"
                                     className="icon-16 font-color-secondary scale-90 icon-tag"
                                 />
-                                <div>Filter by Tags</div>
+                                <div>{t('Filter by Tags')}</div>
                             </div>
                         </div>
                         <div className="flex-1" />
@@ -252,7 +253,7 @@ export const useSourcesMenu = ({
             });
 
             filterItems.push({
-                label: '"Add Note"',
+                label: t('"Add Note"'),
                 onClick: async () => {
                     onNavigateToNotes();
                 },
@@ -260,7 +261,7 @@ export const useSourcesMenu = ({
                     <div className={'display-flex flex-row flex-1 items-start font-color-secondary'}>
                         <div className="display-flex flex-row gap-2">
                             <CSSIcon name="note" className="icon-16 font-color-secondary scale-90" />
-                            <div>Add Note</div>
+                            <div>{t('Add Note')}</div>
                         </div>
                         <div className="flex-1" />
                         <Icon icon={ArrowRightIcon} className="scale-12 mt-020" />
@@ -269,7 +270,7 @@ export const useSourcesMenu = ({
             });
 
             filterItems.push({
-                label: '"Add File"',
+                label: t('"Add File"'),
                 onClick: async () => {
                     onSelectFiles();
                 },
@@ -278,7 +279,7 @@ export const useSourcesMenu = ({
                         <div className="display-flex flex-row gap-2">
                             {/* <CSSIcon name="attachment-file" className="icon-16 font-color-secondary scale-90" /> */}
                             <Icon icon={FileLinkIcon} className="font-color-secondary mt-015 ml-05 scale-11" />
-                            <div>Add External File…</div>
+                            <div>{t('Add External File…')}</div>
                         </div>
                         <div className="flex-1" />
                     </div>
@@ -287,7 +288,7 @@ export const useSourcesMenu = ({
 
             let itemRows: SearchMenuItem[];
             if (hasSelection) {
-                itemRows = itemSection('Selected in Zotero', await Promise.all(
+                itemRows = itemSection(t('Selected in Zotero'), await Promise.all(
                     selectedItems.map((item) => createSourceMenuItem(item, sourceMenuItemContext))
                 ));
             } else {

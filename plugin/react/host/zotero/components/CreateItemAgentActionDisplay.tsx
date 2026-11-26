@@ -40,6 +40,7 @@ import { ToolDisplayFooter } from '../../../components/messages/ToolDisplayFoote
 import AgentActionItemButtons from './AgentActionItemButtons';
 import ReferenceMetadataDisplay from '../../../components/externalReferences/ReferenceMetadataDisplay';
 import { ZoteroItemReference } from '@beaver/agent-core/types/zotero';
+import { t, tn } from '../../../../src/utils/i18n';
 
 interface CreateItemListItemProps {
     action: CreateItemAgentAction;
@@ -479,13 +480,14 @@ const CreateItemAgentActionDisplay: React.FC<CreateItemAgentActionDisplayProps> 
 
     // Generate button text parts (bold label + regular detail)
     const getButtonTextParts = (): { label: string; detail: string } => {
+        const items = (count: number) => tn(count, '{count} Item', '{count} Items');
         if (pendingCount > 0) {
-            return { label: 'Import', detail: `${pendingCount} Item${pendingCount === 1 ? '' : 's'}` };
+            return { label: t('Import'), detail: items(pendingCount) };
         }
         if (allErrors) {
-            return { label: 'Error importing', detail: `${totalItems} Item${totalItems === 1 ? '' : 's'}` };
+            return { label: t('Error importing'), detail: items(totalItems) };
         }
-        return { label: 'Imported', detail: `${appliedCount} Item${appliedCount === 1 ? '' : 's'}` };
+        return { label: t('Imported'), detail: items(appliedCount) };
     };
 
     // Determine when results can be toggled
@@ -534,22 +536,22 @@ const CreateItemAgentActionDisplay: React.FC<CreateItemAgentActionDisplayProps> 
                 {/* Apply/Reject all buttons */}
                 {showApplyButton && !allErrors && (
                     <div className="display-flex flex-row items-center gap-3 mr-015">
-                        <Tooltip content="Reject all" showArrow singleLine>
+                        <Tooltip content={t('Reject all')} showArrow singleLine>
                             <IconButton
                                 icon={CancelIcon}
                                 variant="ghost-secondary"
                                 iconClassName="font-color-red"
                                 onClick={handleRejectAll}
-                                ariaLabel="Reject all"
+                                ariaLabel={t('Reject all')}
                             />
                         </Tooltip>
-                        <Tooltip content="Add all items" showArrow singleLine>
+                        <Tooltip content={t('Add all items')} showArrow singleLine>
                             <IconButton
                                 icon={TickIcon}
                                 variant="ghost-secondary"
                                 iconClassName="font-color-green scale-14"
                                 onClick={handleApplyAll}
-                                ariaLabel="Add all items"
+                                ariaLabel={t('Add all items')}
                             />
                         </Tooltip>
                     </div>

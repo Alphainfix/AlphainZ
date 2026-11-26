@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react';
 import Tooltip from '@beaver/agent-ui/primitives/Tooltip';
 import { HighlighterIcon, Icon, NoteIcon } from '../icons/icons';
+import { t } from '../../../src/utils/i18n';
 
 const DEFAULT_TOOLTIP_WIDTH = '250px';
 
@@ -41,7 +42,7 @@ export const AnnotationTooltip: React.FC<AnnotationTooltipProps> = ({
                 </span>
                 <span className="flex-1" />
                 {pageDisplay && (
-                    <span className="font-color-secondary text-sm">{`Page ${pageDisplay}`}</span>
+                    <span className="font-color-secondary text-sm">{t('Page {page}', { page: pageDisplay })}</span>
                 )}
             </span>
             {tooltipBody && (
@@ -92,17 +93,17 @@ export const AnnotationTooltip: React.FC<AnnotationTooltipProps> = ({
 export function getAnnotationTypeLabel(type: string | undefined): string {
     switch (type) {
         case 'highlight':
-            return 'Highlight Annotation';
+            return t('Highlight Annotation');
         case 'underline':
-            return 'Underline Annotation';
+            return t('Underline Annotation');
         case 'note':
-            return 'Sticky Note';
+            return t('Sticky Note');
         case 'image':
-            return 'Area Annotation';
+            return t('Area Annotation');
         case 'text':
-            return 'Text Annotation';
+            return t('Text Annotation');
         default:
-            return 'Annotation';
+            return t('Annotation');
     }
 }
 

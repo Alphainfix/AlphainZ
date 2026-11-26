@@ -11,8 +11,9 @@ item-section-example2-button-tooltip =
 item-info-row-example-label = Example Row
 item-pane-status = AlphainZ Status
 
+# The plugin passes these labels in its own interface language.
 alphainz-context-menu-submenu =
-    .label = AlphainZ Actions
+    .label = { $label }
 
 alphainz-context-menu-context-header =
     .label = { $context }
@@ -21,4 +22,4 @@ alphainz-context-menu-action =
     .label = { $title }
 
 alphainz-context-menu-add-action =
-    .label = Add custom action…
+    .label = { $label }

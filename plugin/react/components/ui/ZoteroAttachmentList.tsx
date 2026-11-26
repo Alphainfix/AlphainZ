@@ -6,6 +6,7 @@ import { selectItemById } from '../../../src/utils/selectItem';
 import { UNRESOLVED_LIBRARY_ID } from '../../../src/utils/libraryIdentity';
 import { safeAttachmentFilename } from '../../../src/utils/attachmentFiles';
 import IconButton from '@beaver/agent-ui/primitives/IconButton';
+import { t } from '../../../src/utils/i18n';
 
 interface ItemWithSelectionId {
     item: Zotero.Item;
@@ -86,7 +87,7 @@ const ZoteroAttachmentList: React.FC<ZoteroAttachmentListProps> = ({
                 const {item, selectionItemId, errorCode, buttonText, buttonAction, buttonIcon} = itemWithSelectionId;
                 const itemId = `${item.libraryID}-${item.key}`;
                 const isHovered = hoveredItemId === itemId;
-                const errorMessage = errorCode ? errorMapping[errorCode as keyof typeof errorMapping] || "Unknown error" : null;
+                const errorMessage = errorCode ? t(errorMapping[errorCode as keyof typeof errorMapping] || "Unknown error") : null;
                 const hasButton = buttonText && buttonAction;
                 
                 return (
@@ -96,7 +97,7 @@ const ZoteroAttachmentList: React.FC<ZoteroAttachmentListProps> = ({
                         onClick={(e) => handleItemClick(selectionItemId, e)}
                         onMouseEnter={() => setHoveredItemId(itemId)}
                         onMouseLeave={() => setHoveredItemId(null)}
-                        title="Click to reveal in Zotero"
+                        title={t('Click to reveal in Zotero')}
                     >
                         <div className="scale-90" style={{ marginTop: '-2px' }}>
                             <CSSItemTypeIcon itemType={item.getItemTypeIconName()} />

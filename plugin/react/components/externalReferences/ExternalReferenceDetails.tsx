@@ -2,6 +2,7 @@ import React from 'react';
 import { ExternalReference } from '@beaver/agent-core/types/externalReferences';
 import { formatAuthors } from './utils';
 import { getHost } from '@beaver/agent-ui/host';
+import { t } from '../../../src/utils/i18n';
 
 interface ExternalReferenceDetailsProps {
     item: ExternalReference;
@@ -23,7 +24,7 @@ const ExternalReferenceDetails: React.FC<ExternalReferenceDetailsProps> = ({ ite
     return (
         <div className="display-flex flex-col h-full overflow-hidden">
             <div className="display-flex flex-col gap-1 px-4 py-2 shrink-0">
-                <div className="text-lg font-bold font-color-primary leading-tight pr-8">{item.title || 'Untitled Item'}</div>
+                <div className="text-lg font-bold font-color-primary leading-tight pr-8">{item.title || t('Untitled Item')}</div>
                 {authors && (
                     <div className="font-color-primary">{authors}</div>
                 )}
@@ -61,7 +62,7 @@ const ExternalReferenceDetails: React.FC<ExternalReferenceDetailsProps> = ({ ite
             {item.abstract && (
                 <div className="flex-1 overflow-y-auto px-4 py-2 min-h-0">
                         <div className="display-flex flex-col gap-1">
-                            <div className="font-bold font-color-primary uppercase tracking-wider sticky top-0 z-10 pb-1">Abstract</div>
+                            <div className="font-bold font-color-primary uppercase tracking-wider sticky top-0 z-10 pb-1">{t('Abstract')}</div>
                             <div className="font-color-primary leading-relaxed select-text">
                                 {item.abstract.trim()}
                             </div>

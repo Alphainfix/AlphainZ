@@ -21,6 +21,7 @@ import { isFirstRunVisibleAtom } from '../atoms/firstRun';
 import { getWindowFromElement } from '@beaver/agent-ui/utils/windowContext';
 import { currentMessageContentAtom } from '../atoms/messageComposition';
 import { getPref } from '../../src/utils/prefs';
+import { t } from '../../src/utils/i18n';
 
 
 interface HeaderProps {
@@ -78,7 +79,7 @@ const Header: React.FC<HeaderProps> = ({ onClose, isWindow = false, outlineButto
                 {/* Close chat */}
                 {!isWindow && (
                     <Tooltip
-                        content="Close chat"
+                        content={t('Close chat')}
                         secondaryContent={closeChatShortcut}
                         showArrow
                         singleLine
@@ -88,7 +89,7 @@ const Header: React.FC<HeaderProps> = ({ onClose, isWindow = false, outlineButto
                             icon={CancelIcon}
                             onClick={handleClose}
                             className="scale-14"
-                            ariaLabel="Close AlphainZ panel"
+                            ariaLabel={t('Close AlphainZ panel')}
                         />
                     </Tooltip>
                 )}
@@ -101,20 +102,20 @@ const Header: React.FC<HeaderProps> = ({ onClose, isWindow = false, outlineButto
                     about the panel already showing its own starting points. */}
                 {!isFirstRunVisible && (
                     <>
-                    <Tooltip content="Chat history" showArrow singleLine>
+                    <Tooltip content={t('Chat history')} showArrow singleLine>
                         <IconButton
                             icon={ChattingIcon}
                             onClick={() => setIsThreadListView(!isThreadListView)}
                             className={`scale-14 ${isThreadListView ? 'thread-list-toggle-active' : ''}`}
-                            ariaLabel="Show chat history"
+                            ariaLabel={t('Show chat history')}
                         />
                     </Tooltip>
-                    <Tooltip content="New chat" secondaryContent={newChatShortcut} showArrow singleLine>
+                    <Tooltip content={t('New chat')} secondaryContent={newChatShortcut} showArrow singleLine>
                         <IconButton
                             icon={PlusSignIcon}
                             onClick={handleNewThread}
                             className="scale-14"
-                            ariaLabel="New chat"
+                            ariaLabel={t('New chat')}
                             disabled={runsCount === 0}
                         />
                     </Tooltip>
@@ -146,7 +147,7 @@ const Header: React.FC<HeaderProps> = ({ onClose, isWindow = false, outlineButto
                     {process.env.NODE_ENV === 'development' && (
                         <DevToolsMenuButton
                             className="scale-14"
-                            ariaLabel="Development tools"
+                            ariaLabel={t('Development tools')}
                             currentMessageContent={currentMessageContent}
                         />
                     )}
@@ -157,24 +158,24 @@ const Header: React.FC<HeaderProps> = ({ onClose, isWindow = false, outlineButto
                     {threadId && !isFirstRunVisible && (
                         <ThreadMenuButton
                             className="scale-14"
-                            ariaLabel="Chat actions"
+                            ariaLabel={t('Chat actions')}
                         />
                     )}
                     {/* Open in separate window */}
                     {!isWindow && hasCompletedOnboarding && !updateRequired && (!isWaitingForProfile || isProfileLoaded) && !isFirstRunVisible && (
-                        <Tooltip content="Open in separate window" secondaryContent={openWindowShortcut} showArrow singleLine>
+                        <Tooltip content={t('Open in separate window')} secondaryContent={openWindowShortcut} showArrow singleLine>
                             <IconButton
                                 icon={PictureInPictureIcon}
                                 onClick={openBeaverWindow}
                                 className="scale-14"
-                                ariaLabel="Open in separate window"
+                                ariaLabel={t('Open in separate window')}
                             />
                         </Tooltip>
                     )}
                     {/* Settings */}
                     <UserAccountMenuButton
                         className="scale-14"
-                        ariaLabel="AlphainZ settings"
+                        ariaLabel={t('AlphainZ settings')}
                     />
                 </div>
         </div>

@@ -5,6 +5,7 @@ import { MessageItemButton } from '../../../components/input/MessageItemButton';
 import { ChipWithListPopup } from '@beaver/agent-ui/chat/ChipPopup';
 import { buildItemsSummaryListPopup } from '../../../components/input/MessageItemChipPopup';
 import { parseItemReference, resolveItemReference, resolveLibraryRef } from '../../../../src/utils/libraryIdentity';
+import { t, tn } from '../../../../src/utils/i18n';
 
 type ActionStatus = 'pending' | 'applied' | 'rejected' | 'undone' | 'error' | 'awaiting';
 
@@ -149,14 +150,14 @@ export const OrganizeItemsPreview: React.FC<OrganizeItemsPreviewProps> = ({
                                 type="button"
                                 className="variant-outline source-button"
                                 style={{ height: '22px' }}
-                                title={`${overflowCount} more item${overflowCount === 1 ? '' : 's'}`}
+                                title={tn(overflowCount, '{count} more item', '{count} more items')}
                             >
                                 +{overflowCount}
                             </button>
                         </ChipWithListPopup>
                     )}
                     {resolvedItems.length === 0 && itemCount > 0 && (
-                        <span className="text-sm font-color-secondary">Loading {itemCount} item{itemCount !== 1 ? 's' : ''}...</span>
+                        <span className="text-sm font-color-secondary">{tn(itemCount, 'Loading {count} item...', 'Loading {count} items...')}</span>
                     )}
                 </div>
 
@@ -164,7 +165,7 @@ export const OrganizeItemsPreview: React.FC<OrganizeItemsPreviewProps> = ({
                 {hasTagChanges && tagsToAdd.length > 0 && (
                     <div className="display-flex flex-col gap-3">
                         <div className="text-sm font-color-primary font-medium uppercase display-flex flex-row items-center gap-2">
-                            <div>Adding Tags</div>
+                            <div>{t('Adding Tags')}</div>
                         </div>
                         
                         {/* Tags to add */}
@@ -184,7 +185,7 @@ export const OrganizeItemsPreview: React.FC<OrganizeItemsPreviewProps> = ({
                 {hasTagChanges && tagsToRemove.length > 0 && (
                     <div className="display-flex flex-col gap-2">
                         <div className="text-sm font-color-primary font-medium uppercase display-flex flex-row items-center gap-2">
-                            <div>Removing Tags</div>
+                            <div>{t('Removing Tags')}</div>
                         </div>
                         
                         {/* Tags to remove */}
@@ -205,7 +206,7 @@ export const OrganizeItemsPreview: React.FC<OrganizeItemsPreviewProps> = ({
                 {hasCollectionChanges && collectionsToAdd.length > 0 && (
                     <div className="display-flex flex-col gap-2">
                         <div className="text-sm font-color-primary font-medium uppercase display-flex flex-row items-center gap-2">
-                            <div>Adding to Collections</div>
+                            <div>{t('Adding to Collections')}</div>
                         </div>
 
                         {/* Collections to add */}
@@ -228,7 +229,7 @@ export const OrganizeItemsPreview: React.FC<OrganizeItemsPreviewProps> = ({
                 {hasCollectionChanges && collectionsToRemove.length > 0 && (
                     <div className="display-flex flex-col gap-2">
                         <div className="text-sm font-color-primary font-medium uppercase display-flex flex-row items-center gap-2">
-                            <div>Removing from Collections</div>
+                            <div>{t('Removing from Collections')}</div>
                         </div>
 
                         {/* Collections to remove */}
@@ -251,7 +252,7 @@ export const OrganizeItemsPreview: React.FC<OrganizeItemsPreviewProps> = ({
                 {/* Error info for failed items */}
                 {isApplied && resultData?.failed_items && Object.keys(resultData.failed_items).length > 0 && (
                     <div className="text-sm text-red-600 mt-1">
-                        Failed: {Object.keys(resultData.failed_items).length} item{Object.keys(resultData.failed_items).length !== 1 ? 's' : ''}
+                        {tn(Object.keys(resultData.failed_items).length, 'Failed: {count} item', 'Failed: {count} items')}
                     </div>
                 )}
             </div>

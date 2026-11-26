@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { SearchMenuItem } from '@beaver/agent-ui/primitives/SearchMenu';
 import { SourceMenuItemContext, createNoteMenuItem } from '../utils/menuItemFactories';
 import { loadFullItemData, getActiveZoteroLibraryId } from '../../../../../src/utils/zoteroUtils';
+import { t } from '../../../../../src/utils/i18n';
 
 const NOTES_DISPLAY_LIMIT = 20;
 const SEARCH_DEBOUNCE_MS = 200;
@@ -209,10 +210,10 @@ export const useNotesMenu = ({
                 if (items.length === 0) {
                     setMenuItems([]);
                 } else {
-                    let headerLabel = searchQuery.trim() ? 'Search Results' : 'Recent Notes';
+                    let headerLabel = searchQuery.trim() ? t('Search Results') : t('Recent Notes');
                     if (!searchQuery.trim() && activeLibraryId) {
                         const library = Zotero.Libraries.get(activeLibraryId);
-                        headerLabel = library ? `Notes in ${library.name}` : headerLabel;
+                        headerLabel = library ? t('Notes in {library}', { library: library.name }) : headerLabel;
                     }
                     const header: SearchMenuItem = { label: headerLabel, isGroupHeader: true, onClick: () => {} };
 

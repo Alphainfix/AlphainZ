@@ -1,6 +1,7 @@
 import React from "react";
 import { Spinner, ArrowRightIcon, ArrowLeftIcon } from "../../icons/icons";
 import Button, { ButtonVariant } from "@beaver/agent-ui/primitives/Button";
+import { t } from '../../../../src/utils/i18n';
 
 interface OnboardingFooterProps {
     /** Message displayed on the left side of the footer */
@@ -44,7 +45,7 @@ const OnboardingFooter: React.FC<OnboardingFooterProps> = ({
     onButtonClick,
     showBackButton = false,
     onBackClick,
-    backButtonLabel = "Back",
+    backButtonLabel = t("Back"),
     backButtonDisabled = false,
     backButtonLoading = false,
     buttonVariant = "solid",

@@ -477,7 +477,7 @@ export const FULLTEXT_TOOL_SCHEMA: ToolSchema = {
 export const FIGURE_TOOL_SCHEMA: ToolSchema = {
     name: 'search_library_figures',
     description:
-        "Find pages in the user's PDFs by what their figures show — a micrograph of a device, a kind of plot, a schematic, an energy-level diagram — described in words. Every page was indexed as a picture, so this matches what is drawn on it, not only what the text says. Results are pages, not figures, ranked by how closely the page looks like the description: look at a hit with view_page_images before saying what it shows, and cite it by its page. For what a paper says, use search_library_fulltext.",
+        "Find pages in the user's PDFs by what their figures show — a microscope image, a kind of plot, a schematic, a flow diagram — described in words. Every page was indexed as a picture, so this matches what is drawn on it, not only what the text says. Results are pages, not figures, ranked by how closely the page looks like the description: look at a hit with view_page_images before saying what it shows, and cite it by its page. For what a paper says, use search_library_fulltext.",
     parameters: {
         type: 'object',
         properties: {

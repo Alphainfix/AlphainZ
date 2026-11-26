@@ -9,6 +9,7 @@ import { truncateText } from '@beaver/agent-ui/utils/stringUtils'
 import { ChipWithPopup, type ChipPopupContent } from '@beaver/agent-ui/chat/ChipPopup'
 import { ChipButton } from '../agentRuns/requestChips/ChipButton'
 import { ChipRemovableIcon } from '../agentRuns/requestChips/ChipRemovableIcon'
+import { t } from '../../../src/utils/i18n';
 
 
 const MAX_TEXT_SELECTION_TOOLTIP_TEXT_LENGTH = 160;
@@ -29,12 +30,12 @@ function textSelectionRevealLabel(
         const page = typeof selection.page_index === 'number'
             ? selection.page_index + 1
             : selection.page;
-        return page != null ? `Reveal page ${page} in PDF` : 'Reveal in PDF';
+        return page != null ? t('Reveal page {page} in PDF', { page }) : t('Reveal in PDF');
     }
     const readerTypeName = readerType === 'epub' ? 'EPUB'
-        : readerType === 'snapshot' ? 'Snapshot'
-        : 'Document';
-    return `Reveal in ${readerTypeName}`;
+        : readerType === 'snapshot' ? t('Snapshot')
+        : t('Document');
+    return t('Reveal in {type}', { type: readerTypeName });
 }
 
 interface TextSelectionButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'source'> {
@@ -87,7 +88,7 @@ export const TextSelectionButton = forwardRef<HTMLButtonElement, TextSelectionBu
             const selectionText = truncateText(selection.text.replace(/\s+/g, ' ').trim(), MAX_TEXT_SELECTION_TOOLTIP_TEXT_LENGTH);
             return {
                 icon: <Icon icon={TextAlignLeftIcon} className="scale-90 font-color-primary mt-020" />,
-                title: 'Text Selection',
+                title: t('Text Selection'),
                 subtitle: selectionText ? { text: selectionText } : null,
                 action: revealLabel ? { icon: revealIcon, label: revealLabel } : null,
             };
@@ -122,7 +123,7 @@ export const TextSelectionButton = forwardRef<HTMLButtonElement, TextSelectionBu
                         />
                     ) : normalIcon}
                     <span className={`truncate`}>
-                        Text Selection
+                        {t('Text Selection')}
                     </span>
                 </ChipButton>
             </ChipWithPopup>

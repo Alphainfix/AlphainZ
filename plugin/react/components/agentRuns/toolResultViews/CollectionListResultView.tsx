@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CollectionListView } from '@beaver/agent-core/run-state/toolResultViews';
 import { CSSIcon } from '../../icons/icons';
 import { getHost } from '@beaver/agent-ui/host';
+import { t } from '../../../../src/utils/i18n';
 
 /**
  * Shared renderer for the {@link CollectionListView} view model (list_collections).
@@ -15,7 +16,7 @@ export const CollectionListResultView: React.FC<{ view: CollectionListView }> = 
     if (collections.length === 0) {
         return (
             <div className="p-3 text-sm font-color-tertiary">
-                No collections found
+                {t('No collections found')}
             </div>
         );
     }
@@ -43,7 +44,7 @@ export const CollectionListResultView: React.FC<{ view: CollectionListView }> = 
                         onClick={() => revealCollection(collection)}
                         onMouseEnter={() => setHoveredKey(compositeKey)}
                         onMouseLeave={() => setHoveredKey(null)}
-                        title="Click to reveal in Zotero"
+                        title={t('Click to reveal in Zotero')}
                     >
                         <div className="display-flex items-center justify-center flex-shrink-0 rounded-md ml-05 mt-010">
                             <CSSIcon name="collection" className="icon-16 scale-90" />
@@ -58,7 +59,7 @@ export const CollectionListResultView: React.FC<{ view: CollectionListView }> = 
             })}
             {view.total_count > collections.length && (
                 <div className="px-15 py-2 text-xs font-color-tertiary border-t border-primary">
-                    Showing {collections.length} of {view.total_count} collections
+                    {t('Showing {shown} of {total} collections', { shown: collections.length, total: view.total_count })}
                 </div>
             )}
         </div>

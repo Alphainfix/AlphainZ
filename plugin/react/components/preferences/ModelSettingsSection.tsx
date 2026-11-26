@@ -66,12 +66,13 @@ import { SectionDescription, SectionHeader, SectionLabel, SettingsGroup } from '
 
 export { VENDORS, type Vendor, type KeyPrefName, type ProviderId } from './vendors';
 import { VENDORS, type KeyPrefName, type ProviderId, type Vendor } from './vendors';
+import { msg, t, tn } from '../../../src/utils/i18n';
 
 export const EMBEDDING_OPTIONS: Array<{ id: '' | keyof typeof EMBEDDING_PRESETS; label: string; keyPref?: KeyPrefName }> = [
-    { id: '', label: 'Off — keyword search only' },
+    { id: '', label: msg('Off — keyword search only') },
     { id: 'openai', label: 'OpenAI', keyPref: 'llmKeyOpenai' },
-    { id: 'google', label: 'Google Gemini · online', keyPref: 'llmKeyGoogle' },
-    { id: 'ollama', label: 'Ollama · EmbeddingGemma 2, on this computer' },
+    { id: 'google', label: msg('Google Gemini · online'), keyPref: 'llmKeyGoogle' },
+    { id: 'ollama', label: msg('Ollama · EmbeddingGemma 2, on this computer') },
 ];
 
 // ---------------------------------------------------------------------------
@@ -101,10 +102,10 @@ interface TestState {
 }
 
 const TEST_BUTTON = {
-    idle: { text: 'Test', icon: ArrowRightIcon },
-    testing: { text: 'Test', icon: Spinner },
-    ok: { text: 'Works', icon: TickIcon },
-    error: { text: 'Failed', icon: AlertIcon },
+    idle: { text: msg('Test'), icon: ArrowRightIcon },
+    testing: { text: msg('Test'), icon: Spinner },
+    ok: { text: msg('Works'), icon: TickIcon },
+    error: { text: msg('Failed'), icon: AlertIcon },
 } as const;
 
 const isIndexingFulltext = (status: string) => status === 'counting' || status === 'indexing';
@@ -197,13 +198,13 @@ const ModelSettingsSection: React.FC = () => {
         if (!db?.deleteEmbeddingsForModel) return;
         const buttonIndex = Zotero.Prompt.confirm({
             window: Zotero.getMainWindow(),
-            title: 'Delete this index?',
+            title: t('Delete this index?'),
             text:
-                `Delete the ${label} index? Its vectors are removed from this computer only.\n\n` +
+                t('Delete the {label} index? Its vectors are removed from this computer only.', { label }) + '\n\n' +
                 (active
-                    ? 'This is the model in use, so the index will be rebuilt from scratch — that costs time (and, for a cloud model, its quota).'
-                    : 'Switching back to this model later will rebuild it.'),
-            button0: 'Delete',
+                    ? t('This is the model in use, so the index will be rebuilt from scratch — that costs time (and, for a cloud model, its quota).')
+                    : t('Switching back to this model later will rebuild it.')),
+            button0: t('Delete'),
             button1: Zotero.Prompt.BUTTON_TITLE_CANCEL,
             defaultButton: 1,
         });
@@ -298,7 +299,7 @@ const ModelSettingsSection: React.FC = () => {
             const client = new OpenAlexClient(boundFetch, { apiKey: openalexKey.trim() });
             const started = Date.now();
             await client.search('test', { perPage: 1 });
-            setOpenalexTest({ status: 'ok', message: `Connected in ${Date.now() - started} ms.` });
+            setOpenalexTest({ status: 'ok', message: t('Connected in {ms} ms.', { ms: Date.now() - started }) });
         } catch (error) {
             // Decided from the status OpenAlex answered with, never from the
             // text, which can hold any digits.
@@ -306,7 +307,7 @@ const ModelSettingsSection: React.FC = () => {
             setOpenalexTest({
                 status: 'error',
                 message: openAlexRejectedKey(error)
-                    ? 'The key was rejected. Check that you copied all of it.'
+                    ? t('The key was rejected. Check that you copied all of it.')
                     : raw.slice(0, 200),
             });
         }
@@ -334,8 +335,8 @@ const ModelSettingsSection: React.FC = () => {
             setEmbeddingTest({
                 status: 'error',
                 message: id === 'google'
-                    ? 'This computer has no Google key yet. Add it on the Google Gemini card above, or below.'
-                    : `This computer has no ${option.label} key yet. Add it under Providers, above.`,
+                    ? t('This computer has no Google key yet. Add it on the Google Gemini card above, or below.')
+                    : t('This computer has no {label} key yet. Add it under Providers, above.', { label: t(option.label) }),
             });
             return;
         }
@@ -366,12 +367,14 @@ const ModelSettingsSection: React.FC = () => {
     const fulltextPercent =
         fulltext.library > 0 ? Math.round(Math.min(100, (coveredNow / fulltext.library) * 100)) : 0;
     const fulltextCoverage = !fulltext.counted
-        ? 'Counting the PDFs in your libraries…'
+        ? t('Counting the PDFs in your libraries…')
         : fulltext.library + fulltext.skipped === 0
-            ? 'No PDFs found in the libraries you have enabled.'
-            : `${coveredNow} of ${fulltext.library} PDFs indexed${isIndexingFulltext(fulltext.status) && fulltext.total > 0
-                ? ` · this pass: ${fulltext.done}/${fulltext.total}`
-                : ''}.`;
+            ? t('No PDFs found in the libraries you have enabled.')
+            : isIndexingFulltext(fulltext.status) && fulltext.total > 0
+                ? t('{covered} of {library} PDFs indexed · this pass: {done}/{total}.', {
+                    covered: coveredNow, library: fulltext.library, done: fulltext.done, total: fulltext.total,
+                })
+                : t('{covered} of {library} PDFs indexed.', { covered: coveredNow, library: fulltext.library });
     // PDFs that could not be read this session, and why, when the last run said.
     const unreadable = fulltext.skipped || fulltext.failed;
     // Figures still to render, leaving out the PDFs that could not be rendered
@@ -386,13 +389,15 @@ const ModelSettingsSection: React.FC = () => {
         ? vendorForKey(EMBEDDING_OPTIONS.find((o) => o.id === semantic.provider)?.keyPref)
         : undefined;
     const optionLabel = (option: (typeof EMBEDDING_OPTIONS)[number]) =>
-        option.id && option.keyPref && !embeddingKeyFor(option.id) ? `${option.label} — no key on this computer yet` : option.label;
+        option.id && option.keyPref && !embeddingKeyFor(option.id)
+            ? t('{label} — no key on this computer yet', { label: t(option.label) })
+            : t(option.label);
 
     return (
         <>
             <ProviderCards openRequest={cardRequest} />
 
-            <SectionLabel>Literature search</SectionLabel>
+            <SectionLabel>{t('Literature search')}</SectionLabel>
             <SettingsGroup>
                 <div className="display-flex flex-col gap-1 p-3">
                     <div className="display-flex flex-row items-center gap-2">
@@ -410,7 +415,7 @@ const ModelSettingsSection: React.FC = () => {
                             }}
                             className="font-color-secondary text-sm"
                         >
-                            Get a key
+                            {t('Get a key')}
                         </a>
                     </div>
                     <div className="display-flex flex-row items-start gap-2">
@@ -419,7 +424,7 @@ const ModelSettingsSection: React.FC = () => {
                             type="password"
                             value={openalexKey}
                             onChange={(e) => handleOpenalexKeyChange(e.target.value)}
-                            placeholder="Paste your key"
+                            placeholder={t('Paste your key')}
                             className={`flex-1 p-1 m-0 preference-input text-sm ${
                                 openalexTest.status === 'error' ? 'border-error' : 'border-quinary'
                             }`}
@@ -432,22 +437,19 @@ const ModelSettingsSection: React.FC = () => {
                             onClick={() => void testOpenalexKey()}
                             disabled={openalexTest.status === 'testing' || !openalexKey.trim()}
                         >
-                            {TEST_BUTTON[openalexTest.status].text}
+                            {t(TEST_BUTTON[openalexTest.status].text)}
                         </Button>
                     </div>
                     <TestResult state={openalexTest} />
                     <Note>
-                        Literature search (OpenAlex) — a free key, made in 30 seconds. OpenAlex
-                        requires one from February 2026; without it, searches are rate-limited
-                        whenever their servers are busy.
+                        {t('Literature search (OpenAlex) — a free key, made in 30 seconds. OpenAlex requires one from February 2026; without it, searches are rate-limited whenever their servers are busy.')}
                     </Note>
                 </div>
             </SettingsGroup>
 
-            <SectionLabel>Model</SectionLabel>
+            <SectionLabel>{t('Model')}</SectionLabel>
             <SectionDescription>
-                The model the sidebar uses. Every model in a provider's catalogue is listed; the
-                picker in the composer changes the same setting.
+                {t('The model the sidebar uses. Every model in a provider\'s catalogue is listed; the picker in the composer changes the same setting.')}
             </SectionDescription>
 
             <SettingsGroup>
@@ -457,11 +459,11 @@ const ModelSettingsSection: React.FC = () => {
                         value={currentValue}
                         onChange={(e) => applyModel(e.target.value)}
                         className="p-1 m-0 preference-input text-sm"
-                        aria-label="Model"
+                        aria-label={t('Model')}
                     >
-                        <option value="">Choose a model…</option>
+                        <option value="">{t('Choose a model…')}</option>
                         {!showsCurrent && (
-                            <option value={currentValue}>{`${provider} · ${model} (stored)`}</option>
+                            <option value={currentValue}>{t('{provider} · {model} (stored)', { provider, model })}</option>
                         )}
                         {choices.map((choice) => (
                             <option key={choice.value} value={choice.value}>
@@ -472,17 +474,15 @@ const ModelSettingsSection: React.FC = () => {
 
                     {choices.length === 0 && (
                         <Note>
-                            No models are listed because no provider is configured yet. Add one above
-                            and its catalogue appears here.
+                            {t('No models are listed because no provider is configured yet. Add one above and its catalogue appears here.')}
                         </Note>
                     )}
                 </div>
             </SettingsGroup>
 
-            <SectionLabel>Highlight questions</SectionLabel>
+            <SectionLabel>{t('Highlight questions')}</SectionLabel>
             <SectionDescription>
-                Questions asked from the reader's selection popup use the model the sidebar is
-                set to, so changing the model in the sidebar changes it for them too.
+                {t('Questions asked from the reader\'s selection popup use the model the sidebar is set to, so changing the model in the sidebar changes it for them too.')}
             </SectionDescription>
 
             <SettingsGroup>
@@ -496,21 +496,17 @@ const ModelSettingsSection: React.FC = () => {
                                 setPref('selectionChatAutoComment', e.target.checked);
                             }}
                         />
-                        Save answers into the highlight's comment without asking
+                        {t('Save answers into the highlight\'s comment without asking')}
                     </label>
                     <Note>
-                        Answers are appended to the highlight's own Zotero comment, so they show up
-                        when you click the highlight and travel with your library.
+                        {t('Answers are appended to the highlight\'s own Zotero comment, so they show up when you click the highlight and travel with your library.')}
                     </Note>
                 </div>
             </SettingsGroup>
 
-            <SectionLabel>Topic and full-text search</SectionLabel>
+            <SectionLabel>{t('Topic and full-text search')}</SectionLabel>
             <SectionDescription>
-                Searching your library by meaning needs an embedding provider. Leave it off and the
-                agent is told so, instead of reading an empty result as proof your library holds
-                nothing on the subject. This is the deeper of the two indexes — the one that reads
-                inside your PDFs. Titles and abstracts are handled separately, under Search.
+                {t('Searching your library by meaning needs an embedding provider. Leave it off and the agent is told so, instead of reading an empty result as proof your library holds nothing on the subject. This is the deeper of the two indexes — the one that reads inside your PDFs. Titles and abstracts are handled separately, under Search.')}
             </SectionDescription>
 
             <SettingsGroup>
@@ -524,7 +520,7 @@ const ModelSettingsSection: React.FC = () => {
                             setEmbeddingTest({ status: 'idle' });
                         }}
                         className="p-1 m-0 preference-input text-sm"
-                        aria-label="Embedding provider"
+                        aria-label={t('Embedding provider')}
                     >
                         {EMBEDDING_OPTIONS.map((option) => (
                             <option key={option.id} value={option.id}>
@@ -536,8 +532,7 @@ const ModelSettingsSection: React.FC = () => {
                     {embeddingProblem && (
                         <div className="display-flex flex-row items-center gap-2 flex-wrap" role="status" data-testid="embedding-problem">
                             <span className="text-sm font-color-yellow">
-                                {embeddingProblem} Until then nothing is indexed and topic search is off; keyword
-                                search still works. Indexing starts by itself once that is fixed.
+                                {embeddingProblem}{' '}{t('Until then nothing is indexed and topic search is off; keyword search still works. Indexing starts by itself once that is fixed.')}
                             </span>
                             {keyVendor && (
                                 <Button
@@ -545,7 +540,7 @@ const ModelSettingsSection: React.FC = () => {
                                     style={{ padding: '3px 6px' }}
                                     onClick={() => setCardRequest({ vendorId: keyVendor.id, nonce: Date.now() })}
                                 >
-                                    {`Add the ${keyVendor.label} key`}
+                                    {t('Add the {label} key', { label: keyVendor.label })}
                                 </Button>
                             )}
                         </div>
@@ -556,9 +551,8 @@ const ModelSettingsSection: React.FC = () => {
                         <div className="display-flex flex-row items-start gap-1" role="status" data-testid="embedding-health">
                             <Icon icon={AlertIcon} className="scale-90 mt-015 font-color-yellow flex-shrink-0" />
                             <span className="text-sm font-color-yellow">
-                                {`Not working since ${failureTimeText(embeddingHealth.failedAt)}: ${embeddingHealth.reason} `}
-                                Topic search falls back to titles meanwhile. This clears by itself once a request
-                                goes through — Test checks now.
+                                {t('Not working since {time}: {reason}', { time: failureTimeText(embeddingHealth.failedAt), reason: embeddingHealth.reason })}{' '}
+                                {t('Topic search falls back to titles meanwhile. This clears by itself once a request goes through — Test checks now.')}
                             </span>
                         </div>
                     )}
@@ -566,7 +560,7 @@ const ModelSettingsSection: React.FC = () => {
                     {embeddingProvider === 'google' && (
                         <div className="display-flex flex-col gap-1">
                             <label htmlFor="alphain-key-embedding-google" className="text-sm font-color-primary">
-                                Key for embeddings (optional)
+                                {t('Key for embeddings (optional)')}
                             </label>
                             <input
                                 id="alphain-key-embedding-google"
@@ -577,18 +571,15 @@ const ModelSettingsSection: React.FC = () => {
                                     setPref('embeddingKeyGoogle', e.target.value.trim());
                                     setEmbeddingTest({ status: 'idle' });
                                 }}
-                                placeholder={readPref('llmKeyGoogle') ? 'Empty: the Google Gemini card’s key is used' : 'Paste a Google AI Studio key'}
+                                placeholder={readPref('llmKeyGoogle') ? t('Empty: the Google Gemini card’s key is used') : t('Paste a Google AI Studio key')}
                                 className="p-1 m-0 preference-input text-sm border-quinary"
                             />
                             <Note>
                                 {googleEmbeddingKey.trim()
-                                    ? 'Embeddings use this key; chat keeps the Google Gemini card’s.'
-                                    : 'Embeddings use the Google Gemini card’s key. A key here is used for topic and '
-                                        + 'full-text search only, and wins over the card’s.'}
-                                {' '}Gemini Embedding 2. A key from a project with no billing is free but allows
-                                about 100 texts a minute and 1000 a day, and Google may use what it is sent to
-                                improve its products; when Google reports the free tier, indexing keeps a fifth of
-                                each for your searches. A paid key costs about $1 per 20,000 passages.
+                                    ? t('Embeddings use this key; chat keeps the Google Gemini card’s.')
+                                    : t('Embeddings use the Google Gemini card’s key. A key here is used for topic and '
+                                        + 'full-text search only, and wins over the card’s.')}
+                                {' '}{t('Gemini Embedding 2. A key from a project with no billing is free but allows about 100 texts a minute and 1000 a day, and Google may use what it is sent to improve its products; when Google reports the free tier, indexing keeps a fifth of each for your searches. A paid key costs about $1 per 20,000 passages.')}
                             </Note>
                         </div>
                     )}
@@ -604,15 +595,13 @@ const ModelSettingsSection: React.FC = () => {
                                         onClick={runEmbeddingTest}
                                         disabled={embeddingTest.status === 'testing'}
                                     >
-                                        {embeddingButton.text}
+                                        {t(embeddingButton.text)}
                                     </Button>
                                     <TestResult state={embeddingTest} />
                                 </div>
                             )}
                             <Note>
-                                Each model keeps its own index. Switching starts filling the new
-                                model’s index in the background and leaves the previous one in
-                                place, so switching back is instant.
+                                {t('Each model keeps its own index. Switching starts filling the new model’s index in the background and leaves the previous one in place, so switching back is instant.')}
                             </Note>
                             {embeddingProvider === 'ollama' && (
                                 <OllamaGuide
@@ -624,7 +613,7 @@ const ModelSettingsSection: React.FC = () => {
                             )}
                             {storedIndexes.length > 0 && (
                                 <div className="display-flex flex-col gap-1 mt-2 pt-2 border-top-quinary">
-                                    <div className="text-base font-semibold font-color-primary">Stored indexes</div>
+                                    <div className="text-base font-semibold font-color-primary">{t('Stored indexes')}</div>
                                     {storedIndexes.map((index) => {
                                         const active = index.model_id === currentEmbeddingModelId();
                                         const label = Object.values(EMBEDDING_PRESETS).find((p) => p.model === index.model_id)?.label;
@@ -632,11 +621,15 @@ const ModelSettingsSection: React.FC = () => {
                                             <div key={index.model_id} className="display-flex flex-row items-center gap-2 text-sm">
                                                 <span className="font-color-primary">
                                                     {label ? `${label} · ` : ''}<code>{index.model_id}</code>
-                                                    {active ? <span className="font-color-green"> · in use</span> : null}
+                                                    {active ? <span className="font-color-green">{' '}{t('· in use')}</span> : null}
                                                 </span>
                                                 <span className="font-color-tertiary">
-                                                    {`${index.items} items · ${index.chunks.toLocaleString()} passages · `
-                                                        + `${index.images ? `${index.images.toLocaleString()} page images · ` : ''}${formatIndexBytes(index.bytes)}`}
+                                                    {[
+                                                        tn(index.items, '{count} item', '{count} items'),
+                                                        t('{count} passages', { count: index.chunks.toLocaleString() }),
+                                                        index.images ? t('{count} page images', { count: index.images.toLocaleString() }) : null,
+                                                        formatIndexBytes(index.bytes),
+                                                    ].filter(Boolean).join(' · ')}
                                                 </span>
                                                 <div className="flex-1" />
                                                 <Button
@@ -644,7 +637,7 @@ const ModelSettingsSection: React.FC = () => {
                                                     style={{ padding: '1px 6px' }}
                                                     onClick={() => void deleteStoredIndex(index.model_id, label ?? index.model_id, active)}
                                                 >
-                                                    Delete
+                                                    {t('Delete')}
                                                 </Button>
                                             </div>
                                         );
@@ -653,12 +646,12 @@ const ModelSettingsSection: React.FC = () => {
                             )}
 <div className="display-flex flex-col gap-2 mt-2 pt-2 border-top-quinary">
                                 <div className="text-base font-semibold font-color-primary">
-                                    Full text of your PDFs
+                                    {t('Full text of your PDFs')}
                                 </div>
                                 <div className="text-sm font-color-secondary" data-testid="fulltext-coverage">
                                     {embeddingReady
                                         ? fulltextCoverage
-                                        : 'Not indexed while the embedding provider cannot be used (see above).'}
+                                        : t('Not indexed while the embedding provider cannot be used (see above).')}
                                 </div>
 
                                 <label className="display-flex flex-row items-center gap-2 text-sm font-color-primary">
@@ -671,14 +664,14 @@ const ModelSettingsSection: React.FC = () => {
                                             setPref('fulltextIndexAuto', next);
                                         }}
                                     />
-                                    Keep this up to date by itself
+                                    {t('Keep this up to date by itself')}
                                 </label>
 
                                 {embeddingReady && isIndexing && (
                                     <>
                                         <ProgressBar progress={fulltextPercent} />
                                         <div className="text-sm font-color-tertiary truncate">
-                                            {fulltext.current ?? 'Preparing…'}
+                                            {fulltext.current ?? t('Preparing…')}
                                         </div>
                                     </>
                                 )}
@@ -691,7 +684,7 @@ const ModelSettingsSection: React.FC = () => {
                                                 style={{ padding: '3px 6px' }}
                                                 onClick={() => stopFulltext()}
                                             >
-                                                Stop
+                                                {t('Stop')}
                                             </Button>
                                         ) : (remainingDocs > 0 || fulltext.skipped === 0) && (
                                             <Button
@@ -701,8 +694,8 @@ const ModelSettingsSection: React.FC = () => {
                                                 disabled={remainingDocs === 0}
                                             >
                                                 {remainingDocs > 0
-                                                    ? `Index ${remainingDocs} document${remainingDocs === 1 ? '' : 's'}`
-                                                    : 'Everything is indexed'}
+                                                    ? tn(remainingDocs, 'Index {count} document', 'Index {count} documents')
+                                                    : t('Everything is indexed')}
                                             </Button>
                                         )}
                                         {!isIndexing && fulltext.skipped > 0 && (
@@ -711,7 +704,7 @@ const ModelSettingsSection: React.FC = () => {
                                                 style={{ padding: '3px 6px' }}
                                                 onClick={() => void startFulltext({ retryFailed: true })}
                                             >
-                                                {`Retry the ${fulltext.skipped} that could not be read`}
+                                                {t('Retry the {skipped} that could not be read', { skipped: fulltext.skipped })}
                                             </Button>
                                         )}
                                     </div>
@@ -730,10 +723,9 @@ const ModelSettingsSection: React.FC = () => {
                                             .map((f) => `${f.title}: ${f.message}`)
                                             .join('\n')}
                                     >
-                                        {`${unreadable} could not be read`}
                                         {fulltext.failures[0]
-                                            ? ` — ${fulltext.failures[0].message}`
-                                            : ' this session; they are left out until Zotero restarts or you retry them.'}
+                                            ? t('{unreadable} could not be read — {reason}', { unreadable, reason: fulltext.failures[0].message })
+                                            : t('{unreadable} could not be read this session; they are left out until Zotero restarts or you retry them.', { unreadable })}
                                     </span>
                                 )}
                                 {fulltext.error && (
@@ -743,39 +735,30 @@ const ModelSettingsSection: React.FC = () => {
                                 )}
 
                                 <Note>
-                                    Searching inside papers needs each one embedded page by page,
-                                    which costs about as much as everything else here put together.
-                                    Left on, it runs a little after launch and again a few seconds
-                                    after you add papers, reading only the papers not indexed yet — so
-                                    a paper you add today becomes searchable without you doing
-                                    anything. It stops when you ask and picks up where it left off.
-                                    Until it finishes, a full-text search says how much of your
-                                    library it actually looked at.
+                                    {t('Searching inside papers needs each one embedded page by page, which costs about as much as everything else here put together. Left on, it runs a little after launch and again a few seconds after you add papers, reading only the papers not indexed yet — so a paper you add today becomes searchable without you doing anything. It stops when you ask and picks up where it left off. Until it finishes, a full-text search says how much of your library it actually looked at.')}
                                 </Note>
                             </div>
 
                             <div className="display-flex flex-col gap-2 mt-2 pt-2 border-top-quinary" data-testid="page-image-index">
                                 <div className="text-base font-semibold font-color-primary">
-                                    Figures in your PDFs
+                                    {t('Figures in your PDFs')}
                                 </div>
                                 {!embeddingReady ? (
                                     <div className="text-sm font-color-secondary">
-                                        Not indexed while the embedding provider cannot be used (see above).
+                                        {t('Not indexed while the embedding provider cannot be used (see above).')}
                                     </div>
                                 ) : !pageImageProvider() ? (
                                     <div className="text-sm font-color-secondary">
-                                        Finding a figure by describing it needs an embedding model that also reads
-                                        pictures: Google Gemini or Ollama (EmbeddingGemma 2). OpenAI embeds text
-                                        only.
+                                        {t('Finding a figure by describing it needs an embedding model that also reads pictures: Google Gemini or Ollama (EmbeddingGemma 2). OpenAI embeds text only.')}
                                     </div>
                                 ) : (
                                     <>
                                         <div className="text-sm font-color-secondary">
                                             {pageImages.status === 'indexing'
-                                                ? `Rendering pages · this pass: ${pageImages.done}/${pageImages.total} PDFs`
+                                                ? t('Rendering pages · this pass: {done}/{total} PDFs', { done: pageImages.done, total: pageImages.total })
                                                 : pageImages.counted
-                                                    ? `${pageImages.indexed} of ${pageImages.library} PDFs indexed as pictures · ${pageImages.pages.toLocaleString()} pages.`
-                                                    : 'Counting…'}
+                                                    ? t('{indexed} of {library} PDFs indexed as pictures · {pages} pages.', { indexed: pageImages.indexed, library: pageImages.library, pages: pageImages.pages.toLocaleString() })
+                                                    : t('Counting…')}
                                         </div>
                                         <label className="display-flex flex-row items-center gap-2 text-sm font-color-primary">
                                             <input
@@ -787,7 +770,7 @@ const ModelSettingsSection: React.FC = () => {
                                                     setPref('pageImageIndexAuto', next);
                                                 }}
                                             />
-                                            Index every page as a picture too, after the full text
+                                            {t('Index every page as a picture too, after the full text')}
                                         </label>
                                         {pageImages.status === 'indexing' && (
                                             <>
@@ -795,14 +778,14 @@ const ModelSettingsSection: React.FC = () => {
                                                     progress={pageImages.total > 0 ? Math.round((pageImages.done / pageImages.total) * 100) : 0}
                                                 />
                                                 <div className="text-sm font-color-tertiary truncate">
-                                                    {pageImages.current ?? 'Preparing…'}
+                                                    {pageImages.current ?? t('Preparing…')}
                                                 </div>
                                             </>
                                         )}
                                         <div className="display-flex flex-row items-center gap-2 flex-wrap">
                                             {pageImages.status === 'indexing' ? (
                                                 <Button variant="outline" style={{ padding: '3px 6px' }} onClick={() => stopPageImages()}>
-                                                    Stop
+                                                    {t('Stop')}
                                                 </Button>
                                             ) : (
                                                 <>
@@ -814,8 +797,8 @@ const ModelSettingsSection: React.FC = () => {
                                                             disabled={pageImages.counted && imagesRemaining === 0}
                                                         >
                                                             {pageImages.counted && imagesRemaining === 0
-                                                                ? 'Every PDF is indexed'
-                                                                : `Index ${imagesRemaining} PDF${imagesRemaining === 1 ? '' : 's'}`}
+                                                                ? t('Every PDF is indexed')
+                                                                : tn(imagesRemaining, 'Index {count} PDF', 'Index {count} PDFs')}
                                                         </Button>
                                                     )}
                                                     {pageImages.skipped > 0 && (
@@ -824,7 +807,7 @@ const ModelSettingsSection: React.FC = () => {
                                                             style={{ padding: '3px 6px' }}
                                                             onClick={() => void startPageImages({ retryFailed: true })}
                                                         >
-                                                            {`Retry the ${pageImages.skipped} that could not be rendered`}
+                                                            {t('Retry the {skipped} that could not be rendered', { skipped: pageImages.skipped })}
                                                         </Button>
                                                     )}
                                                 </>
@@ -833,7 +816,7 @@ const ModelSettingsSection: React.FC = () => {
                                         {pageImages.skipped > 0 && pageImages.status !== 'indexing' && (
                                             <div className="display-flex flex-col gap-1 text-sm" data-testid="page-image-failures">
                                                 <span className="font-color-error">
-                                                    {`${pageImages.skipped} could not be rendered on this computer`}
+                                                    {t('{skipped} could not be rendered on this computer', { skipped: pageImages.skipped })}
                                                     {imageFailureReasons.length === 1
                                                         ? ` — ${asSentence(imageFailureReasons[0].message)}`
                                                         : ':'}
@@ -845,7 +828,7 @@ const ModelSettingsSection: React.FC = () => {
                                                 ))}
                                                 <details>
                                                     <summary className="font-color-secondary cursor-pointer">
-                                                        {pageImages.skipped === 1 ? 'Which PDF' : `Which ${pageImages.skipped} PDFs`}
+                                                        {pageImages.skipped === 1 ? t('Which PDF') : t('Which {skipped} PDFs', { skipped: pageImages.skipped })}
                                                     </summary>
                                                     <div className="display-flex flex-col gap-1 mt-1 ml-4">
                                                         {pageImages.failures.map((failure, index) => (
@@ -860,19 +843,14 @@ const ModelSettingsSection: React.FC = () => {
                                         )}
                                         {pageImages.stopped && pageImages.status !== 'indexing' && !pageImages.paused && (
                                             <span className="text-sm font-color-secondary" role="status">
-                                                Stopped. It does not start again by itself until you press Index or restart Zotero.
+                                                {t('Stopped. It does not start again by itself until you press Index or restart Zotero.')}
                                             </span>
                                         )}
                                         {pageImages.error && (
                                             <span className="text-sm font-color-error" role="alert">{pageImages.error}</span>
                                         )}
                                         <Note>
-                                            Each page is rendered as a picture and turned into one vector — the picture
-                                            itself is not kept — so the agent can find a figure by what it shows, then
-                                            look at the page before answering. The text always goes first: search works
-                                            while pages are still being added, and a paper added meanwhile is read for
-                                            its words before its pages. Google charges about $0.12 per 1,000 pages;
-                                            EmbeddingGemma 2 runs here, free.
+                                            {t('Each page is rendered as a picture and turned into one vector — the picture itself is not kept — so the agent can find a figure by what it shows, then look at the page before answering. The text always goes first: search works while pages are still being added, and a paper added meanwhile is read for its words before its pages. Google charges about $0.12 per 1,000 pages; EmbeddingGemma 2 runs here, free.')}
                                         </Note>
                                     </>
                                 )}

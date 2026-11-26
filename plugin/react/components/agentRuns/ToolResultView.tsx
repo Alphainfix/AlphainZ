@@ -10,6 +10,7 @@ import { AnnotationListResultView } from './toolResultViews/AnnotationListResult
 import { AttachmentSearchResultView } from './toolResultViews/AttachmentSearchResultView';
 import { UserQuestionResultView } from './toolResultViews/UserQuestionResultView';
 import { BatchOperationResultView } from './toolResultViews/BatchOperationResultView';
+import { t } from '../../../src/utils/i18n';
 
 interface ToolResultViewProps {
     result: ToolReturnPart;
@@ -79,7 +80,7 @@ const GenericResultView: React.FC<{ content: unknown }> = ({ content }) => {
             return content;
         }
         if (content === null || content === undefined) {
-            return 'No result';
+            return t('No result');
         }
         try {
             return JSON.stringify(content, null, 2);
@@ -101,7 +102,7 @@ const GenericResultView: React.FC<{ content: unknown }> = ({ content }) => {
                 </div>
             ) : (
                 <div className="font-color-secondary">
-                    Tool results not available
+                    {t('Tool results not available')}
                 </div>
             )}
         </div>

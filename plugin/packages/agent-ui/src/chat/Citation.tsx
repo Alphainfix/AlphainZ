@@ -12,6 +12,7 @@ import { useCitationMarker } from './useCitationMarker';
 import { getHost } from '../host';
 import { useCitationViewModel } from './useCitationViewModel';
 import { Icon, LibraryIcon, PdfIcon, FileIcon, GlobalSearchIcon, NoteIcon, HighlighterIcon, TextAlignLeftIcon, ExternalLinkIcon } from '../icons';
+import { t } from '../i18n';
 const TOOLTIP_WIDTH = '250px';
 
 /**
@@ -141,8 +142,8 @@ const Citation: React.FC<CitationProps> = (props) => {
             displayText = '?';
         } else {
             displayText = consecutive
-                ? (hasLocatorDisplay ? `p.${pagesDisplay}` : 'Ibid')
-                : (hasLocatorDisplay ? `${citation}, p.${pagesDisplay}` : citation);
+                ? (hasLocatorDisplay ? t('p.{pages}', { pages: pagesDisplay }) : t('Ibid'))
+                : (hasLocatorDisplay ? t('{citation}, p.{pages}', { citation, pages: pagesDisplay }) : citation);
         }
     } else {
         // Numeric markers should be stable and independent of citationMetadata.
@@ -273,14 +274,14 @@ const Citation: React.FC<CitationProps> = (props) => {
                 <span className="flex-1" />
                 {hasLocatorDisplay && (
                     <span className="font-color-secondary text-sm" style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
-                        {`Page ${pagesDisplay}`}
+                        {t('Page {page}', { page: pagesDisplay })}
                     </span>
                 )}
                 {(!pages || pages.length === 0) && textLineLocation && (
                     <span className="font-color-secondary text-sm" style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
                         {textLineLocation.line_end && textLineLocation.line_end !== textLineLocation.line
-                            ? `Lines ${textLineLocation.line}–${textLineLocation.line_end}`
-                            : `Line ${textLineLocation.line}`}
+                            ? t('Lines {first}–{last}', { first: textLineLocation.line, last: textLineLocation.line_end })
+                            : t('Line {line}', { line: textLineLocation.line })}
                     </span>
                 )}
             </span>
@@ -313,7 +314,7 @@ const Citation: React.FC<CitationProps> = (props) => {
                             </a>
                         ) : (
                             <span className="text-sm font-color-secondary">
-                                View details
+                                {t('View details')}
                             </span>
                         )}
                     </span>
@@ -324,7 +325,7 @@ const Citation: React.FC<CitationProps> = (props) => {
                     <span className="display-flex flex-row items-center gap-15">
                         <Icon icon={ExternalLinkIcon} className="font-color-secondary scale-90" />
                         <span className="text-sm font-color-secondary">
-                            Opens external file
+                            {t('Opens external file')}
                         </span>
                     </span>
                 </span>
@@ -334,7 +335,7 @@ const Citation: React.FC<CitationProps> = (props) => {
                     <span className="display-flex flex-row items-center gap-15">
                         <Icon icon={NoteIcon} className="font-color-secondary" />
                         <span className="text-sm font-color-secondary">
-                            Opens note
+                            {t('Opens note')}
                         </span>
                     </span>
                 </span>
@@ -344,7 +345,7 @@ const Citation: React.FC<CitationProps> = (props) => {
                     <span className="display-flex flex-row items-center gap-15">
                         <Icon icon={HighlighterIcon} className="font-color-secondary" />
                         <span className="text-sm font-color-secondary">
-                            Opens annotation in PDF
+                            {t('Opens annotation in PDF')}
                         </span>
                     </span>
                 </span>
@@ -355,10 +356,10 @@ const Citation: React.FC<CitationProps> = (props) => {
                         <Icon icon={PdfIcon} style={{ color: 'var(--tag-red-primary)' }} />
                         <span className="text-sm font-color-secondary">
                             {isEpubCitation
-                                ? (hasLocatorDisplay ? `Opens EPUB at page ${pagesDisplay}` : 'Opens EPUB at location')
+                                ? (hasLocatorDisplay ? t('Opens EPUB at page {page}', { page: pagesDisplay }) : t('Opens EPUB at location'))
                                 : hasBoundingBoxes
-                                    ? (hasLocatorDisplay ? `Highlights passage on page ${pagesDisplay}` : 'Highlights passage in PDF')
-                                    : (hasLocatorDisplay ? `Opens PDF on page ${pagesDisplay}` : 'Opens PDF at location')}
+                                    ? (hasLocatorDisplay ? t('Highlights passage on page {page}', { page: pagesDisplay }) : t('Highlights passage in PDF'))
+                                    : (hasLocatorDisplay ? t('Opens PDF on page {page}', { page: pagesDisplay }) : t('Opens PDF at location'))}
                         </span>
                     </span>
                 </span>
@@ -368,7 +369,7 @@ const Citation: React.FC<CitationProps> = (props) => {
                     <span className="display-flex flex-row items-center gap-15">
                         <Icon icon={TextAlignLeftIcon} className="font-color-secondary scale-90" />
                         <span className="text-sm font-color-secondary">
-                            Opens text file (external application)
+                            {t('Opens text file (external application)')}
                         </span>
                     </span>
                 </span>
@@ -378,7 +379,7 @@ const Citation: React.FC<CitationProps> = (props) => {
                     <span className="display-flex flex-row items-center gap-15">
                         <Icon icon={FileIcon} className="font-color-secondary" />
                         <span className="text-sm font-color-secondary">
-                            {hasSnapshotSymbolicLocator ? 'Opens Snapshot at location' : 'Opens Snapshot'}
+                            {hasSnapshotSymbolicLocator ? t('Opens Snapshot at location') : t('Opens Snapshot')}
                         </span>
                     </span>
                 </span>
@@ -394,13 +395,13 @@ const Citation: React.FC<CitationProps> = (props) => {
                         {isPdfCitation ? (
                             <>
                                 <Icon icon={PdfIcon} style={{ color: 'var(--tag-red-primary)' }} />
-                                <span className="text-sm font-color-secondary">Opens PDF</span>
+                                <span className="text-sm font-color-secondary">{t('Opens PDF')}</span>
                             </>
                         ) : (
                             <>
                                 <Icon icon={LibraryIcon} className="font-color-secondary" />
                                 <span className="text-sm font-color-secondary">
-                                    Reveals item in library
+                                    {t('Reveals item in library')}
                                 </span>
                             </>
                         )}
@@ -424,7 +425,7 @@ const Citation: React.FC<CitationProps> = (props) => {
                 :
                 isInvalid ?
                     <Tooltip
-                        content="Invalid citation"
+                        content={t('Invalid citation')}
                         width="104px"
                         singleLine
                     >

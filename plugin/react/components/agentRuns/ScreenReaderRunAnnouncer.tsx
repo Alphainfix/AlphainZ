@@ -4,6 +4,7 @@ import { activeRunAtom, threadRunsAtom } from '@beaver/agent-core/run-state/atom
 import { AgentRun } from '@beaver/agent-core/agents/types';
 import { buildRunCompletionAnnouncement, extractAssistantResponseText } from '../../utils/screenReaderAnnouncements';
 import { getPref } from '../../../src/utils/prefs';
+import { t } from '../../../src/utils/i18n';
 
 interface ScreenReaderRunAnnouncerProps {
     inputRef?: React.RefObject<HTMLElement | null>;
@@ -192,7 +193,7 @@ export const ScreenReaderRunAnnouncer: React.FC<ScreenReaderRunAnnouncerProps> =
             }
             announcingSurfaceByRunId.delete(oldest);
         }
-        announceStatus('Message sent. AlphainZ is generating a response.');
+        announceStatus(t('Message sent. AlphainZ is generating a response.'));
     };
 
     const focusResponseReader = (run: AgentRun) => {
@@ -208,7 +209,7 @@ export const ScreenReaderRunAnnouncer: React.FC<ScreenReaderRunAnnouncerProps> =
 
         const responseText = run.status === 'completed' ? extractAssistantResponseText(run) : '';
         const message = responseText
-            ? `AlphainZ response: ${responseText} End of response. Press Enter to message AlphainZ.`
+            ? t('AlphainZ response: {response} End of response. Press Enter to message AlphainZ.', { response: responseText })
             : buildRunCompletionAnnouncement(run);
         if (!message) {
             return;

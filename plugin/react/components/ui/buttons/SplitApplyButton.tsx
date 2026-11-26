@@ -3,6 +3,7 @@ import Button from '@beaver/agent-ui/primitives/Button';
 import MenuButton from '@beaver/agent-ui/primitives/MenuButton';
 import { MenuItem } from '@beaver/agent-ui/primitives/ContextMenu';
 import { ArrowDownIcon } from '../../icons/icons';
+import { t } from '../../../../src/utils/i18n';
 
 interface SplitApplyButtonProps {
     onApply: () => void;
@@ -30,9 +31,9 @@ const SplitApplyButton: React.FC<SplitApplyButtonProps> = ({
     onApplyAll,
     loading = false,
     disabled = false,
-    primaryLabel = 'Apply',
-    applyAllLabel = 'Allow this action group for this run',
-    applyAllScope = 'Similar actions',
+    primaryLabel = t('Apply'),
+    applyAllLabel = t('Allow this action group for this run'),
+    applyAllScope = t('Similar actions'),
 }) => {
     const menuItems: MenuItem[] = [
         {
@@ -41,7 +42,7 @@ const SplitApplyButton: React.FC<SplitApplyButtonProps> = ({
             customContent: (
                 <div className="display-flex flex-col min-w-0" style={{ lineHeight: 1.25 }}>
                     <div className="text-base font-medium font-color-primary">
-                        Allow for this run
+                        {t('Allow for this run')}
                     </div>
                     <div
                         className="text-base font-color-secondary"
@@ -78,7 +79,7 @@ const SplitApplyButton: React.FC<SplitApplyButtonProps> = ({
                 icon={ArrowDownIcon}
                 iconClassName="scale-11"
                 disabled={disabled || loading}
-                ariaLabel="More apply options"
+                ariaLabel={t('More apply options')}
                 showArrow={false}
                 maxWidth="180px"
                 // maxWidth="calc(100vw - 24px)"

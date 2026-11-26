@@ -164,6 +164,7 @@ if (!parsed.options.lib || nonEsLibs.length > 0) {
 // state a client reads and writes directly, and nothing else in the package
 // imports it. So is `transport/otp.ts`: a client's sign-in form calls it, and
 // nothing inside the package has a reason to send anyone a code.
+// `i18n/translate.ts` too: a client installs its translator there.
 const entryPaths = [
   "src/globals.d.ts",
   "src/protocol/agentProtocol.ts",
@@ -189,6 +190,7 @@ const entryPaths = [
   "src/run-state/runResumeHelpers.ts",
   "src/run-state/loadThreadRuns.ts",
   "src/run-state/toolLabels.ts",
+  "src/i18n/translate.ts",
   "src/run-state/pendingQuestions.ts",
   "src/run-state/pendingCreditConfirmations.ts",
   "src/run-state/pendingBatchApprovals.ts",

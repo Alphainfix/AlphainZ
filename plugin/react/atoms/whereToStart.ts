@@ -19,6 +19,7 @@ import { ensurePromptActionTokens, getActionCommand } from '@beaver/agent-ui/com
 import { PromptAction } from '@beaver/agent-core/agents/types';
 import { ChargingPermissions } from '@beaver/agent-core/protocol/agentProtocol';
 import { logger } from '@beaver/agent-core/platform/logger';
+import { t } from '../../src/utils/i18n';
 
 // Built-in action ids the launcher maps to.
 const START_PROJECT = 'builtin-start-project';
@@ -140,12 +141,12 @@ function makeGlobalOption(
     return {
         actionId: id,
         targetType: 'global',
-        title: action?.title ?? id,
-        description: action?.description ?? '',
+        title: action?.title ? t(action.title) : id,
+        description: action?.description ? t(action.description) : '',
         requiresTopic,
         requiresWebSearch: WEB_SEARCH_ACTIONS.has(id),
         argumentHintPlaceholder: requiresTopic
-            ? (action?.argumentHint ?? 'Describe your first task…')
+            ? t(action?.argumentHint ?? 'Describe your first task…')
             : undefined,
     };
 }

@@ -79,6 +79,8 @@ import { isOllamaEmbeddingModel, normalizeOllamaBase, onOllamaStatus, type Ollam
 import { OllamaGuide, refreshOllamaStatus } from './OllamaGuide';
 import { VENDORS, type KeyPrefName, type Vendor } from './vendors';
 import { SectionDescription, SectionHeader, SettingsGroup } from './components/SettingsElements';
+import { t, tn } from '../../../src/utils/i18n';
+import { tr } from '../../utils/i18nNodes';
 
 // ---------------------------------------------------------------------------
 // Small shared pieces
@@ -103,19 +105,22 @@ const choiceInUse = () => retireChoice(readPref('llmProvider'), readPref('llmMod
 function removalConsequence(providerIds: readonly string[]): string {
     if (!providerIds.includes(choiceInUse().provider)) return '';
     const next = modelAfterRemoving(providerIds);
-    if (!next) return '\n\nIt is the provider in use and no other provider is set up, so no model is selected until you add one.';
+    if (!next) return '\n\n' + t('It is the provider in use and no other provider is set up, so no model is selected until you add one.');
     // The model choice is among the settings that sync; keys and providers are not.
     const synced = conversationSyncMode() !== 'off'
-        ? ' With settings sync on, your other computers switch to it too, so it has to be set up on each of them.'
+        ? ' ' + t('With settings sync on, your other computers switch to it too, so it has to be set up on each of them.')
         : '';
-    return `\n\nIt is the provider in use, so the sidebar switches to ${next.name}.${synced}`;
+    return '\n\n' + t('It is the provider in use, so the sidebar switches to {name}.', { name: next.name }) + synced;
 }
 
 /** A Test's outcome as the card shows it, naming the model it asked. */
 function testOutcome(result: VerifyResult, model: string, cancelled: boolean): Outcome {
-    if (cancelled) return { status: 'idle', message: 'Test cancelled.' };
+    if (cancelled) return { status: 'idle', message: t('Test cancelled.') };
     if (!result.ok) return { status: 'error', message: result.message };
-    return { status: 'ok', message: model ? `${result.message.replace(/\.$/, '')} with ${model}.` : result.message };
+    return {
+        status: 'ok',
+        message: model ? t('{message} with {model}.', { message: result.message.replace(/[.。]$/, ''), model }) : result.message,
+    };
 }
 
 const OutcomeLine: React.FC<{ outcome?: Outcome }> = ({ outcome }) =>
@@ -139,8 +144,8 @@ const Hint: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 export function describeVerdict(verdict: VisionProbeVerdict): string {
     const when = new Date(verdict.checkedAt).toLocaleString();
     return verdict.seesImages
-        ? `Reads figures — checked ${when}.`
-        : `Does not read figures — checked ${when} (${verdict.detail}).`;
+        ? t('Reads figures — checked {when}.', { when })
+        : t('Does not read figures — checked {when} ({detail}).', { when, detail: verdict.detail });
 }
 
 const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
@@ -159,19 +164,19 @@ const CardHeader: React.FC<{
     onEdit: () => void;
     onRemove?: () => void;
     removeLabel?: string;
-}> = ({ title, badge, configured, editing, onEdit, onRemove, removeLabel = 'Remove' }) => (
+}> = ({ title, badge, configured, editing, onEdit, onRemove, removeLabel = t('Remove') }) => (
     <div className="display-flex flex-row items-center gap-2" data-testid="provider-card-header">
         <span className="text-base font-semibold font-color-primary">{title}</span>
         <span className="text-xs font-color-tertiary px-1 border-quinary rounded-sm" style={{ fontFamily: 'monospace' }}>{badge}</span>
         <span
-            aria-label={configured ? 'Configured' : 'Not configured'}
-            title={configured ? 'Configured' : 'Not configured'}
+            aria-label={configured ? t('Configured') : t('Not configured')}
+            title={configured ? t('Configured') : t('Not configured')}
             style={{ width: 8, height: 8, borderRadius: 4, background: configured ? 'var(--accent-green, #3fa24a)' : 'var(--fill-quinary, #bbb)', display: 'inline-block' }}
         />
         <span className="flex-1" />
         {!editing && (
-            <Button variant="outline" style={{ padding: '2px 8px' }} onClick={onEdit} ariaLabel={`Edit ${title}`}>
-                Edit
+            <Button variant="outline" style={{ padding: '2px 8px' }} onClick={onEdit} ariaLabel={t('Edit {title}', { title })}>
+                {t('Edit')}
             </Button>
         )}
         {!editing && onRemove && (
@@ -250,47 +255,47 @@ const TuningFields: React.FC<{
     fromPreset: boolean;
     onChange: (patch: Partial<CatalogueRow>) => void;
 }> = ({ row, defaults, fromPreset, onChange }) => {
-    const name = row.id || 'this model';
+    const name = row.id || t('this model');
     const tiers = rowTiers(row, defaults);
     const toggle = (tier: ThinkingTier, on: boolean) =>
-        onChange({ efforts: THINKING_TIERS.filter((t) => (t === tier ? on : tiers.includes(t))) });
+        onChange({ efforts: THINKING_TIERS.filter((level) => (level === tier ? on : tiers.includes(level))) });
     const ceiling = defaults.outputCeiling;
     const tuned = row.efforts !== undefined || row.contextWindow !== undefined || row.maxOutputTokens !== undefined;
     return (
         <div className="display-flex flex-col gap-1" data-testid="model-tuning">
-            <div className="display-flex flex-row items-center gap-2 flex-wrap" role="group" aria-label={`Thinking settings ${name} takes`}>
-                <span className="text-sm font-color-primary">Thinking</span>
+            <div className="display-flex flex-row items-center gap-2 flex-wrap" role="group" aria-label={t('Thinking settings {name} takes', { name })}>
+                <span className="text-sm font-color-primary">{t('Thinking')}</span>
                 {THINKING_TIERS.map((tier) => (
                     <label key={tier} className="display-flex flex-row items-center gap-05 text-sm font-color-primary">
                         <input
                             type="checkbox"
                             checked={tiers.includes(tier)}
                             onChange={(e) => toggle(tier, e.target.checked)}
-                            aria-label={`${name} takes ${THINKING_TIER_NAMES[tier]}`}
+                            aria-label={t('{name} takes {value}', { name, value: t(THINKING_TIER_NAMES[tier]) })}
                         />
-                        {THINKING_TIER_NAMES[tier]}
+                        {t(THINKING_TIER_NAMES[tier])}
                     </label>
                 ))}
             </div>
             {tiers.length === 0 && (
-                <span className="text-xs font-color-tertiary">None ticked: no thinking setting is sent, and the composer offers none.</span>
+                <span className="text-xs font-color-tertiary">{t('None ticked: no thinking setting is sent, and the composer offers none.')}</span>
             )}
             <div className="display-flex flex-row items-center gap-3 flex-wrap">
                 <label className="display-flex flex-row items-center gap-1 text-sm font-color-primary">
-                    Context window
+                    {t('Context window')}
                     <input
                         type="text"
                         inputMode="numeric"
                         value={row.contextWindow ?? ''}
                         onChange={(e) => onChange({ contextWindow: typedTokens(e.target.value) })}
-                        placeholder={defaults.contextWindow ? tokens(defaults.contextWindow) : 'Not set'}
+                        placeholder={defaults.contextWindow ? tokens(defaults.contextWindow) : t('Not set')}
                         className="p-1 m-0 preference-input text-sm"
                         style={{ width: '7.5em' }}
-                        aria-label={`Context window of ${name}, in tokens`}
+                        aria-label={t('Context window of {name}, in tokens', { name })}
                     />
                 </label>
                 <label className="display-flex flex-row items-center gap-1 text-sm font-color-primary">
-                    Max output
+                    {t('Max output')}
                     <input
                         type="text"
                         inputMode="numeric"
@@ -299,7 +304,7 @@ const TuningFields: React.FC<{
                         placeholder={defaults.maxOutputTokens ? tokens(defaults.maxOutputTokens) : ''}
                         className="p-1 m-0 preference-input text-sm"
                         style={{ width: '6.5em' }}
-                        aria-label={`Most output one answer from ${name} may use, in tokens`}
+                        aria-label={t('Most output one answer from {name} may use, in tokens', { name })}
                     />
                 </label>
                 {fromPreset && tuned && (
@@ -307,17 +312,17 @@ const TuningFields: React.FC<{
                         type="button"
                         className="bg-transparent border-none p-0 text-sm font-color-secondary cursor-pointer"
                         onClick={() => onChange({ efforts: undefined, contextWindow: undefined, maxOutputTokens: undefined })}
-                        aria-label={`Use the preset's values for ${name}`}
+                        aria-label={t('Use the preset\'s values for {name}', { name })}
                     >
-                        Use the preset's values
+                        {t('Use the preset\'s values')}
                     </button>
                 )}
             </div>
             <span className="text-xs font-color-tertiary">
-                {'A long chat is summarized before it fills 70% of the context window. Max output is this model\'s ceiling: '
-                    + 'Limits per Question can lower it, not raise it.'}
+                {t('A long chat is summarized before it fills 70% of the context window. Max output is this model\'s ceiling: '
+                    + 'Limits per Question can lower it, not raise it.')}
                 {ceiling && row.maxOutputTokens && row.maxOutputTokens > ceiling
-                    ? ` This endpoint accepts at most ${tokens(ceiling)}, so answers stop there.`
+                    ? ' ' + t('This endpoint accepts at most {tokens}, so answers stop there.', { tokens: tokens(ceiling) })
                     : ''}
             </span>
         </div>
@@ -364,7 +369,7 @@ const CatalogueEditor: React.FC<{
             const ids = await fetchModelIds(target, boundFetch as any);
             setFetched(ids);
             setPick(ids.find((id) => !rows.some((r) => r.id === id)) ?? ids[0] ?? '');
-            setFetchState({ status: 'ok', message: `${ids.length} model${ids.length === 1 ? '' : 's'} available.` });
+            setFetchState({ status: 'ok', message: tn(ids.length, '{count} model available.', '{count} models available.') });
         } catch (error) {
             setFetched(null);
             setFetchState({ status: 'error', message: error instanceof Error ? error.message : String(error) });
@@ -375,13 +380,13 @@ const CatalogueEditor: React.FC<{
         <div className="display-flex flex-col gap-2" data-testid="catalogue">
             <div className="display-flex flex-row items-center gap-3">
                 <div className="display-flex flex-col">
-                    <span className="text-sm font-semibold font-color-primary">Model catalogue</span>
-                    {customised && <span className="text-xs font-color-tertiary">Edited — the preset's list is replaced</span>}
+                    <span className="text-sm font-semibold font-color-primary">{t('Model catalogue')}</span>
+                    {customised && <span className="text-xs font-color-tertiary">{t('Edited — the preset\'s list is replaced')}</span>}
                 </div>
                 <span className="flex-1" />
                 {onRestoreDefaults && customised && (
                     <button type="button" className="bg-transparent border-none p-0 text-sm font-color-secondary cursor-pointer" onClick={onRestoreDefaults}>
-                        Restore default models
+                        {t('Restore default models')}
                     </button>
                 )}
                 <button
@@ -389,16 +394,16 @@ const CatalogueEditor: React.FC<{
                     className="bg-transparent border-none p-0 text-sm font-color-secondary cursor-pointer"
                     onClick={() => void fetchAll()}
                     disabled={fetchState.status === 'busy' || !target.baseUrl}
-                    aria-label="Fetch available models"
+                    aria-label={t('Fetch available models')}
                 >
-                    {fetchState.status === 'busy' ? 'Fetching…' : 'Fetch available models'}
+                    {fetchState.status === 'busy' ? t('Fetching…') : t('Fetch available models')}
                 </button>
             </div>
             {fetched && (
                 <div className="display-flex flex-row items-center gap-2">
-                    <select value={pick} onChange={(e) => setPick(e.target.value)} className="flex-1 p-1 m-0 preference-input text-sm" aria-label="Available models">
+                    <select value={pick} onChange={(e) => setPick(e.target.value)} className="flex-1 p-1 m-0 preference-input text-sm" aria-label={t('Available models')}>
                         {fetched.map((id) => (
-                            <option key={id} value={id}>{rows.some((r) => r.id === id) ? `${id} (listed)` : id}</option>
+                            <option key={id} value={id}>{rows.some((r) => r.id === id) ? t('{id} (listed)', { id }) : id}</option>
                         ))}
                     </select>
                     <Button
@@ -406,9 +411,9 @@ const CatalogueEditor: React.FC<{
                         style={{ padding: '2px 8px' }}
                         disabled={!pick || rows.some((r) => r.id === pick)}
                         onClick={() => onChange([...rows, { providerId: newRowProviderId, id: pick, label: '' }])}
-                        ariaLabel={`Add ${pick} to the catalogue`}
+                        ariaLabel={t('Add {pick} to the catalogue', { pick })}
                     >
-                        Add
+                        {t('Add')}
                     </Button>
                 </div>
             )}
@@ -425,30 +430,32 @@ const CatalogueEditor: React.FC<{
                                 type="text"
                                 value={row.id}
                                 onChange={(e) => update(index, { id: e.target.value.trim() })}
-                                placeholder="Model id, exactly as the endpoint spells it"
+                                placeholder={t('Model id, exactly as the endpoint spells it')}
                                 className="flex-1 p-1 m-0 preference-input text-sm"
-                                aria-label="Model id"
+                                aria-label={t('Model id')}
                             />
                             <input
                                 type="text"
                                 value={row.label}
                                 onChange={(e) => update(index, { label: e.target.value })}
-                                placeholder="Display name"
+                                placeholder={t('Display name')}
                                 className="p-1 m-0 preference-input text-sm"
                                 style={{ width: '36%' }}
-                                aria-label="Model display name"
+                                aria-label={t('Model display name')}
                             />
                             <IconButton
                                 icon={open[index] ? ArrowDownIcon : ArrowRightIcon}
                                 variant="ghost-secondary"
                                 onClick={() => setOpen((prev) => ({ ...prev, [index]: !prev[index] }))}
-                                ariaLabel={`${open[index] ? 'Hide' : 'Show'} details for ${row.id || 'this model'}`}
+                                ariaLabel={open[index]
+                                    ? t('Hide details for {name}', { name: row.id || t('this model') })
+                                    : t('Show details for {name}', { name: row.id || t('this model') })}
                             />
                             <IconButton
                                 icon={DeleteIcon}
                                 variant="ghost-secondary"
                                 onClick={() => onChange(rows.filter((_, i) => i !== index))}
-                                ariaLabel={`Remove model ${row.id || 'row'}`}
+                                ariaLabel={row.id ? t('Remove model {name}', { name: row.id }) : t('Remove this row')}
                             />
                         </div>
                         {open[index] && (
@@ -460,7 +467,7 @@ const CatalogueEditor: React.FC<{
                                             checked={reads}
                                             onChange={(e) => update(index, { supportsVision: e.target.checked, checkNote: undefined })}
                                         />
-                                        Reads figures
+                                        {t('Reads figures')}
                                     </label>
                                     <Button
                                         variant="outline"
@@ -468,22 +475,22 @@ const CatalogueEditor: React.FC<{
                                         rightIcon={BUTTON_ICON[state.status]}
                                         onClick={() => void check(index)}
                                         disabled={state.status === 'busy' || !row.id.trim() || !target.baseUrl}
-                                        ariaLabel={`Check whether ${row.id} reads figures`}
+                                        ariaLabel={t('Check whether {id} reads figures', { id: row.id })}
                                     >
-                                        Check
+                                        {t('Check')}
                                     </Button>
                                     <span className="flex-1" />
                                     {inUse ? (
-                                        <span className="text-sm font-color-secondary">In use</span>
+                                        <span className="text-sm font-color-secondary">{t('In use')}</span>
                                     ) : (
                                         <Button
                                             variant="outline"
                                             style={{ padding: '2px 6px' }}
                                             onClick={() => onUse(row)}
                                             disabled={!row.id.trim()}
-                                            ariaLabel={`Use ${row.id}`}
+                                            ariaLabel={t('Use {id}', { id: row.id })}
                                         >
-                                            Use
+                                            {t('Use')}
                                         </Button>
                                     )}
                                 </div>
@@ -507,9 +514,9 @@ const CatalogueEditor: React.FC<{
                     style={{ padding: '2px 6px' }}
                     rightIcon={PlusSignIcon}
                     onClick={() => onChange([...rows, { providerId: newRowProviderId, id: '', label: '' }])}
-                    ariaLabel="Add model"
+                    ariaLabel={t('Add model')}
                 >
-                    Add model
+                    {t('Add model')}
                 </Button>
             </div>
         </div>
@@ -700,7 +707,7 @@ const BuiltinProviderCard: React.FC<{
         if (result.ok && key) {
             keepNewKey(key);
             setDraft((d) => (d.key.trim() === key ? { ...d, key: '' } : d));
-            outcome.message = `${outcome.message} The key is saved.`;
+            outcome.message = `${outcome.message} ${t('The key is saved.')}`;
         }
         failedKeyRef.current = outcome.status === 'error' ? key : '';
         setTest(outcome);
@@ -709,9 +716,10 @@ const BuiltinProviderCard: React.FC<{
     const remove = () => {
         const ids = vendor.providers.map((entry) => entry.id);
         if (!confirmDialog(
-            'Remove this provider?',
-            `Forget the ${vendor.label} key and any catalogue edits on this computer? You can add it again later.${removalConsequence(ids)}`,
-            'Remove',
+            t('Remove this provider?'),
+            t('Forget the {label} key and any catalogue edits on this computer? You can add it again later.', { label: t(vendor.label) })
+                + removalConsequence(ids),
+            t('Remove'),
         )) return;
         setPref(vendor.keyPref, '');
         const overrides = readProviderOverrides();
@@ -731,18 +739,18 @@ const BuiltinProviderCard: React.FC<{
 
     return (
         <div className="display-flex flex-col gap-2 p-2 border-quinary rounded-md" data-testid="provider-card" data-provider={vendor.id}>
-            <CardHeader title={vendor.label} badge={vendor.id} configured={!!storedKey} editing={editing} onEdit={onEdit} onRemove={remove} />
+            <CardHeader title={t(vendor.label)} badge={vendor.id} configured={!!storedKey} editing={editing} onEdit={onEdit} onRemove={remove} />
             {editing && (
                 <div className="display-flex flex-col gap-2 mt-1">
-                    <Field label="API key">
+                    <Field label={t('API key')}>
                         <div className="display-flex flex-row items-start gap-2">
                             <input
                                 type="password"
                                 value={draft.key}
                                 onChange={(e) => { setDraft({ ...draft, key: e.target.value }); setTest({ status: 'idle' }); }}
-                                placeholder={storedKey ? 'Configured — leave empty to keep it, or paste a new key' : 'Paste your key'}
+                                placeholder={storedKey ? t('Configured — leave empty to keep it, or paste a new key') : t('Paste your key')}
                                 className={`flex-1 p-1 m-0 preference-input text-sm ${test.status === 'error' ? 'border-error' : 'border-quinary'}`}
-                                aria-label={`${vendor.label} API key`}
+                                aria-label={t('{label} API key', { label: t(vendor.label) })}
                                 aria-invalid={test.status === 'error'}
                             />
                             {vendor.keyUrl && (
@@ -752,7 +760,7 @@ const BuiltinProviderCard: React.FC<{
                                     className="font-color-secondary text-sm"
                                     style={{ alignSelf: 'center' }}
                                 >
-                                    Get a key
+                                    {t('Get a key')}
                                 </a>
                             )}
                             <Button
@@ -761,23 +769,23 @@ const BuiltinProviderCard: React.FC<{
                                 rightIcon={BUTTON_ICON[test.status]}
                                 onClick={() => void runTest()}
                                 disabled={test.status === 'busy' || !effectiveKey}
-                                title={testModel ? `Sends one short request to ${testModel}` : undefined}
+                                title={testModel ? t('Sends one short request to {testModel}', { testModel }) : undefined}
                             >
-                                {test.status === 'ok' ? 'Works' : test.status === 'error' ? 'Failed' : 'Test'}
+                                {test.status === 'ok' ? t('Works') : test.status === 'error' ? t('Failed') : t('Test')}
                             </Button>
                             {test.status === 'busy' && (
                                 <Button
                                     variant="ghost-secondary"
                                     style={{ padding: '3px 6px' }}
                                     onClick={() => abortRef.current?.abort()}
-                                    ariaLabel={`Cancel the ${vendor.label} test`}
+                                    ariaLabel={t('Cancel the {label} test', { label: t(vendor.label) })}
                                 >
-                                    Cancel
+                                    {t('Cancel')}
                                 </Button>
                             )}
                         </div>
                         <OutcomeLine outcome={test} />
-                        {vendor.note && <Hint>{vendor.note}</Hint>}
+                        {vendor.note && <Hint>{t(vendor.note)}</Hint>}
                     </Field>
 
                     <button
@@ -787,19 +795,19 @@ const BuiltinProviderCard: React.FC<{
                         aria-expanded={advanced}
                     >
                         <Icon icon={advanced ? ArrowDownIcon : ArrowRightIcon} className="scale-90" />
-                        Custom settings
+                        {t('Custom settings')}
                     </button>
 
                     {advanced && (
                         <div className="display-flex flex-col gap-2 pl-2 border-left-quinary">
-                            <Field label="API address">
+                            <Field label={t('API address')}>
                                 <input
                                     type="text"
                                     value={draft.baseUrl}
                                     onChange={(e) => setDraft({ ...draft, baseUrl: e.target.value })}
                                     placeholder={preset.baseUrl}
                                     className="p-1 m-0 preference-input text-sm"
-                                    aria-label={`${vendor.label} API address`}
+                                    aria-label={t('{label} API address', { label: t(vendor.label) })}
                                 />
                             </Field>
                             <CatalogueEditor
@@ -817,11 +825,11 @@ const BuiltinProviderCard: React.FC<{
                     )}
 
                     <div className="display-flex flex-row items-center justify-end gap-2 mt-1">
-                        <Button variant="outline" style={{ padding: '3px 10px' }} onClick={cancel} ariaLabel={`Cancel editing ${vendor.label}`}>
-                            Cancel
+                        <Button variant="outline" style={{ padding: '3px 10px' }} onClick={cancel} ariaLabel={t('Cancel editing {label}', { label: t(vendor.label) })}>
+                            {t('Cancel')}
                         </Button>
-                        <Button variant="solid" style={{ padding: '3px 10px' }} onClick={save} ariaLabel={`Save ${vendor.label}`}>
-                            Save
+                        <Button variant="solid" style={{ padding: '3px 10px' }} onClick={save} ariaLabel={t('Save {label}', { label: t(vendor.label) })}>
+                            {t('Save')}
                         </Button>
                     </div>
                 </div>
@@ -934,12 +942,15 @@ const CustomProviderCard: React.FC<{
     };
 
     const remove = () => {
-        const label = endpoint.name || endpoint.baseUrl || 'this provider';
+        const label = endpoint.name || endpoint.baseUrl || t('this provider');
         const id = liveId();
         if (!isNew && !confirmDialog(
-            'Delete this provider?',
-            `Delete ${label} and the ${endpoint.models.length} model(s) under it? Its key is forgotten with it.${removalConsequence([customProviderId(id)])}`,
-            'Delete',
+            t('Delete this provider?'),
+            tn(endpoint.models.length,
+                'Delete {label} and the {count} model under it? Its key is forgotten with it.',
+                'Delete {label} and the {count} models under it? Its key is forgotten with it.',
+                { label }) + removalConsequence([customProviderId(id)]),
+            t('Delete'),
         )) return;
         writeCustomEndpoints(readCustomEndpoints().filter((e) => e.id !== id));
         releaseRemovedProviders([customProviderId(id)]);
@@ -958,37 +969,37 @@ const CustomProviderCard: React.FC<{
     return (
         <div className="display-flex flex-col gap-2 p-2 border-quinary rounded-md" data-testid="provider-card" data-provider={providerId}>
             <CardHeader
-                title={endpoint.name || endpoint.baseUrl || 'New provider'}
+                title={endpoint.name || endpoint.baseUrl || t('New provider')}
                 badge="custom"
                 configured={!!endpoint.baseUrl}
                 editing={editing}
                 onEdit={onEdit}
                 onRemove={remove}
-                removeLabel="Delete"
+                removeLabel={t('Delete')}
             />
             {editing && (
                 <div className="display-flex flex-col gap-2 mt-1">
-                    <Field label="Name">
+                    <Field label={t('Name')}>
                         <input
                             type="text"
                             value={draft.name}
                             onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-                            placeholder="e.g. My proxy"
+                            placeholder={t('e.g. My proxy')}
                             className="p-1 m-0 preference-input text-sm"
-                            aria-label="Provider name"
+                            aria-label={t('Provider name')}
                         />
                     </Field>
-                    <Field label="API address">
+                    <Field label={t('API address')}>
                         <input
                             type="text"
                             value={draft.baseUrl}
                             onChange={(e) => { setDraft({ ...draft, baseUrl: e.target.value }); setTest({ status: 'idle' }); }}
                             placeholder="https://api.example.com/v1"
                             className="p-1 m-0 preference-input text-sm"
-                            aria-label="Provider API address"
+                            aria-label={t('Provider API address')}
                         />
                     </Field>
-                    <Field label="API format">
+                    <Field label={t('API format')}>
                         <select
                             value={draft.wireFormat === 'openai-responses' ? 'openai-responses' : 'openai'}
                             onChange={(e) => {
@@ -996,34 +1007,33 @@ const CustomProviderCard: React.FC<{
                                 setTest({ status: 'idle' });
                             }}
                             className="p-1 m-0 preference-input text-sm"
-                            aria-label="API format"
+                            aria-label={t('API format')}
                         >
-                            <option value="openai">Chat Completions (/chat/completions)</option>
-                            <option value="openai-responses">Responses (/responses)</option>
+                            <option value="openai">{t('Chat Completions (/chat/completions)')}</option>
+                            <option value="openai-responses">{t('Responses (/responses)')}</option>
                         </select>
                         <Hint>
-                            Most compatible servers speak Chat Completions. Responses is OpenAI's newer API: choose it
-                            when the server offers it and the model should think while it uses tools.
+                            {t('Most compatible servers speak Chat Completions. Responses is OpenAI\'s newer API: choose it when the server offers it and the model should think while it uses tools.')}
                         </Hint>
                     </Field>
-                    <Field label="API key">
+                    <Field label={t('API key')}>
                         <div className="display-flex flex-row items-start gap-2">
                             <input
                                 type="password"
                                 value={draft.apiKey}
                                 onChange={(e) => { setDraft({ ...draft, apiKey: e.target.value }); setTest({ status: 'idle' }); }}
-                                placeholder="Leave empty for a server that takes none"
+                                placeholder={t('Leave empty for a server that takes none')}
                                 className={`flex-1 p-1 m-0 preference-input text-sm ${test.status === 'error' ? 'border-error' : 'border-quinary'}`}
-                                aria-label="Provider API key"
+                                aria-label={t('Provider API key')}
                             />
                             <select
                                 value={draft.authStyle}
                                 onChange={(e) => setDraft({ ...draft, authStyle: e.target.value === 'x-api-key' ? 'x-api-key' : 'bearer' })}
                                 className="p-1 m-0 preference-input text-sm"
-                                aria-label="How the key is sent"
+                                aria-label={t('How the key is sent')}
                             >
-                                <option value="bearer">Bearer token</option>
-                                <option value="x-api-key">X-Api-Key header</option>
+                                <option value="bearer">{t('Bearer token')}</option>
+                                <option value="x-api-key">{t('X-Api-Key header')}</option>
                             </select>
                             <Button
                                 variant="outline"
@@ -1031,18 +1041,18 @@ const CustomProviderCard: React.FC<{
                                 rightIcon={BUTTON_ICON[test.status]}
                                 onClick={() => void runTest()}
                                 disabled={test.status === 'busy' || !draft.baseUrl.trim() || !testModel}
-                                title={testModel ? `Sends one short request to ${testModel}` : 'Add a model first'}
+                                title={testModel ? t('Sends one short request to {testModel}', { testModel }) : t('Add a model first')}
                             >
-                                {test.status === 'ok' ? 'Works' : test.status === 'error' ? 'Failed' : 'Test'}
+                                {test.status === 'ok' ? t('Works') : test.status === 'error' ? t('Failed') : t('Test')}
                             </Button>
                             {test.status === 'busy' && (
                                 <Button
                                     variant="ghost-secondary"
                                     style={{ padding: '3px 6px' }}
                                     onClick={() => abortRef.current?.abort()}
-                                    ariaLabel="Cancel the test"
+                                    ariaLabel={t('Cancel the test')}
                                 >
-                                    Cancel
+                                    {t('Cancel')}
                                 </Button>
                             )}
                         </div>
@@ -1058,11 +1068,11 @@ const CustomProviderCard: React.FC<{
                         onUse={use}
                     />
                     <div className="display-flex flex-row items-center justify-end gap-2 mt-1">
-                        <Button variant="outline" style={{ padding: '3px 10px' }} onClick={isNew ? remove : onClose} ariaLabel="Cancel editing provider">
-                            Cancel
+                        <Button variant="outline" style={{ padding: '3px 10px' }} onClick={isNew ? remove : onClose} ariaLabel={t('Cancel editing provider')}>
+                            {t('Cancel')}
                         </Button>
-                        <Button variant="solid" style={{ padding: '3px 10px' }} onClick={() => { save(); onClose(); }} ariaLabel="Save provider">
-                            Save
+                        <Button variant="solid" style={{ padding: '3px 10px' }} onClick={() => { save(); onClose(); }} ariaLabel={t('Save provider')}>
+                            {t('Save')}
                         </Button>
                     </div>
                 </div>
@@ -1117,8 +1127,8 @@ const OllamaProviderCard: React.FC<{
             setTest({
                 status: 'error',
                 message: /abort/i.test(raw)
-                    ? `No answer from ${root} within 4 s. Is Ollama running?`
-                    : `Could not reach Ollama at ${root}. Is it running? (${raw.slice(0, 80)})`,
+                    ? t('No answer from {address} within 4 s. Is Ollama running?', { address: root })
+                    : t('Could not reach Ollama at {address}. Is it running? ({error})', { address: root, error: raw.slice(0, 80) }),
             });
             return;
         }
@@ -1128,11 +1138,11 @@ const OllamaProviderCard: React.FC<{
         setTest({
             status: chat.length > 0 ? 'ok' : 'error',
             message: chat.length > 0
-                ? `Found ${chat.length} chat model${chat.length === 1 ? '' : 's'}: ${chat.join(', ')}`
-                    + (embedding.length > 0 ? ` · used for indexing: ${embedding.join(', ')}` : '')
+                ? tn(chat.length, 'Found {count} chat model: {models}', 'Found {count} chat models: {models}', { models: chat.join(', ') })
+                    + (embedding.length > 0 ? ' · ' + t('used for indexing: {models}', { models: embedding.join(', ') }) : '')
                 : embedding.length > 0
-                    ? `Ollama has only ${embedding.join(', ')}, which is used for indexing and cannot chat — download a chat model below.`
-                    : 'Ollama is running but has no models yet — download one below.',
+                    ? t('Ollama has only {models}, which is used for indexing and cannot chat — download a chat model below.', { models: embedding.join(', ') })
+                    : t('Ollama is running but has no models yet — download one below.'),
         });
     };
 
@@ -1144,9 +1154,10 @@ const OllamaProviderCard: React.FC<{
 
     const remove = () => {
         if (!confirmDialog(
-            'Remove Ollama?',
-            `Forget the detected models on this computer? Ollama itself is not touched; you can add it again later.${removalConsequence(['ollama'])}`,
-            'Remove',
+            t('Remove Ollama?'),
+            t('Forget the detected models on this computer? Ollama itself is not touched; you can add it again later.')
+                + removalConsequence(['ollama']),
+            t('Remove'),
         )) return;
         setPref('ollamaModels', '[]');
         releaseRemovedProviders(['ollama']);
@@ -1157,10 +1168,10 @@ const OllamaProviderCard: React.FC<{
 
     return (
         <div className="display-flex flex-col gap-2 p-2 border-quinary rounded-md" data-testid="provider-card" data-provider="ollama">
-            <CardHeader title="Ollama (local)" badge="ollama" configured={models.length > 0} editing={editing} onEdit={onEdit} onRemove={remove} />
+            <CardHeader title={t('Ollama (local)')} badge="ollama" configured={models.length > 0} editing={editing} onEdit={onEdit} onRemove={remove} />
             {editing && (
                 <div className="display-flex flex-col gap-2 mt-1">
-                    <Field label="Address">
+                    <Field label={t('Address')}>
                         <div className="display-flex flex-row items-start gap-2">
                             <input
                                 id="alphain-ollama-base"
@@ -1169,7 +1180,7 @@ const OllamaProviderCard: React.FC<{
                                 onChange={(e) => { setBase(e.target.value); setPref('ollamaBaseUrl', e.target.value.trim()); setTest({ status: 'idle' }); }}
                                 placeholder="http://127.0.0.1:11434"
                                 className={`flex-1 p-1 m-0 preference-input text-sm ${test.status === 'error' ? 'border-error' : 'border-quinary'}`}
-                                aria-label="Ollama address"
+                                aria-label={t('Ollama address')}
                                 aria-invalid={test.status === 'error'}
                             />
                             <Button
@@ -1179,13 +1190,13 @@ const OllamaProviderCard: React.FC<{
                                 onClick={() => void detect()}
                                 disabled={test.status === 'busy'}
                             >
-                                {test.status === 'ok' ? 'Found' : test.status === 'error' ? 'Retry' : 'Detect models'}
+                                {test.status === 'ok' ? t('Found') : test.status === 'error' ? t('Retry') : t('Detect models')}
                             </Button>
                         </div>
                         <OutcomeLine outcome={test} />
                     </Field>
                     {(models.length > 0 || indexing.length > 0) && (
-                        <Field label="Installed models">
+                        <Field label={t('Installed models')}>
                             <div className="display-flex flex-col gap-1" data-testid="ollama-models">
                                 {models.map((model) => {
                                     const reads = ollamaModelVision(model, overrides) === true;
@@ -1195,16 +1206,16 @@ const OllamaProviderCard: React.FC<{
                                             <code className="font-color-primary">{model}</code>
                                             <span className="flex-1" />
                                             {saysVision && !reads && (
-                                                <span className="font-color-tertiary">Ollama says it reads images</span>
+                                                <span className="font-color-tertiary">{t('Ollama says it reads images')}</span>
                                             )}
                                             <label className="display-flex flex-row items-center gap-1 font-color-primary">
                                                 <input
                                                     type="checkbox"
                                                     checked={reads}
                                                     onChange={(e) => setReadsFigures(model, e.target.checked)}
-                                                    aria-label={`${model} reads figures`}
+                                                    aria-label={t('{model} reads figures', { model })}
                                                 />
-                                                Reads figures
+                                                {t('Reads figures')}
                                             </label>
                                         </div>
                                     );
@@ -1212,22 +1223,19 @@ const OllamaProviderCard: React.FC<{
                                 {indexing.map((model) => (
                                     <div key={model} className="display-flex flex-row items-center gap-2 text-sm">
                                         <code className="font-color-secondary">{model}</code>
-                                        <span className="font-color-tertiary">used for indexing, not for chat</span>
+                                        <span className="font-color-tertiary">{t('used for indexing, not for chat')}</span>
                                     </div>
                                 ))}
                             </div>
                         </Field>
                     )}
                     <Hint>
-                        No key, and nothing leaves your computer. Models are sent text only unless they are
-                        marked “Reads figures”; mark one only if it really reads images, since a model that
-                        does not is sent pictures it cannot see. Below: whether Ollama is running, and the
-                        models this plugin can use — each downloads with one click.
+                        {t('No key, and nothing leaves your computer. Models are sent text only unless they are marked “Reads figures”; mark one only if it really reads images, since a model that does not is sent pictures it cannot see. Below: whether Ollama is running, and the models this plugin can use — each downloads with one click.')}
                     </Hint>
                     <OllamaGuide base={base} showChat showEmbedding />
                     <div className="display-flex flex-row items-center justify-end gap-2 mt-1">
-                        <Button variant="solid" style={{ padding: '3px 10px' }} onClick={onClose} ariaLabel="Done editing Ollama">
-                            Done
+                        <Button variant="solid" style={{ padding: '3px 10px' }} onClick={onClose} ariaLabel={t('Done editing Ollama')}>
+                            {t('Done')}
                         </Button>
                     </div>
                 </div>
@@ -1316,29 +1324,27 @@ const ProviderCards: React.FC<{ openRequest?: OpenCardRequest | null }> = ({ ope
 
     return (
         <>
-            <SectionHeader>Providers</SectionHeader>
+            <SectionHeader>{t('Providers')}</SectionHeader>
             <SectionDescription>
-                Where the models come from. Each provider holds a key and a catalogue of models; every
-                model in a catalogue appears in the picker under the provider's name. Add the ones you
-                use — a built-in vendor, or any OpenAI-compatible endpoint of your own.
+                {t('Where the models come from. Each provider holds a key and a catalogue of models; every model in a catalogue appears in the picker under the provider\'s name. Add the ones you use — a built-in vendor, or any OpenAI-compatible endpoint of your own.')}
             </SectionDescription>
             <SettingsGroup>
                 <div className="display-flex flex-col gap-2 p-3" data-testid="provider-cards" ref={listRef}>
-                    {!anyCard && <Hint>No providers yet. Add one below and paste its key.</Hint>}
+                    {!anyCard && <Hint>{t('No providers yet. Add one below and paste its key.')}</Hint>}
                     {legacyBaseUrl && (
                         <div className="display-flex flex-row items-start gap-2" data-testid="legacy-base-url">
                             <Hint>
-                                An API address set in an earlier version is still stored:{' '}
-                                <code>{legacyBaseUrl}</code>. The next built-in provider you use sends its requests
-                                there instead of to its own address. Clear it unless that is what you want.
+                                {tr('An API address set in an earlier version is still stored: {address}. The next built-in provider you use sends its requests there instead of to its own address. Clear it unless that is what you want.', {
+                                    address: <code>{legacyBaseUrl}</code>,
+                                })}
                             </Hint>
                             <Button
                                 variant="outline"
                                 style={{ padding: '2px 8px' }}
                                 onClick={() => { setPref('llmBaseUrl', ''); setLegacyBaseUrl(''); }}
-                                ariaLabel="Clear the stored address"
+                                ariaLabel={t('Clear the stored address')}
                             >
-                                Clear
+                                {t('Clear')}
                             </Button>
                         </div>
                     )}
@@ -1398,9 +1404,9 @@ const ProviderCards: React.FC<{ openRequest?: OpenCardRequest | null }> = ({ ope
                             rightIcon={PlusSignIcon}
                             onClick={() => setAdding((v) => !v)}
                             disabled={addable.length === 0 && ollamaShown}
-                            ariaLabel="Add provider"
+                            ariaLabel={t('Add provider')}
                         >
-                            Add provider
+                            {t('Add provider')}
                         </Button>
                         <Button
                             variant="outline"
@@ -1413,9 +1419,9 @@ const ProviderCards: React.FC<{ openRequest?: OpenCardRequest | null }> = ({ ope
                                 setAdding(false);
                             }}
                             disabled={!!newEndpoint}
-                            ariaLabel="Add custom provider"
+                            ariaLabel={t('Add custom provider')}
                         >
-                            Add custom provider
+                            {t('Add custom provider')}
                         </Button>
                     </div>
                     {adding && (
@@ -1426,9 +1432,9 @@ const ProviderCards: React.FC<{ openRequest?: OpenCardRequest | null }> = ({ ope
                                     variant="ghost-secondary"
                                     style={{ padding: '2px 8px' }}
                                     onClick={() => { setAdded((a) => [...a, vendor.id]); setEditing(vendor.id); setAdding(false); }}
-                                    ariaLabel={`Add ${vendor.label}`}
+                                    ariaLabel={t('Add {label}', { label: t(vendor.label) })}
                                 >
-                                    {vendor.label}
+                                    {t(vendor.label)}
                                 </Button>
                             ))}
                             {!ollamaShown && (
@@ -1436,18 +1442,15 @@ const ProviderCards: React.FC<{ openRequest?: OpenCardRequest | null }> = ({ ope
                                     variant="ghost-secondary"
                                     style={{ padding: '2px 8px' }}
                                     onClick={() => { setOllamaShown(true); setEditing('ollama'); setAdding(false); }}
-                                    ariaLabel="Add Ollama (local)"
+                                    ariaLabel={t('Add Ollama (local)')}
                                 >
-                                    Ollama (local)
+                                    {t('Ollama (local)')}
                                 </Button>
                             )}
                         </div>
                     )}
                     <Hint>
-                        Keys, addresses and catalogues stay on this computer. With settings sync on, the
-                        choice of model travels to your other computers and the keys do not, so each computer
-                        needs its own. Keys are kept as plain text in Zotero's preferences: anyone who can
-                        read your Zotero profile folder can read them.
+                        {t('Keys, addresses and catalogues stay on this computer. With settings sync on, the choice of model travels to your other computers and the keys do not, so each computer needs its own. Keys are kept as plain text in Zotero\'s preferences: anyone who can read your Zotero profile folder can read them.')}
                     </Hint>
                 </div>
             </SettingsGroup>

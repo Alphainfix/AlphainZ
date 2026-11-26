@@ -24,6 +24,7 @@ import type {
 } from '@beaver/agent-core/types/agentActions/createAnnotations';
 import { RichCommentText } from '../../../components/ui/popup/RichCommentText';
 import { stripCommentTags } from '../../../../src/utils/zoteroCommentText';
+import { t, tn } from '../../../../src/utils/i18n';
 
 type ActionStatus = 'pending' | 'applied' | 'rejected' | 'undone' | 'error' | 'awaiting';
 
@@ -110,21 +111,20 @@ function formatAnnotationFailureMessage(
 ): string {
     switch (failure.error_code) {
         case 'page_extraction_failed':
-            return 'Could not create annotation because the PDF could not be processed.';
+            return t('Could not create annotation because the PDF could not be processed.');
         case 'page_geometry_unavailable':
-            return 'Could not create annotation because the target position was not found in the PDF.';
+            return t('Could not create annotation because the target position was not found in the PDF.');
         case 'epub_section_not_found':
-            return 'Could not create annotation because the cited section was not found in the EPUB.';
+            return t('Could not create annotation because the cited section was not found in the EPUB.');
         case 'epub_text_not_found':
-            return 'Could not create annotation because the cited passage was not found in the EPUB.';
+            return t('Could not create annotation because the cited passage was not found in the EPUB.');
         case 'epub_math_section_unsupported':
-            return 'Could not create annotation because the passage follows a math equation, which is not yet supported.';
+            return t('Could not create annotation because the passage follows a math equation, which is not yet supported.');
         case 'attachment_file_unavailable':
-            return 'Could not create annotation because the attachment file is not available locally.';
+            return t('Could not create annotation because the attachment file is not available locally.');
         case 'apply_failed':
-            return `Failed to create ${noun}.`;
         default:
-            return `Failed to create ${noun}.`;
+            return noun === 'highlight' ? t('Failed to create highlight.') : t('Failed to create note.');
     }
 }
 
@@ -348,17 +348,17 @@ export const CreateAnnotationsPreview: React.FC<CreateAnnotationsPreviewProps> =
                             ? fallbackLabel
                             : null;
 
-                        const kindLabel = kind === 'highlight' ? 'Highlight Annotation' : 'Sticky Note';
+                        const kindLabel = kind === 'highlight' ? t('Highlight Annotation') : t('Sticky Note');
                         const tooltipContent = stripCommentTags(text || rawItem.title || '');
                         // Only a pending highlight previews (the reader flashes its
                         // cited extent). Notes have no flashable extent and applied
                         // items navigate to the saved annotation, so both say "view".
                         let footerLabel = isFailed
-                            ? failureMessage || `Failed to create ${noun}`
+                            ? failureMessage || (noun === 'highlight' ? t('Failed to create highlight') : t('Failed to create note'))
                             : (kind === 'highlight' && !isCreated)
-                                ? `Click to preview in Zotero Reader`
-                                : `Click to view in Zotero Reader`;
-                        if (kind === 'note' && !isCreated) footerLabel = `Click to view page in Zotero Reader`
+                                ? t('Click to preview in Zotero Reader')
+                                : t('Click to view in Zotero Reader');
+                        if (kind === 'note' && !isCreated) footerLabel = t('Click to view page in Zotero Reader')
                         const footerClass = isFailed ? 'font-color-red' : 'font-color-tertiary';
 
                         const isDimmed = status === 'rejected' || status === 'undone';
@@ -386,11 +386,11 @@ export const CreateAnnotationsPreview: React.FC<CreateAnnotationsPreviewProps> =
                                                 // A sticky note's text is its comment, already in
                                                 // the comment field's idiom; show it as Zotero will.
                                                 ? (kind === 'note' ? <RichCommentText text={text} /> : text)
-                                                : `${noun} annotation`}
+                                                : noun === 'highlight' ? t('highlight annotation') : t('note annotation')}
                                     </div>
                                     {(isFailed || isPartial || pageDisplay !== null) && (
                                         <div className='font-color-tertiary whitespace-nowrap'>
-                                            {pageDisplay !== null ? `Page ${pageDisplay}` : ''}
+                                            {pageDisplay !== null ? t('Page {page}', { page: pageDisplay }) : ''}
                                         </div>
                                     )}
                                 </div>
@@ -418,7 +418,7 @@ export const CreateAnnotationsPreview: React.FC<CreateAnnotationsPreviewProps> =
                 {tags.length > 0 && (
                     <div className="display-flex flex-row items-center gap-2 flex-wrap">
                         <span className="font-color-primary shrink-0 mb-1">
-                            {tags.length > 1 ? `${tags.length} Tags` : `${tags.length} Tag`}
+                            {tn(tags.length, '{count} Tag', '{count} Tags')}
                         </span>
                         {tags.map((tag, index) => (
                             <TagPill key={`${tag}-${index}`} name={tag} />

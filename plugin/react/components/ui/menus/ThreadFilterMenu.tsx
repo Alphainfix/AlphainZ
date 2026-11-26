@@ -15,6 +15,7 @@ import { searchTitleCreatorYear, scoreSearchResult } from '../../../utils/search
 import { getPref } from '../../../../src/utils/prefs';
 import { logger } from '@beaver/agent-core/platform/logger';
 import Tooltip from '@beaver/agent-ui/primitives/Tooltip';
+import { t } from '../../../../src/utils/i18n';
 
 const RECENT_ITEMS_LIMIT = 5;
 const RECENTLY_MODIFIED_LIMIT = 15;
@@ -150,7 +151,7 @@ const ThreadFilterMenu: React.FC<ThreadFilterMenuProps> = ({ activeFilter, onSel
             rows.push(createThreadFilterMenuItem(contextItem, ctx));
         }
         if (recentItems.length > 0) {
-            rows.push({ label: 'Recent Items', isGroupHeader: true, onClick: () => {} });
+            rows.push({ label: t('Recent Items'), isGroupHeader: true, onClick: () => {} });
             rows.push(...recentItems.map((item) => createThreadFilterMenuItem(item, ctx)));
         }
         return rows;
@@ -224,16 +225,16 @@ const ThreadFilterMenu: React.FC<ThreadFilterMenuProps> = ({ activeFilter, onSel
 
     return (
         <>
-            <Tooltip content="Filter chats by Zotero item" disabled={isMenuOpen}>
+            <Tooltip content={t('Filter chats by Zotero item')} disabled={isMenuOpen}>
                 <ChipButton
                     onClick={handleButtonClick}
-                    aria-label="Filter chats by Zotero item"
+                    aria-label={t('Filter chats by Zotero item')}
                     aria-haspopup="menu"
                     aria-expanded={isMenuOpen}
                     disabled={disabled}
                 >
                     <Icon icon={FilterIcon} className="scale-12" />
-                    <span>Filter</span>
+                    <span>{t('Filter')}</span>
                     <Icon icon={ArrowDownIcon} className="scale-11" />
                 </ChipButton>
             </Tooltip>
@@ -247,8 +248,8 @@ const ThreadFilterMenu: React.FC<ThreadFilterMenuProps> = ({ activeFilter, onSel
                 width="250px"
                 maxHeight="300px"
                 onSearch={handleSearch}
-                noResultsText="No results found"
-                placeholder="Search by author, year and title"
+                noResultsText={t('No results found')}
+                placeholder={t('Search by author, year and title')}
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
                 onEmptyBackspace={handleMenuClose}

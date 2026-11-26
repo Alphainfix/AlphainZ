@@ -6,6 +6,7 @@ import { markComposerDraftAtom } from '../../atoms/messageComposition';
 import { CancelIcon } from '../icons/icons';
 import IconButton from '@beaver/agent-ui/primitives/IconButton';
 import Button from '@beaver/agent-ui/primitives/Button';
+import { t } from '../../../src/utils/i18n';
 
 interface Suggestion {
     text: string;
@@ -73,13 +74,13 @@ export const SuggestionsView: React.FC<SuggestionsViewProps> = ({ part, onDismis
         <div className="display-flex flex-col gap-2 pt-3">
             <div className="display-flex flex-row items-center justify-between gap-2">
                 <div className="font-color-tertiary text-xs font-semibold uppercase" style={{ letterSpacing: '0.05em' }}>
-                    Next steps
+                    {t('Next steps')}
                 </div>
                 {onDismiss && (
                     <IconButton
                         icon={CancelIcon}
                         onClick={onDismiss}
-                        ariaLabel="Dismiss suggestions"
+                        ariaLabel={t('Dismiss suggestions')}
                         variant="ghost-secondary"
                         className="scale-80"
                     />

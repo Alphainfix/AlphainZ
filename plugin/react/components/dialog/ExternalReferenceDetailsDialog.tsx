@@ -8,6 +8,7 @@ import ExternalReferenceDetails from '../externalReferences/ExternalReferenceDet
 import { CancelIcon } from '../icons/icons';
 import IconButton from '@beaver/agent-ui/primitives/IconButton';
 import { getDocumentFromElement } from '@beaver/agent-ui/utils/windowContext';
+import { t } from '../../../src/utils/i18n';
 
 const ExternalReferenceDetailsDialog: React.FC = () => {
     const [isVisible, setIsVisible] = useAtom(isExternalReferenceDetailsDialogVisibleAtom);
@@ -47,7 +48,7 @@ const ExternalReferenceDetailsDialog: React.FC = () => {
                     icon={CancelIcon}
                     onClick={() => setIsVisible(false)}
                     className="scale-12"
-                    ariaLabel="Close"
+                    ariaLabel={t('Close')}
                 />
 
             </div>

@@ -9,6 +9,7 @@ import { regenerateFromRunAtom, resumeFromRunAtom, retryPendingRunIdAtom } from 
 import { runErrorVisibilityAtom, setRunErrorVisibilityAtom } from '../../atoms/messageUIState';
 import { openPreferencesWindow } from '../../../src/ui/openPreferencesWindow';
 import { getRunErrorTitle, stripRunErrorTypePrefix } from '@beaver/agent-core/run-state/runErrorCopy';
+import { t } from '../../../src/utils/i18n';
 
 interface RunError {
     type: string;
@@ -164,7 +165,9 @@ export const RunErrorDisplay: React.FC<RunErrorDisplayProps> = ({ runId, error, 
                                         style={{ opacity: 0.75 }}
                                     >
                                         {parseTextWithLinksAndNewlines(
-                                            `${error.type === 'connection_error' ? 'Connection details' : 'Reason'}: ${error.user_facing_details}`,
+                                            error.type === 'connection_error'
+                                                ? t('Connection details: {details}', { details: error.user_facing_details })
+                                                : t('Reason: {details}', { details: error.user_facing_details }),
                                             "text-link-red",
                                         )}
                                     </div>
@@ -183,7 +186,7 @@ export const RunErrorDisplay: React.FC<RunErrorDisplayProps> = ({ runId, error, 
                                         data-run-error-action="resume"
                                         data-run-error-primary-action={primaryActionAttr('resume')}
                                     >
-                                        Resume
+                                        {t('Resume')}
                                     </Button>
                                 )}
                                 {canOpenSettings && (
@@ -195,7 +198,7 @@ export const RunErrorDisplay: React.FC<RunErrorDisplayProps> = ({ runId, error, 
                                         data-run-error-action="open-settings"
                                         data-run-error-primary-action={primaryActionAttr('open-settings')}
                                     >
-                                        <span className="font-color-red">Open Settings → Model</span>
+                                        <span className="font-color-red">{t('Open Settings → Model')}</span>
                                     </Button>
                                 )}
                                 {canRetry && (
@@ -209,7 +212,7 @@ export const RunErrorDisplay: React.FC<RunErrorDisplayProps> = ({ runId, error, 
                                         data-run-error-action="retry"
                                         data-run-error-primary-action={primaryActionAttr('retry')}
                                     >
-                                        <span className="font-color-red">Retry</span>
+                                        <span className="font-color-red">{t('Retry')}</span>
                                     </Button>
                                 )}
                             </div>

@@ -139,7 +139,7 @@ describe('verifyChatProvider', () => {
     it('caps the reply at a negligible budget', async () => {
         const fetchImpl = sseFetch([chunk({ content: 'ok' })]);
         await verifyChatProvider('deepseek', 'k', fetchImpl);
-        // Not 1: an OpenAI gateway behind Apigee rejects a budget too small to
+        // Not 1: an OpenAI-compatible gateway rejects a budget too small to
         // finish a message, which would fail a working key.
         expect(fetchImpl.calls[0].body.max_tokens).toBe(16);
     });
@@ -202,7 +202,7 @@ describe('verifyChatProvider', () => {
     });
 
     it('refuses to call a 2xx with no stream a success', async () => {
-        // A status check alone is not enough: a gateway behind Apigee answers
+        // A status check alone is not enough: one API gateway answers
         // an invalid model with HTTP 200 and a JSON error body, so "Works"
         // would appear for a setup that cannot answer a single question.
         const result = await verifyChatProvider('deepseek', 'k', sseFetch([]));

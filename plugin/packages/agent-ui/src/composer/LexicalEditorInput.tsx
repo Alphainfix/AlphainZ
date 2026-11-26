@@ -59,6 +59,7 @@ import {
     $selectFlatSelection,
     type LexicalSelectionOffsets,
 } from './selectionOffsets';
+import { t } from '../i18n';
 
 export type { SlashCommandDescriptor };
 
@@ -2382,7 +2383,7 @@ export const LexicalEditorInput = forwardRef<LexicalEditorInputHandle, LexicalEd
                                 <ContentEditable
                                     ref={handleContentEditableRef}
                                     className="chat-input alphainz-lexical-content"
-                                    aria-label={ariaLabel ?? 'Message'}
+                                    aria-label={ariaLabel ?? t('Message')}
                                     aria-multiline="true"
                                     role="textbox"
                                     spellCheck={true}

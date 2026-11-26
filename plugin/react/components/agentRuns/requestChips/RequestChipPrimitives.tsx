@@ -9,9 +9,16 @@ import { ANNOTATION_ICON_BY_TYPE, ANNOTATION_TEXT_BY_TYPE } from '../../../utils
 import type { ValidAnnotationType, ExternalFileContentKind } from '@beaver/agent-core/types/attachments/apiTypes';
 import { ChipWithPopup, ChipWithListPopup, type ChipPopupContent, type ChipPopupSubtitle } from '@beaver/agent-ui/chat/ChipPopup';
 import { ChipButton } from './ChipButton';
+import { t, tn } from '../../../../src/utils/i18n';
 
 const MAX_CHIP_TEXT_LENGTH = 30;
 const MAX_ANNOTATION_TOOLTIP_TEXT_LENGTH = 160;
+
+/** An annotation type's name, in the reader's language. */
+function annotationTypeLabel(annotationType: string): string {
+    const text = ANNOTATION_TEXT_BY_TYPE[annotationType];
+    return text ? t(text) : t('Annotation');
+}
 
 function attachmentIconName(contentKind?: ContentKind | ExternalFileContentKind | null): string {
     switch (contentKind) {
@@ -45,14 +52,14 @@ export function ItemChip({
     subtitle?: ChipPopupSubtitle | null;
 }) {
     const iconName = isAttachment ? attachmentIconName(contentKind) : itemType || 'document';
-    const displayName = label || (isAttachment ? 'Attachment' : 'Item');
+    const displayName = label || (isAttachment ? t('Attachment') : t('Item'));
     return (
         <ChipWithPopup
             popup={{
                 icon: <CSSItemTypeIcon itemType={iconName} className="scale-90" />,
                 title: displayName,
                 subtitle,
-                action: { icon: LibraryIcon, label: 'Reveal in library' },
+                action: { icon: LibraryIcon, label: t('Reveal in library') },
             }}
         >
             <ChipButton onClick={() => getHost().navigation?.revealInLibrary(itemRef)}>
@@ -79,7 +86,7 @@ export function AnnotationChip({
     title?: string;
 }) {
     const icon = ANNOTATION_ICON_BY_TYPE[annotationType] || ZOTERO_ICONS.ANNOTATION;
-    const typeLabel = ANNOTATION_TEXT_BY_TYPE[annotationType] || 'Annotation';
+    const typeLabel = annotationTypeLabel(annotationType);
     return (
         <ChipWithPopup
             popup={buildAnnotationChipPopup({ annotationType, color, title })}
@@ -104,13 +111,13 @@ export function buildAnnotationChipPopup({
     title?: string;
 }): ChipPopupContent {
     const icon = ANNOTATION_ICON_BY_TYPE[annotationType] || ZOTERO_ICONS.ANNOTATION;
-    const typeLabel = ANNOTATION_TEXT_BY_TYPE[annotationType] || 'Annotation';
+    const typeLabel = annotationTypeLabel(annotationType);
     const tooltipText = title ? truncateText(title.replace(/\s+/g, ' ').trim(), MAX_ANNOTATION_TOOLTIP_TEXT_LENGTH) : '';
     return {
         icon: <ZoteroIcon icon={icon} size={16} style={color ? { color } : undefined} />,
         title: typeLabel,
         subtitle: tooltipText ? { text: tooltipText } : null,
-        action: { icon: HighlighterIcon, label: 'Open annotation in PDF' },
+        action: { icon: HighlighterIcon, label: t('Open annotation in PDF') },
     };
 }
 
@@ -150,14 +157,14 @@ export function AnnotationGroupChip({
                     style={annotation.color ? { color: annotation.color } : undefined}
                 />
             ),
-            title: truncateText(body || '(no text)', MAX_ANNOTATION_TOOLTIP_TEXT_LENGTH),
-            subtitle: annotation.page_label ? { text: `p.${annotation.page_label}` } : null,
+            title: truncateText(body || t('(no text)'), MAX_ANNOTATION_TOOLTIP_TEXT_LENGTH),
+            subtitle: annotation.page_label ? { text: t('p.{page}', { page: annotation.page_label }) } : null,
         };
     });
     const remaining = annotations.length - rows.length;
     return (
         <ChipWithListPopup
-            content={{ rows, footer: remaining > 0 ? `${remaining} more` : null }}
+            content={{ rows, footer: remaining > 0 ? t('{count} more', { count: remaining }) : null }}
         >
             <ChipButton
                 onClick={() => getHost().navigation?.openAnnotation({
@@ -167,7 +174,7 @@ export function AnnotationGroupChip({
                 })}
             >
                 <ZoteroIcon icon={ZOTERO_ICONS.ANNOTATION} size={14} />
-                <span className="truncate">{annotations.length} Highlights</span>
+                <span className="truncate">{tn(annotations.length, '{count} Highlight', '{count} Highlights')}</span>
             </ChipButton>
         </ChipWithListPopup>
     );
@@ -182,14 +189,14 @@ export function NoteChip({
     noteRef: ZoteroItemReference;
     subtitle?: ChipPopupSubtitle | null;
 }) {
-    const displayName = title || 'Untitled Note';
+    const displayName = title || t('Untitled Note');
     return (
         <ChipWithPopup
             popup={{
                 icon: <CSSItemTypeIcon itemType="note" className="scale-90" />,
                 title: displayName,
                 subtitle,
-                action: { icon: NoteIcon, label: 'Open note' },
+                action: { icon: NoteIcon, label: t('Open note') },
             }}
         >
             <ChipButton onClick={() => getHost().navigation?.openSource(noteRef)}>
@@ -223,8 +230,8 @@ export function CollectionChip({
                     </span>
                 ),
                 title: name,
-                subtitle: { text: isFilter ? 'Search filter' : 'Collection' },
-                action: { icon: LibraryIcon, label: 'Reveal in library' },
+                subtitle: { text: isFilter ? t('Search filter') : t('Collection') },
+                action: { icon: LibraryIcon, label: t('Reveal in library') },
             }}
         >
             <ChipButton onClick={() => getHost().navigation?.revealCollection(collectionRef)}>
@@ -296,8 +303,8 @@ export function ExternalFileChip({
             popup={{
                 icon: <CSSItemTypeIcon itemType={iconName} className="scale-90" />,
                 title: filename,
-                subtitle: { text: 'External file' },
-                action: { icon: ExternalLinkIcon, label: 'Open external file', iconClassName: 'scale-75' },
+                subtitle: { text: t('External file') },
+                action: { icon: ExternalLinkIcon, label: t('Open external file'), iconClassName: 'scale-75' },
             }}
         >
             <ChipButton onClick={() => getHost().navigation?.launchExternalFile(extKey)}>

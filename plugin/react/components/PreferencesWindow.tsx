@@ -1,5 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { useSetAtom } from 'jotai';
+import LanguageBoundary from './LanguageBoundary';
+import { uiLanguageAtom } from '../atoms/uiLanguage';
+import { t } from '../../src/utils/i18n';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { isPreferencePageVisibleAtom, activePreferencePageTabAtom, pendingActionsCategoryFilterAtom, pendingActionEditRequestAtom, PreferencePageTab } from '../atoms/ui';
 import { prefWindowFocusRefreshAtom } from '../atoms/profile';
 import type { ActionCategoryFilter } from '@beaver/agent-core/types/actions';
@@ -19,6 +22,7 @@ const PreferencesWindow: React.FC<PreferencesWindowProps> = ({ initialTab, initi
     const setPendingActionEditRequest = useSetAtom(pendingActionEditRequestAtom);
     const setPrefWindowFocusRefresh = useSetAtom(prefWindowFocusRefreshAtom);
     const containerRef = useRef<HTMLDivElement>(null);
+    const language = useAtomValue(uiLanguageAtom);
 
     useEffect(() => {
         // Signal that preferences are visible (used by useProfileSync)
@@ -53,6 +57,12 @@ const PreferencesWindow: React.FC<PreferencesWindowProps> = ({ initialTab, initi
         };
     }, []);
 
+    // The window's title comes from its XHTML in English; follow the interface language.
+    useEffect(() => {
+        const doc = containerRef.current?.ownerDocument;
+        if (doc) doc.title = t('AlphainZ Settings');
+    }, [language]);
+
     // Refresh profile when preferences window regains focus (e.g., returning from Stripe checkout)
     useEffect(() => {
         const win = containerRef.current?.ownerDocument?.defaultView;
@@ -67,9 +77,13 @@ const PreferencesWindow: React.FC<PreferencesWindowProps> = ({ initialTab, initi
     }, [setPrefWindowFocusRefresh]);
 
     return (
-        <div ref={containerRef} className="bg-sidepane h-full w-full display-flex flex-col min-w-0 relative">
-            <PreferencePage />
-            <DialogContainer />
+        <div ref={containerRef} lang={language} className="bg-sidepane h-full w-full display-flex flex-col min-w-0 relative">
+            {/* Inside, so a language change re-renders the pages without
+                re-running this window's own setup above. */}
+            <LanguageBoundary>
+                <PreferencePage />
+                <DialogContainer />
+            </LanguageBoundary>
         </div>
     );
 };

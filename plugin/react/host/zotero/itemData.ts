@@ -6,6 +6,7 @@ import type { ZoteroItemReference } from '@beaver/agent-core/types/zotero';
 import { logger } from '@beaver/agent-core/platform/logger';
 import { resolveLibraryRef } from '../../../src/utils/libraryIdentity';
 import type { ItemDataHost, ResolvedItemDisplay } from '@beaver/agent-ui/host/types';
+import { t } from '../../../src/utils/i18n';
 
 /**
  * Bibliographic display name for a tool-call header label.
@@ -31,7 +32,7 @@ async function resolveDisplayName(item: Zotero.Item): Promise<string | undefined
         target = await Zotero.Items.getAsync(item.parentItemID) || item;
     }
     await Zotero.Items.loadDataTypes([target], ['itemData', 'creators']).catch(() => {});
-    const firstCreator = target.firstCreator || 'Unknown';
+    const firstCreator = target.firstCreator || t('Unknown');
     const year = target.getField('date')?.match(/\d{4}/)?.[0] || '';
     return `${firstCreator}${year ? ` ${year}` : ''}`;
 }

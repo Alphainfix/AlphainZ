@@ -3,6 +3,7 @@ import { CSSIcon, Icon, ArrowRightIcon } from '../../../components/icons/icons';
 import type { ManageCollectionsResultData } from '@beaver/agent-core/types/agentActions/base';
 import { shortenActionError } from './agentActionViewHelpers';
 import { resolveLibraryRef } from '../../../../src/utils/libraryIdentity';
+import { t, tn } from '../../../../src/utils/i18n';
 
 type ActionStatus = 'pending' | 'applied' | 'rejected' | 'undone' | 'error' | 'awaiting';
 
@@ -66,7 +67,7 @@ export function resolveManageCollectionsSnapshot(
             ?? currentValue?.old_name
             ?? resultData?.old_name
             ?? fallback.collectionName
-            ?? '(unknown)',
+            ?? t('(unknown)'),
         oldParentKey: currentValue?.old_parent_key !== undefined
             ? currentValue.old_parent_key
             : resultData?.old_parent_key !== undefined
@@ -79,15 +80,33 @@ function buildCollectionErrorText(
     action: 'rename' | 'move' | 'delete',
     errorMessage: string | undefined,
 ): string {
-    const verb = action === 'delete' ? 'delete' : action === 'move' ? 'move' : 'rename';
-    const base = `Failed to ${verb} collection`;
-    if (!errorMessage) return `${base}.`;
-    const m = errorMessage.toLowerCase();
-    if (m.includes('subcollection')) return `${base} because it contains subcollections.`;
-    if (m.includes('not found') || m.includes('no longer exists') || m.includes('permanently deleted')) {
-        return `${base} because it no longer exists.`;
+    // The error message is matched in English: it is the executor's own text.
+    const m = errorMessage?.toLowerCase() ?? '';
+    const cause = !errorMessage
+        ? 'none'
+        : m.includes('subcollection')
+            ? 'subcollections'
+            : m.includes('not found') || m.includes('no longer exists') || m.includes('permanently deleted')
+                ? 'gone'
+                : 'other';
+    const reason = errorMessage ? shortenActionError(errorMessage) : '';
+    switch (action) {
+        case 'delete':
+            if (cause === 'none') return t('Failed to delete collection.');
+            if (cause === 'subcollections') return t('Failed to delete collection because it contains subcollections.');
+            if (cause === 'gone') return t('Failed to delete collection because it no longer exists.');
+            return t('Failed to delete collection. {reason}.', { reason });
+        case 'move':
+            if (cause === 'none') return t('Failed to move collection.');
+            if (cause === 'subcollections') return t('Failed to move collection because it contains subcollections.');
+            if (cause === 'gone') return t('Failed to move collection because it no longer exists.');
+            return t('Failed to move collection. {reason}.', { reason });
+        default:
+            if (cause === 'none') return t('Failed to rename collection.');
+            if (cause === 'subcollections') return t('Failed to rename collection because it contains subcollections.');
+            if (cause === 'gone') return t('Failed to rename collection because it no longer exists.');
+            return t('Failed to rename collection. {reason}.', { reason });
     }
-    return `${base}. ${shortenActionError(errorMessage)}.`;
 }
 
 /**
@@ -181,7 +200,7 @@ export const ManageCollectionsPreview: React.FC<ManageCollectionsPreviewProps> =
                 <div className="display-flex flex-row items-center gap-2 flex-wrap">
                     {action === 'delete' && (
                         <span className="display-flex">
-                            {isApplied ? 'Deleted' : 'Delete'}
+                            {isApplied ? t('Deleted') : t('Delete')}
                         </span>
                     )}
                     <CollectionPill name={collectionName} strike={isApplied && action === 'delete'} />
@@ -198,7 +217,7 @@ export const ManageCollectionsPreview: React.FC<ManageCollectionsPreviewProps> =
                             <span className="scale-75 display-flex opacity-60">
                                 <Icon icon={ArrowRightIcon} className="icon-16" />
                             </span>
-                            <CollectionPill name={newParentKey ? (newParentName ?? newParentKey) : 'Library top level'} />
+                            <CollectionPill name={newParentKey ? (newParentName ?? newParentKey) : t('Library top level')} />
                         </>
                     )}
                 </div>
@@ -206,17 +225,17 @@ export const ManageCollectionsPreview: React.FC<ManageCollectionsPreviewProps> =
                 <div className="display-flex flex-col gap-1 text-sm font-color-secondary">
                     {libraryName && (
                         <div>
-                            <span className="font-color-primary">Library:</span> {libraryName}
+                            <span className="font-color-primary">{t('Library:')}</span> {libraryName}
                             {action === 'delete' && itemCount > 0 && (
                                 <span>
-                                    {' '}({itemCount} item{itemCount !== 1 ? 's' : ''} affected)
+                                    {' '}{tn(itemCount, '({count} item affected)', '({count} items affected)')}
                                 </span>
                             )}
                         </div>
                     )}
                     {action === 'move' && oldParentKey && (
                         <div>
-                            <span className="font-color-primary">Was under:</span> {oldParentName ?? oldParentKey}
+                            <span className="font-color-primary">{t('Was under:')}</span> {oldParentName ?? oldParentKey}
                         </div>
                     )}
                     {isError && (

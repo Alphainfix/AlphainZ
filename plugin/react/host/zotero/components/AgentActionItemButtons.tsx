@@ -30,6 +30,7 @@ import { CreateItemAgentAction } from '../../../agents/agentActions';
 import { ZoteroItemReference } from '@beaver/agent-core/types/zotero';
 import { resolveSearchableLibraryId } from '../libraryAccess';
 import { searchableLibraryIdsAtom } from '../../../atoms/profile';
+import { t } from '../../../../src/utils/i18n';
 
 const CITED_BY_URL = 'https://openalex.org/works?page=1&filter=cites:';
 
@@ -222,13 +223,13 @@ const AgentActionItemButtons: React.FC<AgentActionItemButtonsProps> = ({
         <div className="display-flex flex-row items-center gap-3 flex-wrap">
 
             {/* Details button */}
-            <Tooltip content={`${hasDetails ? 'Show details' : 'No details available'}`} singleLine>
+            <Tooltip content={hasDetails ? t('Show details') : t('No details available')} singleLine>
                 <IconButton
                     variant={buttonVariant}
                     icon={InformationCircleIcon}
                     className={`font-color-secondary ${className}`}
                     iconClassName="scale-90"
-                    ariaLabel="Show details"
+                    ariaLabel={t('Show details')}
                     onClick={handleShowDetails}
                     style={{ padding: '2px' }}
                 />
@@ -236,12 +237,12 @@ const AgentActionItemButtons: React.FC<AgentActionItemButtonsProps> = ({
 
             {/* Web button */}
             {hasWeb && (
-                <Tooltip content="Open website" singleLine>
+                <Tooltip content={t('Open website')} singleLine>
                     <IconButton
                         variant={buttonVariant}
                         icon={ArrowUpRightIcon}
                         className={`font-color-secondary ${className}`}
-                        ariaLabel="Open website"
+                        ariaLabel={t('Open website')}
                         onClick={handleOpenWeb}
                         style={{ padding: '2px' }}
                     />
@@ -250,12 +251,12 @@ const AgentActionItemButtons: React.FC<AgentActionItemButtonsProps> = ({
 
             {/* PDF button */}
             {hasPdf && (
-                <Tooltip content="Open PDF" singleLine>
+                <Tooltip content={t('Open PDF')} singleLine>
                     <IconButton
                         variant={buttonVariant}
                         icon={PdfIcon}
                         className={`font-color-secondary ${className}`}
-                        ariaLabel="Open PDF"
+                        ariaLabel={t('Open PDF')}
                         onClick={handleOpenPdf}
                         style={{ padding: '2px' }}
                     />
@@ -268,12 +269,12 @@ const AgentActionItemButtons: React.FC<AgentActionItemButtonsProps> = ({
                     onClick={() => Zotero.launchURL(`${CITED_BY_URL}${item.source_id}`)}
                     className="text-link-muted text-sm"
                 >
-                    Cited by {item.citation_count.toLocaleString()}
+                    {t('Cited by {count}', { count: item.citation_count.toLocaleString() })}
                 </a>
             )}
             {item.citation_count !== undefined && item.citation_count === 0 && (
                 <div className="font-color-tertiary text-sm">
-                    Cited by {item.citation_count.toLocaleString()}
+                    {t('Cited by {count}', { count: item.citation_count.toLocaleString() })}
                 </div>
             )}
 
@@ -284,13 +285,13 @@ const AgentActionItemButtons: React.FC<AgentActionItemButtonsProps> = ({
             )}
 
             {action.status === 'error' && !isLoading && (
-                <Tooltip content="Retry creating item" singleLine>
+                <Tooltip content={t('Retry creating item')} singleLine>
                     <IconButton
                         variant={buttonVariant}
                         icon={AlertIcon}
                         className={`font-color-secondary ${className}`}
                         iconClassName="scale-90"
-                        ariaLabel="Error creating item"
+                        ariaLabel={t('Error creating item')}
                         onClick={onApply}
                         disabled={isLoading}
                         style={{ padding: '2px' }}
@@ -300,13 +301,13 @@ const AgentActionItemButtons: React.FC<AgentActionItemButtonsProps> = ({
 
             {/* Pending: Reject button */}
             {showRejectButton && !isLoading && (
-                <Tooltip content="Reject Item" singleLine>
+                <Tooltip content={t('Reject Item')} singleLine>
                     <IconButton
                         variant={buttonVariant}
                         icon={CancelIcon}
                         className={`font-color-secondary ${className}`}
                         iconClassName="scale-90"
-                        ariaLabel="Reject Item"
+                        ariaLabel={t('Reject Item')}
                         onClick={onReject}
                         disabled={isLoading}
                         style={{ padding: '2px' }}
@@ -316,7 +317,7 @@ const AgentActionItemButtons: React.FC<AgentActionItemButtonsProps> = ({
 
             {/* Add button: shown for pending (no match), rejected, or undone */}
             {showAddButton && !isLoading && (
-                <Tooltip content="Add to library" singleLine>
+                <Tooltip content={t('Add to library')} singleLine>
                     <IconButton
                         variant={buttonVariant}
                         icon={TickIcon}
@@ -324,7 +325,7 @@ const AgentActionItemButtons: React.FC<AgentActionItemButtonsProps> = ({
                         className={`font-color-secondary ${className}`}
                         style={{ padding: '2px' }}
                         onClick={onApply}
-                        ariaLabel="Add to library"
+                        ariaLabel={t('Add to library')}
                         disabled={isLoading}
                     />
                 </Tooltip>
@@ -332,7 +333,7 @@ const AgentActionItemButtons: React.FC<AgentActionItemButtonsProps> = ({
 
             {/* Pending with existing match OR Applied: Reveal button */}
             {showRevealButton && !isLoading && (
-                <Tooltip content={action.status === 'pending' ? 'Already in library - click to reveal' : 'Reveal in Zotero'} singleLine>
+                <Tooltip content={action.status === 'pending' ? t('Already in library - click to reveal') : t('Reveal in Zotero')} singleLine>
                     <Button
                         variant={buttonVariant}
                         rightIcon={() => <ZoteroIcon icon={ZOTERO_ICONS.SHOW_ITEM} size={9} />}
@@ -341,7 +342,7 @@ const AgentActionItemButtons: React.FC<AgentActionItemButtonsProps> = ({
                         onClick={handleReveal}
                         disabled={isLoading}
                     >
-                        {action.status === 'pending' ? 'In Library' : 'Reveal'}
+                        {action.status === 'pending' ? t('In Library') : t('Reveal')}
                     </Button>
                 </Tooltip>
             )}

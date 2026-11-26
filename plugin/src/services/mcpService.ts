@@ -2,7 +2,7 @@
  * MCP (Model Context Protocol) Service
  *
  * Implements MCP's Streamable HTTP transport on Zotero's built-in HTTP server
- * at /beaver/mcp. Handles JSON-RPC 2.0 messages for initialize, tools/list,
+ * at /alphainz/mcp. Handles JSON-RPC 2.0 messages for initialize, tools/list,
  * and tools/call methods.
  *
  * This file lives in the esbuild bundle but is imported by the webpack bundle
@@ -14,11 +14,8 @@ import { logger } from '@beaver/agent-core/platform/logger';
 /*
  * The endpoint path and the server name, in one place.
  *
- * The preferences pane builds a ready-to-paste MCP config from these. It used
- * to spell the URL out as `/beaver/mcp` while the endpoint registered here was
- * `/alphainz/mcp`, so copying that config produced a client pointed at a path
- * nothing serves — a rename that failed silently, on the far side of a
- * clipboard.
+ * The preferences pane builds its ready-to-paste MCP config from these, so the
+ * config it copies always names the path this service registers.
  */
 export const MCP_ENDPOINT_PATH = '/alphainz/mcp';
 export const MCP_SERVER_NAME = 'alphainz-zotero';
@@ -58,6 +55,17 @@ interface McpToolDefinition {
 interface McpToolEntry {
     definition: McpToolDefinition;
     handler: (args: any) => Promise<any>;
+    /**
+     * Whether `tools/list` offers the tool right now. A tool the settings rule
+     * out — a search with no embedding model set up — is left out, so a client
+     * does not read its failures as "the library has nothing".
+     */
+    isAvailable?: () => boolean | Promise<boolean>;
+}
+
+/** Options for one registered tool. */
+export interface McpToolOptions {
+    isAvailable?: () => boolean | Promise<boolean>;
 }
 
 interface ZoteroRequestData {
@@ -96,12 +104,13 @@ export class MCPService {
         name: string,
         definition: McpToolDefinition,
         handler: (args: any) => Promise<any>,
+        options: McpToolOptions = {},
     ): void {
-        this.tools.set(name, { definition, handler });
+        this.tools.set(name, { definition, handler, ...(options.isAvailable ? { isAvailable: options.isAvailable } : {}) });
     }
 
     /**
-     * Register the /beaver/mcp endpoint on Zotero's HTTP server.
+     * Register the /alphainz/mcp endpoint on Zotero's HTTP server.
      */
     register(): boolean {
         if (!Zotero?.Server?.Endpoints) {
@@ -230,24 +239,46 @@ export class MCPService {
                 '## Tool Strategy\n' +
                 "- Search the user's library before concluding sources are unavailable.\n" +
                 '- For exploratory discovery, use `search_by_topic`. For known references (author, title, journal), use `search_by_metadata`.\n' +
+                '- To find which papers *say* something — a claim, a method, a number — use `search_library_fulltext` when it is listed: ' +
+                'it searches the text of the papers by meaning and returns the paper, the page and the passage. ' +
+                'To find a figure by what it shows, use `search_library_figures` when it is listed, and look at the page before describing it.\n' +
+                '- Inside one paper, `search_in_document` finds the pages where a phrase appears; `read_attachment` reads a page range.\n' +
                 "- Use `read_attachment` to verify claims about a paper's findings or methods — don't rely on metadata alone for substantive claims.\n" +
+                '- Use `view_page_images` for figures, plots, equations and tables, whose meaning is missing from the extracted text. Ask only for the pages you need.\n' +
+                "- The user's own highlights and comments show what they found important: `find_annotations` searches them " +
+                "in the user's personal library, or on one PDF given its `attachment_id`; `get_annotations` lists every one on a PDF.\n" +
                 '- Paginate (via `offset`) only when current results are insufficient.\n\n' +
                 '## Citations\n' +
                 'Always cite Zotero sources that inform your response. Adapt format to the output context:\n' +
                 '- **Plain text**: Author-year — e.g., (Smith 2004).\n' +
-                '- **Markdown**: Use the `zotero_uri` from results — e.g., [Smith 2004](zotero://select/library/items/KEY).\n' +
+                '- **Markdown**: Use the `zotero_uri` from results — e.g., [Smith 2004](zotero://select/library/items/KEY). ' +
+                'Results from the search, page and annotation tools carry an `open_uri`, which opens the PDF at that page in Zotero — e.g., ' +
+                '[Smith 2004, p. 5](zotero://open-pdf/library/items/KEY?page=5).\n' +
                 '- **LaTeX**: Use the `citation_key` if available — e.g., \\cite{smith2004}.\n' +
                 'Only cite items actually returned by the tools. Never fabricate citations.',
         };
     }
 
-    private handleToolsList() {
-        const tools = Array.from(this.tools.values()).map(({ definition }) => ({
-            name: definition.name,
-            description: definition.description,
-            inputSchema: definition.inputSchema,
-            ...(definition.annotations ? { annotations: definition.annotations } : {}),
+    private async handleToolsList() {
+        const entries = Array.from(this.tools.values());
+        // A check that fails says nothing about the tool working, so it hides
+        // the tool rather than failing the whole list.
+        const offered = await Promise.all(entries.map(async (entry) => {
+            if (!entry.isAvailable) return true;
+            try {
+                return await entry.isAvailable();
+            } catch {
+                return false;
+            }
         }));
+        const tools = entries
+            .filter((_, index) => offered[index])
+            .map(({ definition }) => ({
+                name: definition.name,
+                description: definition.description,
+                inputSchema: definition.inputSchema,
+                ...(definition.annotations ? { annotations: definition.annotations } : {}),
+            }));
         return { tools };
     }
 

@@ -302,6 +302,43 @@ describe('MCPService', () => {
             // handler should NOT leak into the response
             expect(tool.handler).toBeUndefined();
         });
+
+        it('leaves out a tool whose check says it cannot run now, and asks again on the next list', async () => {
+            const definition = (name: string) => ({
+                name,
+                description: `${name} tool`,
+                inputSchema: { type: 'object', properties: {} },
+            });
+            let indexReady = false;
+            service.registerTool('always', definition('always'), vi.fn());
+            service.registerTool('index_search', definition('index_search'), vi.fn(), {
+                isAvailable: async () => indexReady,
+            });
+            service.registerTool('sync_check', definition('sync_check'), vi.fn(), { isAvailable: () => true });
+
+            const before = await rpc(service, { jsonrpc: '2.0', method: 'tools/list', id: 1 });
+            expect(before.body.result.tools.map((t: any) => t.name)).toEqual(['always', 'sync_check']);
+
+            indexReady = true;
+            const after = await rpc(service, { jsonrpc: '2.0', method: 'tools/list', id: 2 });
+            expect(after.body.result.tools.map((t: any) => t.name)).toEqual(['always', 'index_search', 'sync_check']);
+        });
+
+        it('leaves out a tool whose check fails, and still lists the rest', async () => {
+            service.registerTool('broken_check', {
+                name: 'broken_check',
+                description: 'Its check throws',
+                inputSchema: { type: 'object', properties: {} },
+            }, vi.fn(), { isAvailable: async () => { throw new Error('no index'); } });
+            service.registerTool('fine', {
+                name: 'fine',
+                description: 'No check',
+                inputSchema: { type: 'object', properties: {} },
+            }, vi.fn());
+
+            const res = await rpc(service, { jsonrpc: '2.0', method: 'tools/list', id: 1 });
+            expect(res.body.result.tools.map((t: any) => t.name)).toEqual(['fine']);
+        });
     });
 
     // =====================================================================

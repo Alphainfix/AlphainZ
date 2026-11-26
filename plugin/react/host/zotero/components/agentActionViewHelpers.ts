@@ -21,6 +21,7 @@ import {
 } from '../../../components/icons/icons';
 import { truncateText } from '@beaver/agent-ui/utils/stringUtils';
 import { countEditAnnotationTargets } from './reviewChangeRows';
+import { msg, t, tn } from '../../../../src/utils/i18n';
 
 export type ActionStatus = 'pending' | 'applied' | 'rejected' | 'undone' | 'error';
 
@@ -30,10 +31,12 @@ export type ActionStatus = 'pending' | 'applied' | 'rejected' | 'undone' | 'erro
  */
 export function confirmOverwriteManualChanges(modifiedFields: string[]): boolean {
     const fieldList = modifiedFields.join(', ');
-    const title = 'Overwrite manual changes?';
+    const title = t('Overwrite manual changes?');
     const message = modifiedFields.length === 1
-        ? `The field "${fieldList}" has been manually modified since the edit was applied. Do you want to overwrite your changes and revert to the original value?`
-        : `The following fields have been manually modified since the edit was applied: ${fieldList}. Do you want to overwrite your changes and revert to the original values?`;
+        ? t('The field "{field}" has been manually modified since the edit was applied. Do you want to overwrite '
+            + 'your changes and revert to the original value?', { field: fieldList })
+        : t('The following fields have been manually modified since the edit was applied: {fields}. Do you want '
+            + 'to overwrite your changes and revert to the original values?', { fields: fieldList });
 
     const buttonIndex = Zotero.Prompt.confirm({
         window: Zotero.getMainWindow(),
@@ -77,6 +80,7 @@ export function shortenActionError(msg: string): string {
 
 export interface StatusConfig {
     icon: React.FC<React.SVGProps<SVGSVGElement>> | null;
+    /** English; shown through `t`. */
     label: string;
     iconClassName?: string;
     showApply: boolean;
@@ -88,7 +92,7 @@ export interface StatusConfig {
 export const STATUS_CONFIGS: Record<ActionStatus | 'awaiting', StatusConfig> = {
     awaiting: {
         icon: Spinner,
-        label: 'Awaiting approval',
+        label: msg('Awaiting approval'),
         showApply: true,
         showReject: true,
         showUndo: false,
@@ -96,7 +100,7 @@ export const STATUS_CONFIGS: Record<ActionStatus | 'awaiting', StatusConfig> = {
     },
     pending: {
         icon: null,
-        label: 'Pending',
+        label: msg('Pending'),
         iconClassName: 'font-color-secondary',
         showApply: true,
         showReject: true,
@@ -105,7 +109,7 @@ export const STATUS_CONFIGS: Record<ActionStatus | 'awaiting', StatusConfig> = {
     },
     applied: {
         icon: CheckmarkCircleIcon,
-        label: 'Applied',
+        label: msg('Applied'),
         iconClassName: 'font-color-green scale-11',
         showApply: false,
         showReject: false,
@@ -114,7 +118,7 @@ export const STATUS_CONFIGS: Record<ActionStatus | 'awaiting', StatusConfig> = {
     },
     rejected: {
         icon: CancelCircleIcon,
-        label: 'Rejected',
+        label: msg('Rejected'),
         iconClassName: 'font-color-red scale-11',
         showApply: true,
         showReject: false,
@@ -123,7 +127,7 @@ export const STATUS_CONFIGS: Record<ActionStatus | 'awaiting', StatusConfig> = {
     },
     undone: {
         icon: CancelCircleIcon,
-        label: 'Undone',
+        label: msg('Undone'),
         iconClassName: 'font-color-red scale-11',
         showApply: true,
         showReject: false,
@@ -132,7 +136,7 @@ export const STATUS_CONFIGS: Record<ActionStatus | 'awaiting', StatusConfig> = {
     },
     error: {
         icon: AlertIcon,
-        label: 'Failed',
+        label: msg('Failed'),
         iconClassName: 'color-error',
         showApply: false,
         showReject: false,
@@ -251,24 +255,24 @@ export function getActionLabel(
     switch (toolName) {
         case 'edit_metadata':
         case 'edit_item':
-            return completed ? 'Edited' : 'Edit';
+            return completed ? t('Edited') : t('Edit');
         case 'edit_note':
-            return completed ? 'Edited Note' : 'Note Edit';
+            return completed ? t('Edited Note') : t('Note Edit');
         case 'edit_note_batch':
-            return completed ? 'Edited Note' : 'Note Edits';
+            return completed ? t('Edited Note') : t('Note Edits');
         case 'create_note':
-            return completed ? 'Created Note' : 'Create Note';
+            return completed ? t('Created Note') : t('Create Note');
         case 'create_highlight_annotations': {
             const count = actionData?.items?.length ?? 0;
             return count > 1
-                ? `${count} Highlights`
-                : 'Highlight';
+                ? t('{count} Highlights', { count })
+                : t('Highlight');
         }
         case 'create_note_annotations': {
             const count = actionData?.items?.length ?? 0;
             return count > 1
-                ? `${count} Sticky Notes`
-                : 'Sticky Note';
+                ? t('{count} Sticky Notes', { count })
+                : t('Sticky Note');
         }
         // Both annotation-mutation tools share one action type. The tool name is
         // what settles the verb: streaming tool arguments carry no `operation`,
@@ -279,28 +283,30 @@ export function getActionLabel(
         case 'delete_annotations': {
             const count = countEditAnnotationTargets(actionData);
             const isDelete = toolName === 'delete_annotations' || actionData?.operation === 'delete';
-            const verb = isDelete
-                ? (completed ? 'Deleted' : 'Delete')
-                : (completed ? 'Edited' : 'Edit');
-            return count > 1
-                ? `${verb} ${count} Annotations`
-                : `${verb} Annotation`;
+            if (count > 1) {
+                return isDelete
+                    ? (completed ? t('Deleted {count} Annotations', { count }) : t('Delete {count} Annotations', { count }))
+                    : (completed ? t('Edited {count} Annotations', { count }) : t('Edit {count} Annotations', { count }));
+            }
+            return isDelete
+                ? (completed ? t('Deleted Annotation') : t('Delete Annotation'))
+                : (completed ? t('Edited Annotation') : t('Edit Annotation'));
         }
         case 'create_item':
         case 'create_items':
-            return completed ? 'Imported' : 'Import';
+            return completed ? t('Imported') : t('Import');
         case 'create_collection':
-            return completed ? 'Created Collection' : 'Create Collection';
+            return completed ? t('Created Collection') : t('Create Collection');
         case 'organize_items':
-            return completed ? 'Organized' : 'Organize';
+            return completed ? t('Organized') : t('Organize');
         case 'manage_tags':
-            return 'Tag';
+            return t('Tag');
         case 'manage_collections':
-            return 'Collection';
+            return t('Collection');
         case 'confirm_extraction':
-            return 'Extract';
+            return t('Extract');
         case 'confirm_external_search':
-            return 'Search';
+            return t('Search');
         default:
             return toolName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
     }
@@ -338,43 +344,45 @@ export function getActionTitle(
             if (itemCount === 0) return null;
             return itemCount === 1 && itemTitle
                 ? itemTitle
-                : `${itemCount} item${itemCount !== 1 ? 's' : ''}`;
+                : tn(itemCount, '{count} item', '{count} items');
         }
         case 'manage_tags': {
             const name = actionData?.name;
             const op = actionData?.action;
             if (!name) return null;
-            if (op === 'delete') return `Delete tag "${name}"`;
+            if (op === 'delete') return t('Delete tag "{name}"', { name });
             const newName = actionData?.new_name;
             if (newName) {
                 return actionData?.is_merge
-                    ? `Merge "${name}" → "${newName}"`
-                    : `Rename "${name}" → "${newName}"`;
+                    ? t('Merge "{name}" → "{newName}"', { name, newName })
+                    : t('Rename "{name}" → "{newName}"', { name, newName });
             }
-            return `Tag "${name}"`;
+            return t('Tag "{name}"', { name });
         }
         case 'manage_collections': {
             const op = actionData?.action;
             const collectionName = actionData?.collection_name ?? actionData?.old_name ?? actionData?.name;
             if (op === 'delete') {
-                return collectionName ? `Delete "${collectionName}"` : 'Delete collection';
+                return collectionName ? t('Delete "{name}"', { name: collectionName }) : t('Delete collection');
             }
             if (op === 'move') {
-                return collectionName ? `Move "${collectionName}"` : 'Move collection';
+                return collectionName ? t('Move "{name}"', { name: collectionName }) : t('Move collection');
             }
             if (op === 'rename') {
                 const newName = actionData?.new_name;
-                if (collectionName && newName) return `Rename "${collectionName}" → "${newName}"`;
-                if (newName) return `Rename → "${newName}"`;
+                if (collectionName && newName) {
+                    return t('Rename "{name}" → "{newName}"', { name: collectionName, newName });
+                }
+                if (newName) return t('Rename → "{newName}"', { newName });
             }
             return collectionName ?? null;
         }
         case 'confirm_extraction': {
             const count = actionData?.attachment_count ?? 0;
-            return `Confirm ${count} Item Batch Processing`;
+            return t('Confirm {count} Item Batch Processing', { count });
         }
         case 'confirm_external_search': {
-            return 'Confirm External Search';
+            return t('Confirm External Search');
         }
         case 'create_item':
         case 'create_items': {
@@ -389,7 +397,7 @@ export function getActionTitle(
                 // Pending approval case: actions not yet stored, but we have item data
                 return truncateText(actionData.item.title, 60);
             }
-            return `${actions && actions.length > 1 ? `${actions.length} ` : ''}Item${actions && actions.length > 1 ? 's' : ''}`;
+            return actions && actions.length > 1 ? t('{count} Items', { count: actions.length }) : t('Item');
         }
         default:
             return null;

@@ -12,6 +12,7 @@ import { getJotaiState } from '../../utils/getJotaiState';
 import { accountService } from '@beaver/agent-core/transport/clients/accountService';
 import { getPref } from '../../../src/utils/prefs';
 import { getDocumentFromElement } from '@beaver/agent-ui/utils/windowContext';
+import { t } from '../../../src/utils/i18n';
 
 /**
  * Get all plugin preferences for debugging
@@ -140,13 +141,13 @@ const ErrorReportDialog: React.FC = () => {
         >
             {/* Header */}
             <div className="display-flex flex-row items-center justify-between p-4 pb-3">
-                <div className="text-lg font-semibold">Report Error</div>
+                <div className="text-lg font-semibold">{t('Report Error')}</div>
                 <IconButton
                     icon={CancelIcon}
                     onClick={handleClose}
                     disabled={isSending}
                     className="scale-12"
-                    ariaLabel="Close dialog"
+                    ariaLabel={t('Close dialog')}
                 />
             </div>
 
@@ -159,7 +160,7 @@ const ErrorReportDialog: React.FC = () => {
                         ref={textareaRef}
                         value={errorText}
                         onChange={handleTextareaChange}
-                        placeholder="Describe the issue you encountered..."
+                        placeholder={t('Describe the issue you encountered...')}
                         className="chat-input"
                         rows={4}
                         disabled={isSending}
@@ -169,7 +170,7 @@ const ErrorReportDialog: React.FC = () => {
 
                 {/* Info note */}
                 <div className="text-sm opacity-60">
-                    The current state of your application will be shared with the developers.
+                    {t('The current state of your application will be shared with the developers.')}
                 </div>
 
                 {/* Buttons */}
@@ -179,7 +180,7 @@ const ErrorReportDialog: React.FC = () => {
                         onClick={handleClose}
                         disabled={isSending}
                     >
-                        Cancel
+                        {t('Cancel')}
                     </Button>
                     <Button
                         variant="solid"
@@ -187,7 +188,7 @@ const ErrorReportDialog: React.FC = () => {
                         disabled={errorText.trim().length === 0 || isSending}
                         loading={isSending}
                     >
-                        {isSending ? 'Sending...' : 'Send'}
+                        {isSending ? t('Sending...') : t('Send')}
                     </Button>
                 </div>
             </div>

@@ -34,6 +34,7 @@ import { useAddSourcesMenu, AddSourcesMenuHandle } from '@beaver/agent-ui/compos
 import { useComposerPasteHandlers } from '../../hooks/useComposerPasteHandlers';
 import { useActionPopupResolver } from '../../hooks/useActionPopupResolver';
 import { sendComposedMessageAtom } from '../../atoms/actions';
+import { t } from '../../../src/utils/i18n';
 
 
 
@@ -435,9 +436,9 @@ const InputArea: React.FC<InputAreaProps> = ({
 
     const getPlaceholderText = () => {
         if (placeholder !== undefined) return placeholder;
-        if (isLibraryTab) return "@ to add a source, / for actions";
-        if (currentNoteItem) return "@ to add a source, / for actions";
-        return "@ to add a source, / for actions, drag to add annotations";
+        if (isLibraryTab) return t("@ to add a source, / for actions");
+        if (currentNoteItem) return t("@ to add a source, / for actions");
+        return t("@ to add a source, / for actions, drag to add annotations");
     }
 
     const menuPortalContainer = inputRef.current?.closest('[id^="alphainz-react-root-"], #alphainz-pane-window') as HTMLElement | null;
@@ -508,8 +509,8 @@ const InputArea: React.FC<InputAreaProps> = ({
                 searchQuery={slashSearchQuery}
                 setSearchQuery={setSlashSearchQuery}
                 onSearch={() => {}}
-                noResultsText="No actions found"
-                placeholder="Search actions..."
+                noResultsText={t('No actions found')}
+                placeholder={t('Search actions...')}
                 closeOnSelect={false}
                 showSearchInput={false}
                 selectOnTab={true}
@@ -537,11 +538,11 @@ const InputArea: React.FC<InputAreaProps> = ({
                             isAddSourcesMenuOpen &&
                             addSourcesQuerySource === 'editor' &&
                             addSourcesSearchQuery.length === 0
-                                ? 'Type to search'
+                                ? t('Type to search')
                                 : null
                         }
                         placeholder={getPlaceholderText()}
-                        ariaLabel="Message AlphainZ"
+                        ariaLabel={t('Message AlphainZ')}
                         onKeyDown={handleEditorKeyDown}
                         suspendKeyboardNavigation={isSlashMenuOpen || isAddSourcesMenuOpen}
                         onContentEditableRef={(el) => {
@@ -576,7 +577,7 @@ const InputArea: React.FC<InputAreaProps> = ({
                             is only ever cleared by sending it. */}
                         <Button
                             rightIcon={isPending ? StopIcon : undefined}
-                            ariaLabel={isPending ? 'Stop generating' : 'Send message'}
+                            ariaLabel={isPending ? t('Stop generating') : t('Send message')}
                             type="button"
                             variant={isPending ? 'surface' : 'solid'}
                             style={{ padding: '2px 5px' }}
@@ -588,8 +589,8 @@ const InputArea: React.FC<InputAreaProps> = ({
                             }
                         >
                             {isPending
-                                ? 'Stop'
-                                : (<span>Send <span className="opacity-50">⏎</span></span>)
+                                ? t('Stop')
+                                : (<span>{t('Send')}{' '}<span className="opacity-50">⏎</span></span>)
                             }
                         </Button>
                     </div>

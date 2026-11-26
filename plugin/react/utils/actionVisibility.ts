@@ -19,6 +19,7 @@ import { agentItemFilter } from '../../src/utils/agentItemSupport';
 import { getDisplayNameFromItem } from './sourceUtils';
 import { truncateText } from '@beaver/agent-ui/utils/stringUtils';
 import { safeIsInTrash } from '../../src/utils/zoteroUtils';
+import { t } from '../../src/utils/i18n';
 
 // ---------------------------------------------------------------------------
 // ActionContext — combines Zotero state with manually-attached message items
@@ -261,7 +262,7 @@ export function computeActionGroups(allActions: Action[], ctx: ActionContext): A
             if (noteActions.length > 0) {
                 const label = selectedNotes.length === 1
                     ? truncateText(selectedNotes[0].getNoteTitle(), MAX_LABEL_ITEM_LENGTH)
-                    : `${selectedNotes.length} selected notes`;
+                    : t('{count} selected notes', { count: selectedNotes.length });
                 groups.push({
                     id: 'selected-notes',
                     label,
@@ -280,7 +281,7 @@ export function computeActionGroups(allActions: Action[], ctx: ActionContext): A
             const noteItem = ctx.zotero.noteItem;
             const label = noteItem
                 ? truncateText(noteItem.getNoteTitle(), MAX_LABEL_ITEM_LENGTH)
-                : 'Note';
+                : t('Note');
             groups.push({ id: 'note', label, actions: noteActions, targetType: 'note', iconInfo: { type: 'css-icon', name: 'note' } });
         }
     }
@@ -303,7 +304,7 @@ export function computeActionGroups(allActions: Action[], ctx: ActionContext): A
     // --- 6. Global group ---
     const globalActions = allActions.filter(a => a.targets.includes('global'));
     if (globalActions.length > 0) {
-        groups.push({ id: 'global', label: 'Anywhere', actions: globalActions, targetType: 'global' });
+        groups.push({ id: 'global', label: t('Anywhere'), actions: globalActions, targetType: 'global' });
     }
 
     return groups;
@@ -383,7 +384,7 @@ export function getActiveTarget(ctx: ActionContext): ActiveTarget | null {
         if (selectedNotes.length > 0) {
             const label = selectedNotes.length === 1
                 ? truncateText(selectedNotes[0].getNoteTitle(), MAX_LABEL_ITEM_LENGTH)
-                : `${selectedNotes.length} selected notes`;
+                : t('{count} selected notes', { count: selectedNotes.length });
             return { targetType: 'note', label, iconInfo: { type: 'css-icon', name: 'note' } };
         }
     }
@@ -420,36 +421,38 @@ export function resolveActionBinding(action: Action, active: ActiveTarget | null
 // ---------------------------------------------------------------------------
 
 function formatItemNames(items: Zotero.Item[], source: 'selected' | 'attached'): string {
-    const prefix = source === 'selected' ? 'selected' : 'attached';
-    if (items.length > MAX_LABEL_ITEMS) {
+    const selected = source === 'selected';
+    const count = items.length;
+    if (count > MAX_LABEL_ITEMS) {
         if (source === 'attached' && items.some(i => i.isAttachment()) && items.some(i => i.isRegularItem())) {
-            return `${items.length} ${prefix} items and attachments`;
+            return t('{count} attached items and attachments', { count });
         }
         if (items.every(i => i.isAttachment())) {
-            return `${items.length} ${prefix} attachments`;
+            return selected ? t('{count} selected attachments', { count }) : t('{count} attached attachments', { count });
         }
         if (items.every(i => i.isNote())) {
-            return `${items.length} ${prefix} notes`;
+            return selected ? t('{count} selected notes', { count }) : t('{count} attached notes', { count });
         }
-        return `${items.length} ${prefix} items`;
+        return selected ? t('{count} selected items', { count }) : t('{count} attached items', { count });
     }
     const names = items
         .slice(0, MAX_LABEL_ITEMS)
         .map(i => getItemLabel(i));
     const remaining = items.length - MAX_LABEL_ITEMS;
-    if (remaining > 0) names.push(`+${remaining} more`);
-    return names.join(', ');
+    if (remaining > 0) names.push(t('+{count} more', { count: remaining }));
+    return names.join(t(', '));
 }
 
 function getManualLabel(items: Zotero.Item[]): string {
     if (items.length <= MAX_LABEL_ITEMS) {
         const names = items.map(i => getItemLabel(i));
-        return `${names.join(', ')} (attached)`;
+        return t('{names} (attached)', { names: names.join(t(', ')) });
     }
-    if (items.every(i => i.isAttachment())) return `${items.length} attached attachments`;
-    if (items.every(i => i.isRegularItem())) return `${items.length} attached items`;
-    if (items.every(i => i.isNote())) return `${items.length} attached notes`;
-    return `${items.length} attached items and attachments`;
+    const count = items.length;
+    if (items.every(i => i.isAttachment())) return t('{count} attached attachments', { count });
+    if (items.every(i => i.isRegularItem())) return t('{count} attached items', { count });
+    if (items.every(i => i.isNote())) return t('{count} attached notes', { count });
+    return t('{count} attached items and attachments', { count });
 }
 
 /**
@@ -459,19 +462,18 @@ function getManualLabel(items: Zotero.Item[]): string {
  */
 function getCollectionLabel(collections: SelectedCollectionInfo[]): string {
     if (collections.length === 1) {
-        return truncateText(collections[0].collectionName || 'Collection', MAX_LABEL_ITEM_LENGTH);
+        return truncateText(collections[0].collectionName || t('Collection'), MAX_LABEL_ITEM_LENGTH);
     }
-    return `${collections.length} collections selected`;
+    return t('{count} collections selected', { count: collections.length });
 }
 
 function getSelectedLabel(items: Zotero.Item[]): string {
     if (items.length <= MAX_LABEL_ITEMS) {
         const names = items.map(i => getItemLabel(i));
-        return `${names.join(', ')}`;
+        return names.join(t(', '));
     }
-    if (items.every(i => i.isAttachment())) return `${items.length} selected attachments`;
-    if (items.every(i => i.isRegularItem())) return `${items.length} selected items`;
-    return `${items.length} selected items`;
+    if (items.every(i => i.isAttachment())) return t('{count} selected attachments', { count: items.length });
+    return t('{count} selected items', { count: items.length });
 }
 
 /** Display name for any item type — regular items use author/year, others use parent or display title */

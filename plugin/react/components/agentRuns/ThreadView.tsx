@@ -19,6 +19,7 @@ import {
 import { lastQuestionRunId } from "../../utils/conversationTurns";
 import { streamDisplayModeAtom } from "../../atoms/streamDisplay";
 import { logger } from "@beaver/agent-core/platform/logger";
+import { t } from '../../../src/utils/i18n';
 
 const BOTTOM_THRESHOLD = 120; // pixels
 const RESTORE_THRESHOLD = 100; // pixels - threshold for restoring scroll position
@@ -669,7 +670,7 @@ export const ThreadView = forwardRef<HTMLDivElement, ThreadViewProps>(
                     className={`display-flex flex-col flex-1 min-h-0 items-center justify-center ${className || ''}`}
                     ref={setScrollContainerRef}
                 >
-                    <p className="text-secondary">No messages yet</p>
+                    <p className="text-secondary">{t('No messages yet')}</p>
                 </div>
             );
         }
@@ -678,7 +679,7 @@ export const ThreadView = forwardRef<HTMLDivElement, ThreadViewProps>(
             <div
                 id="alphainz-thread-view"
                 role="log"
-                aria-label="Chat history"
+                aria-label={t('Chat history')}
                 className={`flex-1 min-h-0 overflow-y-auto scrollbar min-w-0 pb-4 ${className || ''}`}
                 onScroll={() => {
                     handleScroll();

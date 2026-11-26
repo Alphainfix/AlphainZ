@@ -41,6 +41,7 @@ import { searchableLibraryIdsAtom } from '../../../atoms/profile';
 import type { ZoteroItemReference } from '@beaver/agent-core/types/zotero';
 import type { ExternalReferenceActionMode, ExternalReferenceActionsProps } from '@beaver/agent-ui/host/types';
 import { resolveSearchableLibraryId } from '../libraryAccess';
+import { t } from '../../../../src/utils/i18n';
 
 const CITED_BY_URL = 'https://openalex.org/works?page=1&filter=cites:';
 
@@ -360,33 +361,33 @@ const ActionButtons: React.FC<ExternalReferenceActionsProps> = ({
             {/* Details button */}
             {renderButton(
                 detailsButtonMode,
-                'Show details',
-                'Details',
+                t('Show details'),
+                t('Details'),
                 InformationCircleIcon,
                 () => {
                     setSelectedReference(item);
                     setIsDetailsVisible(true);
                 },
                 !item.abstract,
-                'Show details',
+                t('Show details'),
                 detailsButtonMode=='icon-only' ? 'scale-90' : undefined
             )}
 
             {/* Web button */}
             {renderButton(
                 webButtonMode,
-                'Open website',
-                'Web',
+                t('Open website'),
+                t('Web'),
                 ArrowUpRightIcon,
                 () => (item.publication_url || item.url) ? Zotero.launchURL(item.url || item.publication_url!) : undefined,
                 !item.publication_url && !item.url,
-                'Open website'
+                t('Open website')
             )}
 
             {/* PDF button - always rendered, disabled when no PDF available */}
             {renderButton(
                 pdfButtonMode,
-                hasPdf ? 'Open PDF' : 'No PDF available',
+                hasPdf ? t('Open PDF') : t('No PDF available'),
                 'PDF',
                 PdfIcon,
                 () => {
@@ -397,7 +398,7 @@ const ActionButtons: React.FC<ExternalReferenceActionsProps> = ({
                     }
                 },
                 !hasPdf,
-                'Open PDF'
+                t('Open PDF')
             )}
 
             {/* Citation count */}
@@ -406,12 +407,12 @@ const ActionButtons: React.FC<ExternalReferenceActionsProps> = ({
                     onClick={() => Zotero.launchURL(`${CITED_BY_URL}${item.source_id}`)}
                     className="text-link-muted text-sm"
                 >
-                    Cited by {item.citation_count.toLocaleString()}
+                    {t('Cited by {count}', { count: item.citation_count.toLocaleString() })}
                 </a>
             )}
             {showCitationCount && item.citation_count !== undefined && item.citation_count === 0 && (
                 <div className="font-color-tertiary text-sm">
-                    Cited by {item.citation_count.toLocaleString()}
+                    {t('Cited by {count}', { count: item.citation_count.toLocaleString() })}
                 </div>
             )}
             {((
@@ -424,23 +425,23 @@ const ActionButtons: React.FC<ExternalReferenceActionsProps> = ({
             {/* Reveal button - shown when item exists in library */}
             {itemExists && zoteroItemRef && renderButton(
                 revealButtonMode,
-                'Reveal in Zotero',
-                'Reveal',
+                t('Reveal in Zotero'),
+                t('Reveal'),
                 isLoading ? () => <Spinner className="scale-14 -mr-1" /> : () => <ZoteroIcon icon={ZOTERO_ICONS.SHOW_ITEM} size={9} />,
                 () => revealSource(zoteroItemRef),
                 isLoading,
-                'Reveal in Zotero'
+                t('Reveal in Zotero')
             )}
 
             {/* Import button - shown when item doesn't exist in library */}
             {!itemExists && renderButton(
                 importButtonMode,
-                'Import to Zotero',
-                'Import',
+                t('Import to Zotero'),
+                t('Import'),
                 (isLoading || isImporting) ? () => <Spinner className="scale-14 -mr-1" /> : DownloadIcon,
                 handleImport,
                 isLoading || isImporting,
-                'Import to Zotero'
+                t('Import to Zotero')
             )}
         </div>
     );

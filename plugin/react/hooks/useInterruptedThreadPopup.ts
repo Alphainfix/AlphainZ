@@ -19,6 +19,7 @@ import {
     clearInterruptedThread,
     getInterruptedThread,
 } from '../../src/utils/interruptedThreadPrefs';
+import { t } from '../../src/utils/i18n';
 
 /** Shared with `useOnboardingPopups`, which stands down while this popup is up. */
 export const INTERRUPTED_THREAD_POPUP_ID = 'interrupted-thread-resume';
@@ -86,13 +87,13 @@ export function useInterruptedThreadPopup() {
         addFloatingPopupMessage({
             id: INTERRUPTED_THREAD_POPUP_ID,
             type: 'info',
-            title: 'AlphainZ chat was interrupted',
+            title: t('AlphainZ chat was interrupted'),
             text: interrupted.threadName
-                ? `AlphainZ closed before it finished working on “${interrupted.threadName}”.`
-                : 'AlphainZ closed before it finished working on your last chat.',
+                ? t('AlphainZ closed before it finished working on “{name}”.', { name: interrupted.threadName })
+                : t('AlphainZ closed before it finished working on your last chat.'),
             expire: false,
             button: {
-                text: 'Open chat',
+                text: t('Open chat'),
                 rightIcon: ArrowRightIcon,
                 variant: 'solid',
                 onClick: () => {

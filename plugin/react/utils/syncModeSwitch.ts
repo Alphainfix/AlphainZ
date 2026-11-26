@@ -19,6 +19,7 @@ import type { ExportAllOutcome } from '../../src/services/conversationSync/expor
 import { flushSettingsExportNow, forgetSettingsExchange } from '../../src/services/conversationSync/settingsSync';
 import { resetSyncHealth } from '../../src/services/conversationSync/syncHealth';
 import { CONVERSATIONS_TITLE } from '../../src/services/threadZoteroSync';
+import { joinSentences, t, tn } from '../../src/utils/i18n';
 
 export type SwitchOutcome = 'switched' | 'cancelled' | 'unchanged';
 
@@ -44,20 +45,21 @@ async function confirmDeletion(current: Exclude<ConversationSyncMode, 'off'>): P
         count = null;
     }
     const what = count === null
-        ? 'every conversation file'
-        : `${count} conversation file${count === 1 ? '' : 's'}`;
+        ? t('every conversation file')
+        : tn(count, '{count} conversation file', '{count} conversation files');
     const text = current === 'folder'
-        ? `This permanently deletes ${what} and the settings file from the sync folder. `
+        ? t('This permanently deletes {what} and the settings file from the sync folder. '
             + 'Your cloud service then removes them from your other computers\' copies of the folder too, '
             + 'and a chat archived on another computer that this one never opened exists only there. '
-            + 'Conversations on this computer are kept.'
-        : `This moves ${what} and the settings file under "${CONVERSATIONS_TITLE}" to Zotero's trash — `
-            + 'on your other computers too, once Zotero syncs. Conversations on this computer are kept.';
+            + 'Conversations on this computer are kept.', { what })
+        : t('This moves {what} and the settings file under "{title}" to Zotero\'s trash — '
+            + 'on your other computers too, once Zotero syncs. Conversations on this computer are kept.',
+            { what, title: CONVERSATIONS_TITLE });
     const answer = Zotero.Prompt.confirm({
         window: Zotero.getMainWindow(),
-        title: 'Delete the synced copies?',
+        title: t('Delete the synced copies?'),
         text,
-        button0: 'Delete',
+        button0: t('Delete'),
         button1: Zotero.Prompt.BUTTON_TITLE_CANCEL,
         defaultButton: 1,
     });
@@ -99,8 +101,8 @@ export async function confirmAndSwitchSyncMode(
     let deleteOldCopies = false;
     if (current !== 'off' && next !== current) {
         const where = current === 'zotero'
-            ? `the "${CONVERSATIONS_TITLE}" item in My Library`
-            : 'the sync folder';
+            ? t('the "{title}" item in My Library', { title: CONVERSATIONS_TITLE })
+            : t('the sync folder');
         /*
          * Three-way, with "keep" as the safe default: the copies are the
          * user's data sitting in their own storage, and deleting them is a
@@ -113,16 +115,15 @@ export async function confirmAndSwitchSyncMode(
          */
         const buttonIndex = Zotero.Prompt.confirm({
             window: Zotero.getMainWindow(),
-            title: 'Switch sync mode?',
-            text: `There are conversation copies stored in ${where}. `
-                + 'Keep them there, or delete them? Conversations on this '
-                + 'computer are kept either way.'
-                + (current === 'folder'
-                    ? ' Conflict copies (like "… 2.json") are always left for you to review.'
-                    : ''),
-            button0: 'Keep the copies',
+            title: t('Switch sync mode?'),
+            text: joinSentences([
+                t('There are conversation copies stored in {where}.', { where }),
+                t('Keep them there, or delete them? Conversations on this computer are kept either way.'),
+                current === 'folder' && t('Conflict copies (like "… 2.json") are always left for you to review.'),
+            ]),
+            button0: t('Keep the copies'),
             button1: Zotero.Prompt.BUTTON_TITLE_CANCEL,
-            button2: 'Delete them…',
+            button2: t('Delete them…'),
             defaultButton: 0,
         });
         if (buttonIndex === 2) {

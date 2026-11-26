@@ -19,6 +19,7 @@ import { indexDocumentChunks } from './fulltextIndex';
 import type { ChunkStore, IndexDocumentResult } from './fulltextIndex';
 import type { EmbeddingProvider } from './embeddings';
 import { isModelRequestError, isQuotaErrorCode } from './sse';
+import { joinSentences, t } from '../../utils/i18n';
 
 /** What the extractor hands back, matching what `indexDocumentChunks` takes. */
 export type ExtractedDocument = {
@@ -116,39 +117,51 @@ export function embeddingFailureBlame(error: unknown): EmbeddingFailureBlame {
  * The sentence the settings show for a paused run: what went wrong with the
  * provider, and what happens next.
  */
-export function describeIndexingPause(error: unknown): string {
-    const resumes = 'It picks up where it stopped on the next pass.';
+export function describeIndexingPause(error: unknown, index: 'text' | 'figures' = 'text'): string {
+    const details = indexingPauseDetails(error);
+    return index === 'figures'
+        ? t('Figure indexing paused: {details}', { details })
+        : t('Indexing paused: {details}', { details });
+}
+
+/** What went wrong with the provider and what happens next, after the "… paused:" lead. */
+function indexingPauseDetails(error: unknown): string {
+    const resumes = t('It picks up where it stopped on the next pass.');
     if (!isModelRequestError(error)) {
         const reason = (error instanceof Error ? error.message : String(error)).replace(/[.\s]+$/, '');
-        return `Indexing paused: ${reason}. ${resumes}`;
+        return joinSentences([t('{reason}.', { reason }), resumes]);
     }
-    const who = error.label ? `${error.label} embeddings` : 'The embedding provider';
+    const who = error.label ? t('{label} embeddings', { label: error.label }) : t('The embedding provider');
     const status = error.status;
     if (error.code === 'daily_quota') {
         const at = error.retryAfterMs !== undefined ? new Date(Date.now() + error.retryAfterMs) : null;
-        const when = at ? ` (${at.getHours()}:${String(at.getMinutes()).padStart(2, '0')} here)` : '';
-        const why = error.detail ? ` ${error.detail.replace(/\s*$/, '')}` : '';
-        return `Indexing paused: ${who} has used today’s allowance.${why} It continues by itself after `
-            + `midnight Pacific time${when}.`;
+        const time = at ? `${at.getHours()}:${String(at.getMinutes()).padStart(2, '0')}` : null;
+        return joinSentences([
+            t('{who} has used today’s allowance.', { who }),
+            error.detail ? error.detail.replace(/\s*$/, '') : null,
+            time
+                ? t('It continues by itself after midnight Pacific time ({time} here).', { time })
+                : t('It continues by itself after midnight Pacific time.'),
+        ]);
     }
     if (status === 401 || status === 403) {
-        return `Indexing paused: ${who} rejected the API key (${status}). Check the key under `
-            + 'Settings → Model → Providers; indexing resumes once it works.';
+        return t('{who} rejected the API key ({status}). Check the key under '
+            + 'Settings → Model → Providers; indexing resumes once it works.', { who, status });
     }
     if (isQuotaErrorCode(error.code) || status === 402) {
-        return `Indexing paused: ${who} reports the quota or balance is used up. ${resumes}`;
+        return joinSentences([t('{who} reports the quota or balance is used up.', { who }), resumes]);
     }
-    if (status === 429) return `Indexing paused: ${who} is limiting requests (429). ${resumes}`;
+    if (status === 429) return joinSentences([t('{who} is limiting requests (429).', { who }), resumes]);
     if (status === 404) {
-        return `Indexing paused: ${who} does not offer the embedding model (404). Check the provider's `
-            + 'address under Settings → Model → Providers.';
+        return t("{who} does not offer the embedding model (404). Check the provider's "
+            + 'address under Settings → Model → Providers.', { who });
     }
-    if (error.kind === 'network') return `Indexing paused: ${who} could not be reached. ${resumes}`;
-    if (error.kind === 'timeout') return `Indexing paused: ${who} did not answer in time. ${resumes}`;
+    if (error.kind === 'network') return joinSentences([t('{who} could not be reached.', { who }), resumes]);
+    if (error.kind === 'timeout') return joinSentences([t('{who} did not answer in time.', { who }), resumes]);
     if (status !== undefined && status >= 500) {
-        return `Indexing paused: ${who} had a server error (${status}). ${resumes}`;
+        return joinSentences([t('{who} had a server error ({status}).', { who, status }), resumes]);
     }
-    return `Indexing paused: ${error.message}. ${resumes}`;
+    return joinSentences([t('{reason}.', { reason: error.message }), resumes]);
 }
 
 /** Two short texts: a request that costs next to nothing, and still a batch. */

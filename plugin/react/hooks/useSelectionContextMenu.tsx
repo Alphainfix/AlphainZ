@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MenuPosition } from '@beaver/agent-ui/primitives/ContextMenu';
 import { getWindowFromElement, getDocumentFromElement } from '@beaver/agent-ui/utils/windowContext';
+import { t } from '../../src/utils/i18n';
 
 interface UseSelectionContextMenuOptions {
     onCopy?: (selectedText: string) => void;
@@ -130,7 +131,7 @@ export default function useSelectionContextMenu(
     // Generate menu items - default Copy action plus any custom items
     const menuItems = [
         {
-            label: 'Copy',
+            label: t('Copy'),
             onClick: defaultCopyHandler
         },
         ...(options.customMenuItems?.map(item => ({

@@ -11,6 +11,7 @@ import {
     streamDisplayModeAtom,
     type StreamDisplayMode,
 } from '../../../atoms/streamDisplay';
+import { t } from '../../../../src/utils/i18n';
 
 interface StreamDisplayButtonProps {
     className?: string;
@@ -30,14 +31,14 @@ interface StreamDisplayButtonProps {
  */
 const StreamDisplayButton: React.FC<StreamDisplayButtonProps> = ({
     className = '',
-    ariaLabel = 'Step display',
+    ariaLabel = t('Step display'),
 }) => {
     const [mode, setMode] = useAtom(streamDisplayModeAtom);
 
     const menuItems = useMemo<MenuItem[]>(
         () =>
             STREAM_DISPLAY_MODES.map((option: StreamDisplayMode) => ({
-                label: STREAM_DISPLAY_LABELS[option],
+                label: t(STREAM_DISPLAY_LABELS[option]),
                 role: 'menuitemradio' as const,
                 ariaChecked: mode === option,
                 onClick: () => setMode(option),
@@ -46,10 +47,10 @@ const StreamDisplayButton: React.FC<StreamDisplayButtonProps> = ({
                         <span
                             className={`text-sm ${mode === option ? 'font-color-primary font-semibold' : 'font-color-primary'}`}
                         >
-                            {STREAM_DISPLAY_LABELS[option]}
+                            {t(STREAM_DISPLAY_LABELS[option])}
                         </span>
                         <span className="text-xs font-color-tertiary">
-                            {STREAM_DISPLAY_HINTS[option]}
+                            {t(STREAM_DISPLAY_HINTS[option])}
                         </span>
                     </div>
                 ),
@@ -64,7 +65,7 @@ const StreamDisplayButton: React.FC<StreamDisplayButtonProps> = ({
             className={className}
             ariaLabel={ariaLabel}
             variant="ghost"
-            tooltipContent={STREAM_DISPLAY_LABELS[mode]}
+            tooltipContent={t(STREAM_DISPLAY_LABELS[mode])}
             showArrow={true}
         />
     );

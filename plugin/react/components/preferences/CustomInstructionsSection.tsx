@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { SectionLabel } from "./components/SettingsElements";
 import { getPref, setPref } from "../../../src/utils/prefs";
 import { logger } from "@beaver/agent-core/platform/logger";
+import { t } from '../../../src/utils/i18n';
 
 
 const CustomInstructionsSection: React.FC = () => {
@@ -35,16 +36,16 @@ const CustomInstructionsSection: React.FC = () => {
 
     return (
         <>
-            <SectionLabel>Custom Instructions</SectionLabel>
+            <SectionLabel>{t('Custom Instructions')}</SectionLabel>
             <div className="text-base font-color-secondary mb-2" style={{ paddingLeft: '2px' }}>
-                Custom instructions are added to all chats and help steer responses. (Max ~250 words)
+                {t('Custom instructions are added to all chats and help steer responses. (Max ~250 words)')}
             </div>
             <div className="custom-prompt-card" style={{ cursor: 'default' }}>
                 <textarea
                     value={customInstructions}
                     onChange={handleCustomInstructionsChange}
-                    placeholder="Enter custom instructions here..."
-                    aria-label="Custom instructions"
+                    placeholder={t('Enter custom instructions here...')}
+                    aria-label={t('Custom instructions')}
                     rows={5}
                     className="chat-input custom-prompt-edit-textarea text-base"
                     style={{ width: '100%', boxSizing: 'border-box', resize: 'vertical' }}
@@ -52,16 +53,16 @@ const CustomInstructionsSection: React.FC = () => {
                 />
             </div>
 
-            <SectionLabel>Reader Explain Prompt</SectionLabel>
+            <SectionLabel>{t('Reader Explain Prompt')}</SectionLabel>
             <div className="text-base font-color-secondary mb-2" style={{ paddingLeft: '2px' }}>
-                The prompt sent when you click "Explain" on selected text or annotations in the PDF reader.
+                {t('The prompt sent when you click "Explain" on selected text or annotations in the PDF reader.')}
             </div>
             <div className="custom-prompt-card" style={{ cursor: 'default' }}>
                 <textarea
                     value={readerExplainPrompt}
                     onChange={handleReaderExplainPromptChange}
-                    placeholder="Explain the selected passage from this paper in plain language..."
-                    aria-label="Reader explain prompt"
+                    placeholder={t('Explain the selected passage from this paper in plain language...')}
+                    aria-label={t('Reader explain prompt')}
                     rows={4}
                     className="chat-input custom-prompt-edit-textarea text-base"
                     style={{ width: '100%', boxSizing: 'border-box', resize: 'vertical' }}

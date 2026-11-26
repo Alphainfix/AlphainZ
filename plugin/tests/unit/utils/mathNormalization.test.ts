@@ -41,16 +41,16 @@ describe('normalizeMathEnvironments', () => {
     });
 
     it('leaves text with no environment untouched', () => {
-        expect(normalizeMathEnvironments('Just prose about $t_2^*$.')).toBe(
-            'Just prose about $t_2^*$.',
+        expect(normalizeMathEnvironments('Just prose about $x_2^*$.')).toBe(
+            'Just prose about $x_2^*$.',
         );
     });
 });
 
 describe('escapeCurrencyDollars', () => {
     it('leaves inline math alone', () => {
-        expect(escapeCurrencyDollars('The value $t_2^*$ matters.')).toBe(
-            'The value $t_2^*$ matters.',
+        expect(escapeCurrencyDollars('The value $x_2^*$ matters.')).toBe(
+            'The value $x_2^*$ matters.',
         );
     });
 
@@ -66,7 +66,7 @@ describe('escapeCurrencyDollars', () => {
     });
 
     it('leaves display math whole', () => {
-        const src = 'Result:\n\n$$\n\\frac{1}{t_2} = \\lambda N\n$$\n';
+        const src = 'Result:\n\n$$\n\\frac{1}{x_2} = \\lambda N\n$$\n';
         expect(escapeCurrencyDollars(src)).toBe(src);
     });
 
@@ -106,16 +106,16 @@ describe('normalizeMathDelimiters', () => {
     it('rewrites the form a model actually reaches for', () => {
         // Asked in Chinese about bread proofing, gpt-5.6 wrote every symbol
         // in the answer this way rather than with dollars.
-        expect(normalizeMathDelimiters('导致 \\(t_2^*\\) 变短'))
-            .toBe('导致 $t_2^*$ 变短');
+        expect(normalizeMathDelimiters('导致 \\(x_2^*\\) 变短'))
+            .toBe('导致 $x_2^*$ 变短');
     });
 
     it('trims the body, so the next pass does not read it as currency', () => {
-        // `$ t_2 $` has whitespace against both delimiters, which is exactly
+        // `$ x_2 $` has whitespace against both delimiters, which is exactly
         // how escapeCurrencyDollars tells a price from a formula — leaving the
         // spaces in turns the formula back into escaped prose.
-        expect(normalizeMathDelimiters('导致 \\( t_2^* \\) 变短'))
-            .toBe('导致 $t_2^*$ 变短');
+        expect(normalizeMathDelimiters('导致 \\( x_2^* \\) 变短'))
+            .toBe('导致 $x_2^*$ 变短');
     });
 
     it('promotes the display pair to its own block', () => {
@@ -137,10 +137,10 @@ describe('normalizeMathDelimiters', () => {
     it('survives the full pipeline in the order the renderer applies it', () => {
         const out = escapeCurrencyDollars(
             normalizeMathEnvironments(
-                normalizeMathDelimiters('导致 \\( t_2^* \\) 变短，而 \\(t_2\\) 不同'),
+                normalizeMathDelimiters('导致 \\( x_2^* \\) 变短，而 \\(x_2\\) 不同'),
             ),
         );
-        expect(out).toBe('导致 $t_2^*$ 变短，而 $t_2$ 不同');
+        expect(out).toBe('导致 $x_2^*$ 变短，而 $x_2$ 不同');
         expect(out).not.toContain('\\$');
     });
 });

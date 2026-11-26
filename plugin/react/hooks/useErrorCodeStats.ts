@@ -10,6 +10,7 @@ import {
 } from '../atoms/files';
 import { attachmentsService } from '../../src/services/attachmentsService';
 import { planFeaturesAtom } from '../atoms/profile';
+import { t } from '../../src/utils/i18n';
 
 /**
  * Custom hook to fetch and manage error code statistics for file processing.
@@ -88,7 +89,7 @@ export const useErrorCodeStats = () => {
             });
         } catch (err) {
             console.error("Failed to fetch error code stats:", err);
-            setError("Could not load details.");
+            setError(t("Could not load details."));
         } finally {
             setIsLoading(false);
         }

@@ -3,6 +3,7 @@ import IconButton from '@beaver/agent-ui/primitives/IconButton';
 import Tooltip from '@beaver/agent-ui/primitives/Tooltip';
 import { SettingsIcon } from '../../icons/icons';
 import { openPreferencesWindow } from '../../../../src/ui/openPreferencesWindow';
+import { t } from '../../../../src/utils/i18n';
 
 interface UserAccountMenuButtonProps {
     className?: string;
@@ -18,9 +19,9 @@ interface UserAccountMenuButtonProps {
  */
 const UserAccountMenuButton: React.FC<UserAccountMenuButtonProps> = ({
     className = '',
-    ariaLabel = 'Settings',
+    ariaLabel = t('Settings'),
 }) => (
-    <Tooltip content="Settings" showArrow singleLine>
+    <Tooltip content={t('Settings')} showArrow singleLine>
         <IconButton
             icon={SettingsIcon}
             onClick={() => openPreferencesWindow()}

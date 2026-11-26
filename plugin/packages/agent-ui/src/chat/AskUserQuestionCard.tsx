@@ -27,6 +27,7 @@ import {
     Icon,
     StopStrokeIcon,
 } from '../icons';
+import { t } from '../i18n';
 
 export interface AskUserQuestionCardProps {
     /** The request the run is blocked on, as the backend asked it. */
@@ -153,7 +154,7 @@ export const AskUserQuestionCard: React.FC<AskUserQuestionCardProps> = ({
             className="user-message-display"
             style={{ minHeight: 'fit-content' }}
             role="group"
-            aria-label={total > 1 ? `Question ${index + 1} of ${total}` : 'Question'}
+            aria-label={total > 1 ? t('Question {number} of {total}', { number: index + 1, total }) : t('Question')}
         >
             <div className="display-flex flex-col gap-15">
                 {/* Header: per-question label + stepper. The question's short
@@ -164,24 +165,24 @@ export const AskUserQuestionCard: React.FC<AskUserQuestionCardProps> = ({
                         className="font-color-primary text-sm font-semibold uppercase truncate"
                         style={{ letterSpacing: '0.05em' }}
                     >
-                        {question.header || pendingQuestion.title || 'Question'}
+                        {question.header || pendingQuestion.title || t('Question')}
                     </div>
                     {total > 1 && (
                         <div className="display-flex flex-row items-center gap-1 flex-none">
                             <IconButton
                                 icon={ArrowLeftIcon}
                                 variant="ghost-secondary"
-                                ariaLabel="Previous question"
+                                ariaLabel={t('Previous question')}
                                 onClick={() => setIndex((i) => Math.max(0, i - 1))}
                                 disabled={index === 0 || isSubmitted}
                             />
                             <span className="text-sm font-color-tertiary whitespace-nowrap">
-                                {index + 1} of {total}
+                                {t('{number} of {total}', { number: index + 1, total })}
                             </span>
                             <IconButton
                                 icon={ArrowRightIcon}
                                 variant="ghost-secondary"
-                                ariaLabel="Next question"
+                                ariaLabel={t('Next question')}
                                 onClick={() => setIndex((i) => Math.min(total - 1, i + 1))}
                                 disabled={isLast || isSubmitted}
                             />
@@ -195,7 +196,7 @@ export const AskUserQuestionCard: React.FC<AskUserQuestionCardProps> = ({
                         {question.question}
                         {question.allow_multiple && (
                             <span className="font-color-secondary text-base ml-2">
-                                (Multiple choice)
+                                {t('(Multiple choice)')}
                             </span>
                         )}
                     </div>
@@ -244,7 +245,7 @@ export const AskUserQuestionCard: React.FC<AskUserQuestionCardProps> = ({
                                 <button
                                     type="button"
                                     aria-pressed={isOther}
-                                    aria-label="Other (custom answer)"
+                                    aria-label={t('Other (custom answer)')}
                                     disabled={isSubmitted}
                                     onClick={() => handleOtherClick(question)}
                                     className="display-flex mt-15"
@@ -267,8 +268,8 @@ export const AskUserQuestionCard: React.FC<AskUserQuestionCardProps> = ({
                                     ref={textareaRef}
                                     className="chat-input"
                                     rows={1}
-                                    placeholder="Other..."
-                                    aria-label={`Custom answer for: ${question.question}`}
+                                    placeholder={t('Other...')}
+                                    aria-label={t('Custom answer for: {question}', { question: question.question })}
                                     value={draft.customTexts[question.id] ?? ''}
                                     disabled={isSubmitted}
                                     style={{ flex: 1 }}
@@ -295,36 +296,36 @@ export const AskUserQuestionCard: React.FC<AskUserQuestionCardProps> = ({
 
                 {/* Footer: Stop ... Skip Next/Submit */}
                 <div className="display-flex flex-row items-center pt-2 gap-2">
-                    <Tooltip content="Stop the agent run" showArrow singleLine>
+                    <Tooltip content={t('Stop the agent run')} showArrow singleLine>
                         <Button
                             variant="outline"
                             rightIcon={StopStrokeIcon}
-                            ariaLabel="Stop generating"
+                            ariaLabel={t('Stop generating')}
                             style={{ padding: '2px 5px' }}
                             onClick={onStop}
                         >
-                            Stop
+                            {t('Stop')}
                         </Button>
                     </Tooltip>
                     <div className="flex-1" />
                     <Button
                         variant="ghost"
-                        ariaLabel={isLast ? 'Skip this question and submit' : 'Skip this question'}
+                        ariaLabel={isLast ? t('Skip this question and submit') : t('Skip this question')}
                         onClick={handleSkip}
                         disabled={isSubmitted}
                     >
-                        Skip
+                        {t('Skip')}
                     </Button>
                     <Button
                         variant="solid"
-                        ariaLabel={isLast ? 'Submit answers' : 'Next question'}
+                        ariaLabel={isLast ? t('Submit answers') : t('Next question')}
                         style={{ padding: '2px 5px' }}
                         onClick={handleNext}
                         disabled={!isQuestionAnswered(question, draft) || isSubmitted}
                     >
                         {isLast
-                            ? (<span>Submit <span className="opacity-50">⏎</span></span>)
-                            : (<span>Next <span className="opacity-50">⏎</span></span>)}
+                            ? (<span>{t('Submit')}{' '}<span className="opacity-50">⏎</span></span>)
+                            : (<span>{t('Next')}{' '}<span className="opacity-50">⏎</span></span>)}
                     </Button>
                 </div>
             </div>

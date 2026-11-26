@@ -10,6 +10,7 @@ import { SettingsIcon }  from "../icons/icons";
 import { openPreferencesWindow } from "../../../src/ui/openPreferencesWindow";
 import { useAgentConfigured } from "../../hooks/useAgentConfigured";
 import Button from "@beaver/agent-ui/primitives/Button";
+import { t } from '../../../src/utils/i18n';
 
 interface HomePageProps {
     isWindow?: boolean;
@@ -23,14 +24,14 @@ const AllLibrariesExcludedMessage = () => (
         style={{ color: 'var(--tag-red-secondary)', border: '1px solid var(--tag-red-tertiary)', background: 'var(--tag-red-quinary)' }}
     >
         <span className="flex-1">
-            AlphainZ can't access any libraries. You've excluded all of them.
+            {t('AlphainZ can\'t access any libraries. You\'ve excluded all of them.')}
         </span>
         <Button
             variant="error"
             icon={SettingsIcon}
             onClick={() => openPreferencesWindow('sync')}
         >
-            Open Settings
+            {t('Open Settings')}
         </Button>
     </div>
 );
@@ -47,14 +48,14 @@ const NoModelConfiguredMessage = () => (
         className="display-flex flex-row items-center gap-2 text-sm p-2 rounded-md bg-quinary"
     >
         <span className="flex-1 font-color-secondary">
-            No model is configured yet. Choose a provider and paste your API key to start.
+            {t('No model is configured yet. Choose a provider and paste your API key to start.')}
         </span>
         <Button
             variant="outline"
             icon={SettingsIcon}
             onClick={() => openPreferencesWindow('models')}
         >
-            Open Settings
+            {t('Open Settings')}
         </Button>
     </div>
 );
@@ -74,7 +75,7 @@ const HomePage: React.FC<HomePageProps> = ({ isWindow = false, inputRef }) => {
                 <div className="flex-1" style={{ minHeight: '2vh', maxHeight: '4vh' }} />
 
                 {/* Greeting */}
-                <div className="text-2xl font-semibold text-center p-2">How can I help you?</div>
+                <div className="text-2xl font-semibold text-center p-2">{t('How can I help you?')}</div>
 
                 {/* Input area */}
                 <DragDropWrapper>

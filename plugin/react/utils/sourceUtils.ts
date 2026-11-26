@@ -27,6 +27,7 @@ import {
     normalizeCitationTag,
     parseRawCitationAttributes,
 } from '@beaver/agent-core/citations/citationGrammar';
+import { t } from '../../src/utils/i18n';
 
 // Constants
 export const MAX_NOTE_CONTENT_LENGTH = 150;
@@ -112,12 +113,12 @@ export async function isValidZoteroItem(item: Zotero.Item): Promise<{valid: bool
 
     // User ID
     const userID = store.get(userIdAtom);
-    if (!userID) return {valid: false, error: "User ID not found. Make sure you are logged in."};
+    if (!userID) return {valid: false, error: t("User ID not found. Make sure you are logged in.")};
 
     // Item library
     const library = Zotero.Libraries.get(item.libraryID);
     if (!library) {
-        return {valid: false, error: "Library not found"};
+        return {valid: false, error: t("Library not found")};
     }
 
     // Is library searchable?
@@ -127,17 +128,17 @@ export async function isValidZoteroItem(item: Zotero.Item): Promise<{valid: bool
         return {
             valid: false,
             error: library_name
-                ? `The library "${library_name}" is excluded from AlphainZ. You can update this setting in AlphainZ Settings.`
-                : "This library is excluded from AlphainZ. You can update this setting in AlphainZ Settings."};
+                ? t('The library "{name}" is excluded from AlphainZ. You can update this setting in AlphainZ Settings.', { name: library_name })
+                : t("This library is excluded from AlphainZ. You can update this setting in AlphainZ Settings.")};
     }
 
     // ------- Regular items -------
     if (item.isRegularItem()) {
-        if (item.isInTrash()) return {valid: false, error: "Item is in trash"};
+        if (item.isInTrash()) return {valid: false, error: t("Item is in trash")};
 
         // (a) Pass the supported-item filter
         if (!(await agentItemFilterAsync(item))) {
-            return {valid: false, error: "File not available to use in AlphainZ"};
+            return {valid: false, error: t("File not available to use in AlphainZ")};
         }
 
         return {valid: true};
@@ -148,21 +149,21 @@ export async function isValidZoteroItem(item: Zotero.Item): Promise<{valid: bool
 
         // (a) Check if attachment is supported
         if (!isAgentSupportedItem(item)) {
-            return {valid: false, error: "AlphainZ only supports PDF, EPUB, and plain-text attachments"};
+            return {valid: false, error: t("AlphainZ only supports PDF, EPUB, and plain-text attachments")};
         }
 
         // (b) Check if attachment is in trash
-        if (item.isInTrash()) return {valid: false, error: "Item is in trash"};
+        if (item.isInTrash()) return {valid: false, error: t("Item is in trash")};
 
         
         // (c) Check if file exists locally or on server
         if (!(await safeFileExists(item)) && !isAttachmentOnServer(item)) {
-            return {valid: false, error: "File unavailable locally and on server"};
+            return {valid: false, error: t("File unavailable locally and on server")};
         }
 
         // (d) Use the comprehensive supported-item filter
         if (!(await agentItemFilterAsync(item))) {
-            return {valid: false, error: "Attachment not available to use in AlphainZ"};
+            return {valid: false, error: t("Attachment not available to use in AlphainZ")};
         }
         
         // Confirm upload status
@@ -177,34 +178,34 @@ export async function isValidZoteroItem(item: Zotero.Item): Promise<{valid: bool
     // ------- Annotations -------
     else if (item.isAnnotation()) {
         // (a) Check if the annotation type is valid
-        if (!isValidAnnotationType(item.annotationType)) return {valid: false, error: "Invalid annotation type"};
+        if (!isValidAnnotationType(item.annotationType)) return {valid: false, error: t("Invalid annotation type")};
 
         // (b) Check if annotation is empty
-        if (item.annotationType === 'underline' && !item.annotationText && !item.annotationComment) return {valid: false, error: "Annotation is empty"};
-        if (item.annotationType === 'highlight' && !item.annotationText && !item.annotationComment) return {valid: false, error: "Annotation is empty"};
+        if (item.annotationType === 'underline' && !item.annotationText && !item.annotationComment) return {valid: false, error: t("Annotation is empty")};
+        if (item.annotationType === 'highlight' && !item.annotationText && !item.annotationComment) return {valid: false, error: t("Annotation is empty")};
         // if (item.annotationType === 'note' && !item.annotationText && !item.annotationComment) return {valid: false, error: "Annotation is empty"};
 
         // (c) Check if the parent exists and is an attachment
         const parent = item.parentItem;
-        if (!parent || !parent.isAttachment()) return {valid: false, error: "Parent item is not an attachment"};
+        if (!parent || !parent.isAttachment()) return {valid: false, error: t("Parent item is not an attachment")};
 
         // (d) Check if the parent is available to Beaver
-        if (!agentItemFilter(parent)) return {valid: false, error: "Parent item is not available to use in AlphainZ"};
+        if (!agentItemFilter(parent)) return {valid: false, error: t("Parent item is not available to use in AlphainZ")};
 
         // (e) Check if the parent file exists
         const hasFile = await safeFileExists(parent);
-        if (!hasFile) return {valid: false, error: "Parent file does not exist"};
+        if (!hasFile) return {valid: false, error: t("Parent file does not exist")};
 
         return {valid: true};
     }
 
     // ------- Notes -------
     else if (item.isNote()) {
-        if (item.isInTrash()) return {valid: false, error: "Note is in trash"};
+        if (item.isInTrash()) return {valid: false, error: t("Note is in trash")};
         return {valid: true};
     }
 
-    return {valid: false, error: "Invalid item type"};
+    return {valid: false, error: t("Invalid item type")};
 }
 
 /**

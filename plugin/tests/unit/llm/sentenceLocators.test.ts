@@ -38,7 +38,7 @@ const DOC = {
                     sentence('s2', 'The second sentence.', [[10, 34, 180, 46]]),
                 ],
             },
-            { id: 'margin1', kind: 'margin', text: 'PHYSICAL REVIEW B 102, 134210 (2020)' },
+            { id: 'margin1', kind: 'margin', text: 'ECOLOGY LETTERS 23, 1342 (2020)' },
         ]),
         page(1, [
             {
@@ -97,7 +97,7 @@ describe('rendering a page', () => {
     });
 
     it('drops the running head', () => {
-        expect(renderPageWithLocators(DOC.pages[0])).not.toContain('PHYSICAL REVIEW B');
+        expect(renderPageWithLocators(DOC.pages[0])).not.toContain('ECOLOGY LETTERS');
     });
 
     it('knows when a document has no locators at all', () => {

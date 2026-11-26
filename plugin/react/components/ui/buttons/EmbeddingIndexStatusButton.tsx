@@ -13,6 +13,7 @@ import { AlertIcon, SyncIcon } from "../../icons/icons";
 import Tooltip from "@beaver/agent-ui/primitives/Tooltip";
 import { logger } from "@beaver/agent-core/platform/logger";
 import { openPreferencesWindow } from "../../../../src/ui/openPreferencesWindow";
+import { t, tn } from '../../../../src/utils/i18n';
 
 /**
  * Index status, in the toolbar.
@@ -104,7 +105,7 @@ export function describeIndexStatus(input: IndexStatusInput): IndexStatus {
         if (!metadataRunning && !fulltextRunning) {
             return {
                 visible: true, isIndexing: true, pass: null, percent: null,
-                title: 'Indexing', preferencesTab: 'sync',
+                title: t('Indexing'), preferencesTab: 'sync',
             };
         }
 
@@ -137,7 +138,7 @@ export function describeIndexStatus(input: IndexStatusInput): IndexStatus {
             isIndexing: true,
             pass: metadataRunning ? 'metadata' : 'fulltext',
             percent,
-            title: metadataRunning ? 'Indexing titles and abstracts' : 'Reading your PDFs',
+            title: metadataRunning ? t('Indexing titles and abstracts') : t('Reading your PDFs'),
             detail: percent === null
                 ? undefined
                 : `${percent}% · ${done.toLocaleString()}/${total.toLocaleString()} ${unit}`,
@@ -150,16 +151,16 @@ export function describeIndexStatus(input: IndexStatusInput): IndexStatus {
     if (hasError) {
         return {
             visible: true, isIndexing: false, pass: null, percent: null,
-            title: 'Indexing Error',
-            detail: embedding.error || 'Click to retry',
+            title: t('Indexing Error'),
+            detail: embedding.error || t('Click to retry'),
             preferencesTab: null,
         };
     }
 
     return {
         visible: true, isIndexing: false, pass: null, percent: null,
-        title: `${embedding.failedItems} items failed to index`,
-        detail: 'Click to retry indexing',
+        title: tn(embedding.failedItems, '{count} item failed to index', '{count} items failed to index'),
+        detail: t('Click to retry indexing'),
         preferencesTab: null,
     };
 }
@@ -205,7 +206,7 @@ const EmbeddingIndexStatusButton: React.FC = () => {
         : (isHovered ? "" : "font-color-red");
     const ariaLabel = status.isIndexing
         ? `${status.title}${status.percent !== null ? `, ${status.percent} percent` : ''}`
-        : "Rebuild Search Index";
+        : t("Rebuild Search Index");
 
     return (
         <Tooltip
