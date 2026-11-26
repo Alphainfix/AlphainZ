@@ -51,7 +51,8 @@ AlphainZ 会自己决定怎么找，几种方式一起用：
 - **找库外的文献。** 通过 OpenAlex 检索文献，把找到的加进某个分类。
 - **长对话不贵。** 对话变长时，较早的部分会自动压缩成摘要；每个问题都有输出和步数的上限。
 - **多台电脑一起用。** 对话和设置可以通过 Zotero 或你选的文件夹（iCloud Drive、OneDrive 等）同步；API key 只留在填它的那台电脑上。
-- **给其他 AI 工具用。** 在 设置 → Advanced → MCP Server 里打开后，AlphainZ 会在 Zotero 数据文件夹里生成一个小桥接文件`alphainz-mcp-stdio.mjs`。在 Claude Desktop 这类客户端里把它加成用 `node` 运行的 stdio 服务器，Zotero 开着时，客户端就能搜索你的文献库。
+- **中英文界面。** 界面有英文和简体中文两种：在欢迎页第一页选，或者在 设置 → 常规 → 外观 里改，默认跟随 Zotero 的语言。
+- **给其他 AI 工具用。** 在 设置 → 高级 → MCP 服务器 里打开后，AlphainZ 会在 Zotero 数据文件夹里生成一个小桥接文件`alphainz-mcp-stdio.mjs`。在 Claude Desktop 这类客户端里把它加成用 `node` 运行的 stdio 服务器。Zotero 开着时，客户端就能按元数据、主题或全文的意思搜索你的文献库，用文字描述找图，读论文、看页面，读你的笔记、高亮和批注。
 
 ## 语义的图片/文字搜索准确度
 
@@ -113,7 +114,7 @@ AlphainZ 本身免费，花的只是付给模型厂商的 token 费用。按 62 
 
 1. 从[最新版本](https://github.com/Alphainfix/AlphainZ/releases/latest)下载 `.xpi` 文件。
 2. 在 Zotero 7 或更新版本里：工具 → 插件 → 右上角齿轮 → Install Plugin From File…，选这个文件。
-3. 点工具栏上的 AlphainZ 按钮打开，然后 设置 → Model → Add provider：贴上 key，选一个模型。
+3. 点工具栏上的 AlphainZ 按钮打开，然后 设置 → 模型 → 添加服务商：贴上 key，选一个模型。
 
 之后 Zotero 会自己从这个仓库检查新版本。
 
@@ -136,6 +137,13 @@ npm test
 ```
 
 `.env.production` 里的值只是占位：从 Beaver 继承来的一个组件仍会创建一个用不到的客户端，没有这些值就加载不了。
+
+## 更新记录
+
+- **0.1.80**（2026-11-25）：中文界面；MCP 多了 8 个读库工具（按意思搜全文、找图、看页面和图片、读高亮和批注）。
+- **0.1.78**（2026-10-30）：第一个公开版。
+
+每一版的完整说明见[发布页](https://github.com/Alphainfix/AlphainZ/releases)。
 
 ## 许可证
 
