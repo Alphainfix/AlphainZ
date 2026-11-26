@@ -10,10 +10,11 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { runAgentLoop } from '../../../src/services/llm/agentLoop';
-import { runLocalAgent, type LocalRunCallbacks } from '../../../src/services/llm/localRunner';
-import { parseSseStream, type StreamEvent } from '../../../src/services/llm/sse';
-import type { ChatProvider, ToolSchema } from '../../../src/services/llm/types';
+import { runAgentLoop } from '@beaver/agent-llm/agentLoop';
+import { runLocalAgent, type LocalRunCallbacks } from '@beaver/agent-llm/localRunner';
+import { WRITE_TOOL_NAMES } from '../../../src/services/llm/writeTools';
+import { parseSseStream, type StreamEvent } from '@beaver/agent-llm/sse';
+import type { ChatProvider, ToolSchema } from '@beaver/agent-llm/types';
 
 function readerOf(chunks: string[]): ReadableStreamDefaultReader<Uint8Array> {
     const encoder = new TextEncoder();
@@ -127,7 +128,8 @@ function recorder() {
     return { callbacks, events };
 }
 
-const base = { runId: 'run-1', threadId: 't', messages: [{ role: 'user' as const, content: 'go' }] };
+// The plugin tells the runner which of its tools are writes; so do these tests.
+const base = { runId: 'run-1', threadId: 't', messages: [{ role: 'user' as const, content: 'go' }], writeTools: WRITE_TOOL_NAMES };
 
 describe('parseSseStream / a stream that simply stops', () => {
     it('reports a reply cut off with no finish reason and no end marker as interrupted', async () => {

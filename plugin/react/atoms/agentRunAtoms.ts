@@ -66,7 +66,7 @@ import { buildAgentFromPrefs, isLocalBrain } from '../../src/services/llm/agentC
  * back to the opening line. The other dynamic imports nearby work only because
  * something else in this bundle already pulls those modules in statically.
  */
-import { generateThreadTitle } from '../../src/services/llm/threadTitle';
+import { generateThreadTitle } from '@beaver/agent-llm/threadTitle';
 import { selectedModelAtom, ModelConfig } from './models';
 import { getPref } from '../../src/utils/prefs';
 import { executeLocalRequest } from './executeLocalRun';

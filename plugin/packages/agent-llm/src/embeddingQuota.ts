@@ -16,7 +16,7 @@
  * midnight Pacific time.
  */
 
-import { getPref, setPref } from '../../utils/prefs';
+import { getPref, setPref } from './prefs';
 import { msUntilPacificMidnight, type EmbeddingRequestOutcome } from './embeddings';
 import { ModelRequestError, isModelRequestError } from './sse';
 

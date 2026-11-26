@@ -23,7 +23,7 @@ import {
     isLocalBrain,
     ollamaApiBaseUrl,
 } from '../../../src/services/llm/agentConfig';
-import { PROVIDER_PRESETS, presetSupportsVision } from '../../../src/services/llm/openAICompatible';
+import { PROVIDER_PRESETS, presetSupportsVision } from '@beaver/agent-llm/openAICompatible';
 
 beforeEach(() => {
     for (const k of Object.keys(prefs)) delete prefs[k];

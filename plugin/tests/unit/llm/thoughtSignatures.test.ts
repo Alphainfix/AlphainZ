@@ -6,10 +6,10 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { runAgentLoop } from '../../../src/services/llm/agentLoop';
-import { toOpenAIMessages } from '../../../src/services/llm/openAICompatible';
-import { parseSseStream, type StreamEvent } from '../../../src/services/llm/sse';
-import type { ChatMessage, ChatProvider, ToolSchema } from '../../../src/services/llm/types';
+import { runAgentLoop } from '@beaver/agent-llm/agentLoop';
+import { toOpenAIMessages } from '@beaver/agent-llm/openAICompatible';
+import { parseSseStream, type StreamEvent } from '@beaver/agent-llm/sse';
+import type { ChatMessage, ChatProvider, ToolSchema } from '@beaver/agent-llm/types';
 
 const SIGNATURE = { google: { thought_signature: 'EmkKZwFpFH0TGZDc' } };
 

@@ -12,7 +12,7 @@ import {
     pendingCandidates,
     runFulltextIndex,
     type FulltextCandidate,
-} from '../../../src/services/llm/fulltextIndexer';
+} from '@beaver/agent-llm/fulltextIndexer';
 
 const candidate = (key: string): FulltextCandidate => ({
     libraryId: 1,

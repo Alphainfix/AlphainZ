@@ -17,7 +17,14 @@
 
 import type { ChatProvider } from './types';
 import { COMPACT_AT_WINDOW_SHARE } from './thinkingTiers';
-import type { ThreadCompaction } from '../database';
+
+/** A thread's stored summary: its text, the last run it covers, and how many runs that is. */
+export interface ThreadCompaction {
+    summary: string;
+    throughRunId: string;
+    createdAt: string;
+    runCount: number;
+}
 
 /** Runs newer than this many are never compacted: the model keeps their full replay. */
 export const KEEP_RECENT_RUNS = 4;
@@ -73,13 +80,24 @@ const CLIP_ANSWER_CHARS = 900;
 /** A summary that outgrows this failed at its one job. */
 const MAX_SUMMARY_CHARS = 2400;
 
-const PROMPT = [
-    'Summarize the earlier part of this conversation between a user and a research assistant working inside their Zotero library.',
-    'The summary will be the ONLY memory of these exchanges in future turns, so keep every fact that a follow-up question might rely on.',
-    'Structure it as short sections: Topic; Key findings so far; Decisions and preferences the user stated; Open questions.',
-    'Keep paper titles, page numbers, and citation ids (like u-XXXXXXXX or W123456) exactly as written — they are how sources are referred to later.',
-    'Write in the language the user wrote in. At most 250 words. Reply with the summary alone.',
-].join(' ');
+/**
+ * What the model is asked to write. Two parts differ per client: where the
+ * conversation happens (`place`, e.g. "working inside their Zotero library")
+ * and how its sources are named (`sources`, e.g. "paper titles, page numbers,
+ * and citation ids (like u-XXXXXXXX)"), which the summary must keep verbatim.
+ */
+export function summaryPrompt(place: string, sources: string): string {
+    return [
+        `Summarize the earlier part of this conversation between a user and a research assistant${place ? ` ${place}` : ''}.`,
+        'The summary will be the ONLY memory of these exchanges in future turns, so keep every fact that a follow-up question might rely on.',
+        'Structure it as short sections: Topic; Key findings so far; Decisions and preferences the user stated; Open questions.',
+        `Keep ${sources} exactly as written — they are how sources are referred to later.`,
+        'Write in the language the user wrote in. At most 250 words. Reply with the summary alone.',
+    ].join(' ');
+}
+
+/** The prompt for a client that does not supply its own. */
+const DEFAULT_PROMPT = summaryPrompt('', 'titles, page numbers, links and citation ids');
 
 /** The slice of a stored run the summary prompt needs. */
 export interface CompactableRun {
@@ -128,8 +146,9 @@ export function buildCompactionInput(runs: CompactableRun[], priorSummary?: stri
 export async function generateThreadSummary(
     provider: ChatProvider,
     input: string,
-    signal?: AbortSignal,
+    options: { signal?: AbortSignal; prompt?: string } = {},
 ): Promise<string | null> {
+    const { signal, prompt = DEFAULT_PROMPT } = options;
     const body = input.trim();
     if (!body) return null;
 
@@ -138,7 +157,7 @@ export async function generateThreadSummary(
         await provider.stream(
             {
                 messages: [
-                    { role: 'system', content: PROMPT },
+                    { role: 'system', content: prompt },
                     { role: 'user', content: body },
                 ],
                 tools: [],

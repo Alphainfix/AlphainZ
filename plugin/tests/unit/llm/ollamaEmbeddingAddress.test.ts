@@ -9,8 +9,8 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { embeddingProviderFromPreset } from '../../../src/services/llm/embeddings';
-import { verifyEmbeddingProvider } from '../../../src/services/llm/verifyKey';
+import { embeddingProviderFromPreset } from '@beaver/agent-llm/embeddings';
+import { verifyEmbeddingProvider } from '@beaver/agent-llm/verifyKey';
 
 function embeddingFetch() {
     const urls: string[] = [];

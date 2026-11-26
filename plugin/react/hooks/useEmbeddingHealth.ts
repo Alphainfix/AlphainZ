@@ -9,7 +9,7 @@
 import { useEffect, useState } from 'react';
 
 import { currentEmbeddingModelId } from '../../src/services/llm/agentConfig';
-import { readEmbeddingHealth, type EmbeddingHealth } from '../../src/services/llm/embeddingHealth';
+import { readEmbeddingHealth, type EmbeddingHealth } from '@beaver/agent-llm/embeddingHealth';
 import pkg from '../../package.json';
 
 const WATCHED = ['embeddingHealth', 'embeddingProvider'];

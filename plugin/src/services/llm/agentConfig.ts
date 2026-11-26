@@ -18,9 +18,9 @@ import {
     type EmbeddingPresetId,
     type EmbeddingProvider,
     type EmbeddingRequestOutcome,
-} from './embeddings';
-import { noteEmbeddingOutcome } from './embeddingHealth';
-import { geminiIndexPacing } from './embeddingQuota';
+} from '@beaver/agent-llm/embeddings';
+import { noteEmbeddingOutcome } from '@beaver/agent-llm/embeddingHealth';
+import { geminiIndexPacing } from '@beaver/agent-llm/embeddingQuota';
 import {
     PROVIDER_PRESETS,
     RETIRED_MODELS,
@@ -29,8 +29,8 @@ import {
     providerFromPreset,
     retireChoice,
     type ProviderPresetId,
-} from './openAICompatible';
-import { probeVision, refreshVisionCapability, visionProbeApplies, type VisionProbeVerdict } from './visionProbe';
+} from '@beaver/agent-llm/openAICompatible';
+import { probeVision, refreshVisionCapability, visionProbeApplies, type VisionProbeVerdict } from '@beaver/agent-llm/visionProbe';
 import {
     DEFAULT_CUSTOM_MAX_TOKENS,
     customModelCapabilities,
@@ -39,23 +39,23 @@ import {
     findCustomModel,
     isCustomProviderId,
     updateCustomModel,
-} from './customEndpoints';
-import { readRunLimits, resolveOutputTokens } from './runLimits';
-import { THINKING_TIERS, isThinkingTier, nearestTier, type ThinkingTier } from './thinkingTiers';
-import { modelContextWindow, modelThinkingTiers, presetModelOutputTokens } from './modelTuning';
+} from '@beaver/agent-llm/customEndpoints';
+import { readRunLimits, resolveOutputTokens } from '@beaver/agent-llm/runLimits';
+import { THINKING_TIERS, isThinkingTier, nearestTier, type ThinkingTier } from '@beaver/agent-llm/thinkingTiers';
+import { modelContextWindow, modelThinkingTiers, presetModelOutputTokens } from '@beaver/agent-llm/modelTuning';
 import { conversationSyncMode } from '../conversationSync';
 import {
     baseUrlOverrideFor,
     hydrateProviderOverrides,
     readProviderOverrides,
     updateProviderOverride,
-} from './providerOverrides';
+} from '@beaver/agent-llm/providerOverrides';
 // RETIRED_MODELS is re-exported for callers that only need the map.
 export { RETIRED_MODELS };
 import { buildSystemPrompt, type PromptContext } from './systemPrompt';
 import { toolSchemas } from './toolSchemas';
 import { IMAGE_TOOLS, LIBRARY_TOOL_NAMES } from './zoteroToolDispatch';
-import type { ChatProvider, ToolSchema } from './types';
+import type { ChatProvider, ToolSchema } from '@beaver/agent-llm/types';
 import { currentUiLanguage } from '../../utils/i18n';
 
 /** Every thinking tier a model can take, least first; each model offers its own subset. */
@@ -95,8 +95,9 @@ export function providerSupportsReasoningEffort(providerId: string, model?: stri
 }
 
 /** Which pref holds the key for each chat provider. */
-export const KEY_PREF_BY_PROVIDER: Record<ProviderPresetId, 'llmKeyDeepseek' | 'llmKeyOpenai' | 'llmKeyOpenrouter' | 'llmKeyZhipu' | 'llmKeyGoogle' | null> = {
+export const KEY_PREF_BY_PROVIDER: Record<ProviderPresetId, 'llmKeyDeepseek' | 'llmKeyOpencodeGo' | 'llmKeyOpenai' | 'llmKeyOpenrouter' | 'llmKeyZhipu' | 'llmKeyGoogle' | null> = {
     deepseek: 'llmKeyDeepseek',
+    'opencode-go': 'llmKeyOpencodeGo',
     openai: 'llmKeyOpenai',
     openrouter: 'llmKeyOpenrouter',
     zhipu: 'llmKeyZhipu',

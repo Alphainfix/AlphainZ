@@ -19,7 +19,7 @@ import { indexDocumentChunks } from './fulltextIndex';
 import type { ChunkStore, IndexDocumentResult } from './fulltextIndex';
 import type { EmbeddingProvider } from './embeddings';
 import { isModelRequestError, isQuotaErrorCode } from './sse';
-import { joinSentences, t } from '../../utils/i18n';
+import { joinSentences, t } from './i18n';
 
 /** What the extractor hands back, matching what `indexDocumentChunks` takes. */
 export type ExtractedDocument = {

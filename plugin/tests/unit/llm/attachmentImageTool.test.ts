@@ -10,7 +10,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { attachmentImageToToolResult, IMAGE_TOOLS } from '../../../src/services/llm/zoteroToolDispatch';
-import { describePromptContext } from '../../../src/services/llm/runRequestToMessages';
+import { describePromptContext } from '@beaver/agent-llm/runRequestToMessages';
 import { TOOL_SPECS } from '../../../src/services/llm/toolSchemas';
 
 describe('view_attachment_image', () => {

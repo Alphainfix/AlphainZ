@@ -95,11 +95,15 @@ async function mount(runs: AgentRun[] = RUNS) {
     const { store } = await import('../../../react/store');
     const { threadRunsAtom } = await import('@beaver/agent-core/run-state/atoms');
     store.set(threadRunsAtom, runs);
-    const { Provider } = await import('jotai');
-    const { ConversationRail } = await import('../../../react/components/agentRuns/ConversationRail');
+    const { Provider, useAtomValue } = await import('jotai');
+    const { ConversationRail } = await import('@beaver/agent-ui/conversation/ConversationRail');
+    const { conversationTurnsAtom } = await import('../../../react/atoms/conversationNav');
+    const { userScrolledAtom } = await import('../../../react/atoms/ui');
 
+    // Wired as the plugin's ConversationView wires it: the turns and the scrolled flag from the app's atoms.
     function Harness() {
         const viewRef = useRef<HTMLDivElement>(null);
+        const turns = useAtomValue(conversationTurnsAtom);
         return (
             <div className="conversation-view">
                 <div id="alphainz-thread-view" ref={viewRef}>
@@ -109,7 +113,7 @@ async function mount(runs: AgentRun[] = RUNS) {
                         </div>
                     ))}
                 </div>
-                <ConversationRail containerRef={viewRef} isWindow={false} />
+                <ConversationRail containerRef={viewRef} turns={turns} onScrolled={(away) => store.set(userScrolledAtom, away)} />
             </div>
         );
     }

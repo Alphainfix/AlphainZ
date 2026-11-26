@@ -8,7 +8,7 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 
-import { indexDocumentChunks, searchChunks } from '../../../src/services/llm/fulltextIndex';
+import { indexDocumentChunks, searchChunks } from '@beaver/agent-llm/fulltextIndex';
 
 /** A provider whose vectors are a deterministic function of the text. */
 const fakeProvider = (dims = 8) => ({

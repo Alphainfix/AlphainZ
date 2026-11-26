@@ -8,7 +8,7 @@ import {
     resetSemanticSearchProbe,
     semanticSearchState,
 } from "../../src/services/llm/agentConfig";
-import { EMBEDDING_PRESETS } from "../../src/services/llm/embeddings";
+import { EMBEDDING_PRESETS } from "@beaver/agent-llm/embeddings";
 import { onOllamaStatus } from "../utils/ollama";
 import {
     embeddingIndexStateAtom,

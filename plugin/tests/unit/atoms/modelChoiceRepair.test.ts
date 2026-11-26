@@ -25,7 +25,7 @@ import {
     readCustomEndpoints,
     writeCustomEndpoints,
     type CustomEndpoint,
-} from '../../../src/services/llm/customEndpoints';
+} from '@beaver/agent-llm/customEndpoints';
 
 const relay = (id: string, models = ['relay-model']): CustomEndpoint => ({
     id,
@@ -93,7 +93,7 @@ describe('a custom endpoint set up by hand on two computers', () => {
     });
 
     it('lets something that read the endpoint before the rename find it under its id now', async () => {
-        const { adoptSyncedEndpointId: adopt, currentEndpointId } = await import('../../../src/services/llm/customEndpoints');
+        const { adoptSyncedEndpointId: adopt, currentEndpointId } = await import('@beaver/agent-llm/customEndpoints');
         writeCustomEndpoints([relay('ep-laptop')]);
         expect(adopt('custom:ep-desktop', 'relay-model')).toBe(true);
         expect(currentEndpointId('ep-laptop')).toBe('ep-desktop');

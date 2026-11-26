@@ -1,5 +1,6 @@
 import { getPref } from "./prefs";
 import { ZH_CN } from "../i18n/zh-CN";
+import { setTranslator as setLlmTranslator } from "@beaver/agent-llm/i18n";
 
 /**
  * The interface language.
@@ -150,3 +151,9 @@ export function joinList(items: string[]): string {
   }
   return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 }
+
+// The model layer (@beaver/agent-llm) is shared with other clients, so it
+// translates through whatever translator the client installs. Installing it
+// here, as this module is evaluated, puts it in place in both bundles before
+// any of the layer's messages can be produced.
+setLlmTranslator({ t, joinSentences });

@@ -10,8 +10,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { getRunErrorTitle } from '@beaver/agent-core/run-state/runErrorCopy';
-import { classifyRunError } from '../../../src/services/llm/localRunner';
-import { ModelRequestError, type ModelRequestErrorInit } from '../../../src/services/llm/sse';
+import { classifyRunError } from '@beaver/agent-llm/localRunner';
+import { ModelRequestError, type ModelRequestErrorInit } from '@beaver/agent-llm/sse';
 
 const GENERIC = 'An error occurred';
 

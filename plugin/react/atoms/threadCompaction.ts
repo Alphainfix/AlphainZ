@@ -25,8 +25,9 @@ import {
     compactionThreshold,
     generateThreadSummary,
     planCompaction,
+    summaryPrompt,
     type CompactableRun,
-} from '../../src/services/llm/threadCompaction';
+} from '@beaver/agent-llm/threadCompaction';
 import type { ThreadCompaction } from '../../src/services/database';
 import { getConversationBackend } from '../../src/services/conversationSync';
 import { getFirstRequestInputTokens } from '../utils/runUsage';
@@ -38,6 +39,12 @@ import { t, tn } from '../../src/utils/i18n';
  * a new thread. The wire path reads this synchronously when building the next
  * request.
  */
+/** The summary keeps the ids the answers cite sources by, so later turns can still cite them. */
+const SUMMARY_PROMPT = summaryPrompt(
+    'working inside their Zotero library',
+    'paper titles, page numbers, and citation ids (like u-XXXXXXXX or W123456)',
+);
+
 export const threadCompactionAtom = atom<ThreadCompaction | null>(null);
 
 /** One summary at a time per thread — a second pass over the same runs would race the first. */
@@ -160,7 +167,7 @@ export async function maybeCompactThread(
         if (!config.ok) return 'skipped';
 
         const input = buildCompactionInput(plan.cover, existing?.summary ?? null);
-        const summary = await generateThreadSummary(config.provider, input);
+        const summary = await generateThreadSummary(config.provider, input, { prompt: SUMMARY_PROMPT });
         if (!summary) return 'failed';
 
         /*

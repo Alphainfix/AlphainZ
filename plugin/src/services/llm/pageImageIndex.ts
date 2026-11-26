@@ -13,9 +13,9 @@
  * that turns a candidate into rendered pages.
  */
 
-import { int8Cosine, quantizeToInt8, type EmbeddingProvider } from './embeddings';
-import { describeIndexingPause, embeddingFailureBlame, indexingResumesAt, candidateKey, providerCheckFailure } from './fulltextIndexer';
-import { isModelRequestError } from './sse';
+import { int8Cosine, quantizeToInt8, type EmbeddingProvider } from '@beaver/agent-llm/embeddings';
+import { describeIndexingPause, embeddingFailureBlame, indexingResumesAt, candidateKey, providerCheckFailure } from '@beaver/agent-llm/fulltextIndexer';
+import { isModelRequestError } from '@beaver/agent-llm/sse';
 
 /** Pages rendered past this are not indexed: a handbook is not a paper. */
 export const MAX_PAGES_PER_DOCUMENT = 300;

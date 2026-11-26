@@ -44,7 +44,7 @@ let modelRunsHere = true;
 vi.mock('../../../src/services/llm/agentConfig', () => ({
     isAgentConfigured: () => modelRunsHere,
 }));
-vi.mock('../../../src/services/llm/openAICompatible', () => ({
+vi.mock('@beaver/agent-llm/openAICompatible', () => ({
     PROVIDER_PRESETS: { zhipu: { label: 'Zhipu' }, deepseek: { label: 'DeepSeek' } },
 }));
 vi.mock('../../../react/atoms/loadLocalThreads', () => ({

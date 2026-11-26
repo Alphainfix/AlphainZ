@@ -5,9 +5,9 @@ import {
     verifyChatProvider,
     verifyCustomEndpoint,
     verifyEmbeddingProvider,
-} from '../../../src/services/llm/verifyKey';
-import type { FetchLike } from '../../../src/services/llm/openAICompatible';
-import { ModelRequestError } from '../../../src/services/llm/sse';
+} from '@beaver/agent-llm/verifyKey';
+import type { FetchLike } from '@beaver/agent-llm/openAICompatible';
+import { ModelRequestError } from '@beaver/agent-llm/sse';
 
 // ---------------------------------------------------------------------------
 // Doubles
@@ -277,7 +277,7 @@ describe('verifyEmbeddingProvider', () => {
 
 describe('verifying Ollama', () => {
     it('does not demand a key — it is the one provider that has none', async () => {
-        const { verifyChatProvider } = await import('../../../src/services/llm/verifyKey');
+        const { verifyChatProvider } = await import('@beaver/agent-llm/verifyKey');
         const fetchImpl = (async () => { throw new Error('connection refused'); }) as any;
         const result = await verifyChatProvider('ollama', '', fetchImpl, { baseUrl: 'http://127.0.0.1:59999/v1' });
         expect(result.ok).toBe(false);

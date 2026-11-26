@@ -16,7 +16,8 @@
       // program by being imported, and each has its own standalone gate
       // (`npm run typecheck:core` / `npm run typecheck:ui`).
       "@beaver/agent-core/*": ["./packages/agent-core/src/*"],
-      "@beaver/agent-ui/*": ["./packages/agent-ui/src/*"]
+      "@beaver/agent-ui/*": ["./packages/agent-ui/src/*"],
+      "@beaver/agent-llm/*": ["./packages/agent-llm/src/*"]
     },
     "jsx": "react",
     "esModuleInterop": true,

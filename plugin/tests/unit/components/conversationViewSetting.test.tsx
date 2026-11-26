@@ -168,7 +168,8 @@ describe('the open pane', () => {
 });
 
 describe('the stylesheet', () => {
-    const css = fs.readFileSync(path.resolve(__dirname, '../../../addon/content/styles/beaver.css'), 'utf8');
+    // The rail is a shared component (@beaver/agent-ui), and so is its stylesheet.
+    const css = fs.readFileSync(path.resolve(__dirname, '../../../packages/agent-ui/src/theme/agent-ui-components.css'), 'utf8');
     /** The declarations of the first rule whose selector is exactly `selector`. */
     const rule = (selector: string) => {
         const at = css.indexOf(`${selector} {`);

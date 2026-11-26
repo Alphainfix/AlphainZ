@@ -9,8 +9,9 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { runAgentLoop } from '../../../src/services/llm/agentLoop';
-import type { ChatMessage, ChatProvider, StreamEvent } from '../../../src/services/llm/types';
+import { runAgentLoop } from '@beaver/agent-llm/agentLoop';
+import { WRITE_TOOL_NAMES } from '../../../src/services/llm/writeTools';
+import type { ChatMessage, ChatProvider, StreamEvent } from '@beaver/agent-llm/types';
 
 type Turn = { text?: string; tools?: string[] };
 
@@ -46,7 +47,7 @@ function provider(turns: Turn[]): ChatProvider & { calls: ChatMessage[][] } {
 }
 
 const run = (p: ChatProvider) =>
-    runAgentLoop([{ role: 'user', content: 'go' }], { provider: p, dispatch: async () => 'ok' });
+    runAgentLoop([{ role: 'user', content: 'go' }], { provider: p, dispatch: async () => 'ok', writeTools: WRITE_TOOL_NAMES });
 
 describe('return_suggestions alongside other calls', () => {
     it('gives the model another turn when a read rode along with the suggestions', async () => {

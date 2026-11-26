@@ -15,10 +15,10 @@
  * provider that keeps working costs nothing.
  */
 
-import { getPref, setPref } from '../../utils/prefs';
+import { getPref, setPref } from './prefs';
 import type { EmbeddingRequestOutcome } from './embeddings';
 import { isModelRequestError, isQuotaErrorCode } from './sse';
-import { joinSentences, t } from '../../utils/i18n';
+import { joinSentences, t } from './i18n';
 
 export interface EmbeddingHealth {
     /** The embedding model the failure belongs to; another model's is stale. */

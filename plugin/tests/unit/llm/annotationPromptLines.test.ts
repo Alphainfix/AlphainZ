@@ -8,7 +8,7 @@
  * call tools.
  */
 import { describe, expect, it } from 'vitest';
-import { describePromptContext } from '../../../src/services/llm/runRequestToMessages';
+import { describePromptContext } from '@beaver/agent-llm/runRequestToMessages';
 
 const withAttachments = (attachments: any[], reader: any = {}) =>
     describePromptContext({

@@ -24,13 +24,13 @@ import {
     judgeVisionAnswer,
     refreshVisionCapability,
     visionProbeApplies,
-} from '../../../src/services/llm/visionProbe';
+} from '@beaver/agent-llm/visionProbe';
 import {
     presetSupportsVision,
     presetVisionByProbe,
     providerFromPreset,
     resetProbedVision,
-} from '../../../src/services/llm/openAICompatible';
+} from '@beaver/agent-llm/openAICompatible';
 
 /** A fetch that answers every chat completion with `text`, billed at `promptTokens`. */
 function answering(text: string, status = 200, promptTokens = 160) {

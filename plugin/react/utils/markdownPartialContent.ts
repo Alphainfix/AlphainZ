@@ -5,9 +5,12 @@
 export function processPartialContent(content: string, exportRendering: boolean): string {
     let processed = content;
 
-    processed = exportRendering
-        ? processed.normalize("NFC").replace(/[\u200B-\u200D\uFEFF\u00AD]/g, '')
-        : processed.normalize("NFKC").replace(/[\u200B-\u200D\uFEFF\u00AD]/g, '');
+    // NFC, on screen as in export: NFKC would also fold compatibility characters,
+    // turning Chinese full-width punctuation into ASCII (，。！ → ,.!) and
+    // superscripts into digits (x² → x2), which changes what the answer says.
+    // Zero-width characters and soft hyphens are removed either way.
+    void exportRendering;
+    processed = processed.normalize("NFC").replace(/[\u200B-\u200D\uFEFF\u00AD]/g, '');
 
     const boldMarkers = (processed.match(/\*\*/g) || []).length;
     if (boldMarkers % 2 === 1 && !processed.endsWith('**')) {

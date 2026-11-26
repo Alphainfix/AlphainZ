@@ -13,8 +13,8 @@ import {
     OpenAICompatibleProvider,
     providerFromPreset,
     type FetchLike,
-} from '../../../src/services/llm/openAICompatible';
-import type { ChatMessage, ProviderConfig } from '../../../src/services/llm/types';
+} from '@beaver/agent-llm/openAICompatible';
+import type { ChatMessage, ProviderConfig } from '@beaver/agent-llm/types';
 
 const B64 = 'iVBORw0KGgo=';
 const noFetch = (async () => {

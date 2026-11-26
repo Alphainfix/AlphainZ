@@ -19,24 +19,24 @@ vi.mock('../../../src/utils/prefs', () => ({
 }));
 vi.mock('@beaver/agent-core/platform/logger', () => ({ logger: vi.fn() }));
 
-import { nearestTier, normalizeTiers, normalizeTuning } from '../../../src/services/llm/thinkingTiers';
+import { nearestTier, normalizeTiers, normalizeTuning } from '@beaver/agent-llm/thinkingTiers';
 import {
     modelContextWindow,
     modelThinkingTiers,
     presetDefaultTiers,
     presetModelOutputTokens,
     tuningDefaults,
-} from '../../../src/services/llm/modelTuning';
-import { catalogueIsCustom, readProviderOverrides, writeProviderOverrides } from '../../../src/services/llm/providerOverrides';
+} from '@beaver/agent-llm/modelTuning';
+import { catalogueIsCustom, readProviderOverrides, writeProviderOverrides } from '@beaver/agent-llm/providerOverrides';
 import {
     customModelTiers,
     customProviderFromEndpoint,
     readCustomEndpoints,
     writeCustomEndpoints,
     type CustomEndpoint,
-} from '../../../src/services/llm/customEndpoints';
+} from '@beaver/agent-llm/customEndpoints';
 import { buildAgentFromPrefs, providerSupportsReasoningEffort, reasoningEffortBody } from '../../../src/services/llm/agentConfig';
-import { compactionThreshold } from '../../../src/services/llm/threadCompaction';
+import { compactionThreshold } from '@beaver/agent-llm/threadCompaction';
 
 beforeEach(() => {
     for (const k of Object.keys(prefs)) delete prefs[k];

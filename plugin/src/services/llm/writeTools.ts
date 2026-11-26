@@ -17,7 +17,7 @@
  * research library should do so because the user decided it should.
  */
 
-import type { ToolSchema } from './types';
+import type { ToolSchema } from '@beaver/agent-llm/types';
 
 /** Colour the agent's own highlights, so they are distinguishable at a glance. */
 export const AGENT_HIGHLIGHT_COLOR = 'blue';

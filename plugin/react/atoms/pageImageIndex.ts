@@ -15,7 +15,7 @@ import { logger } from '@beaver/agent-core/platform/logger';
 
 import { buildEmbeddingProviderFromPrefs, currentEmbeddingModelId } from '../../src/services/llm/agentConfig';
 import { getPref } from '../../src/utils/prefs';
-import { candidateKey } from '../../src/services/llm/fulltextIndexer';
+import { candidateKey } from '@beaver/agent-llm/fulltextIndexer';
 import {
     MAX_PAGES_PER_DOCUMENT,
     PAGE_IMAGE_DPI,
@@ -26,7 +26,7 @@ import {
     type PageImageIndexRunResult,
     type RenderedPage,
 } from '../../src/services/llm/pageImageIndex';
-import type { EmbeddingProvider } from '../../src/services/llm/embeddings';
+import type { EmbeddingProvider } from '@beaver/agent-llm/embeddings';
 import { uint8ToBase64 } from '../../src/services/agentDataProvider/imageProcessing';
 import { isEmbeddingIndexingAtom } from './embeddingIndex';
 import { fulltextIndexStateAtom, listAllCandidates } from './fulltextIndex';

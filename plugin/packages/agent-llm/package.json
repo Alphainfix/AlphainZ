@@ -1,0 +1,17 @@
+{
+  "name": "@beaver/agent-llm",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "typesVersions": {
+    "*": {
+      "*": ["src/*"]
+    }
+  },
+  "peerDependencies": {
+    "@beaver/agent-core": "*"
+  }
+}

@@ -24,10 +24,10 @@ import {
     readProviderOverrides,
     updateProviderOverride,
     writeProviderOverrides,
-} from '../../../src/services/llm/providerOverrides';
-import { fetchModelIds } from '../../../src/services/llm/listModels';
+} from '@beaver/agent-llm/providerOverrides';
+import { fetchModelIds } from '@beaver/agent-llm/listModels';
 import { buildAgentFromPrefs } from '../../../src/services/llm/agentConfig';
-import { presetSupportsVision, recordProbedVision, resetDeclaredVision, resetProbedVision } from '../../../src/services/llm/openAICompatible';
+import { presetSupportsVision, recordProbedVision, resetDeclaredVision, resetProbedVision } from '@beaver/agent-llm/openAICompatible';
 import { localModelsFromPrefs } from '../../../react/atoms/models';
 import { rowLabel } from '../../../react/components/ui/buttons/ModelSelectionButton';
 

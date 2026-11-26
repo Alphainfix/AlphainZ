@@ -15,7 +15,7 @@ import { endWheelTurn, flashQuestion, isConversationJumpLocked, jumpToRun, readi
 import {
     attachReadingRoom, clearReadingRoom, detachReadingRoom, holdReadingScroll, isHeldAtReach, isLaidOut, noteReaderInput,
     noteReadingScroll, placeInView, readingRoomHeight, restoreReadingPlace, settleReadingRoom, type ReadingPlace,
-} from "../../utils/readingRoom";
+} from "@beaver/agent-ui/conversation/readingRoom";
 import { lastQuestionRunId } from "../../utils/conversationTurns";
 import { streamDisplayModeAtom } from "../../atoms/streamDisplay";
 import { logger } from "@beaver/agent-core/platform/logger";

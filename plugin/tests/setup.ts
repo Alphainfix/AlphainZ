@@ -10,6 +10,16 @@ import { vi } from 'vitest';
 import { registerZoteroLibraryIdentity } from '../src/utils/libraryIdentity';
 
 // ---------------------------------------------------------------------------
+// The model layer's settings (@beaver/agent-llm/prefs)
+// ---------------------------------------------------------------------------
+// In the plugin they go through the runtime adapter, which reads the same
+// Zotero preferences as src/utils/prefs. Tests stand in for those preferences
+// by mocking src/utils/prefs, so the layer is pointed at that module — the
+// stand-in when a test mocks it, the real one otherwise. The factory runs when
+// the layer is first imported, after the test file's own mocks are in place.
+vi.mock('@beaver/agent-llm/prefs', async () => await import('../src/utils/prefs'));
+
+// ---------------------------------------------------------------------------
 // Worker-scope `self` — code inside src/beaver-extract/worker/ references
 // `self` at module-load time (e.g. workerScope.ts). Tests run in node, where
 // `self` is undefined; alias it to globalThis so worker-only modules can be

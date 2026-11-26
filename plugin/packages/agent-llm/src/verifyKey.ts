@@ -17,7 +17,7 @@ import type { ChatProvider } from './types';
 import { EMBEDDING_PRESETS, embeddingProviderFromPreset, type EmbeddingPresetId } from './embeddings';
 import type { StreamEvent } from './types';
 import { childAbortController, isModelRequestError, isQuotaErrorCode, untilAborted } from './sse';
-import { t } from '../../utils/i18n';
+import { t } from './i18n';
 
 export interface VerifyResult {
     ok: boolean;

@@ -23,7 +23,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import pkg from '../../../package.json';
 
 const verify = vi.hoisted(() => ({ chat: vi.fn() }));
-vi.mock('../../../src/services/llm/verifyKey', async (importOriginal) => ({
+vi.mock('@beaver/agent-llm/verifyKey', async (importOriginal) => ({
     ...(await importOriginal<any>()),
     verifyChatProvider: verify.chat,
 }));
@@ -218,7 +218,7 @@ describe('the feature tour', () => {
 
 describe('the vendor notes', () => {
     it('describe the models the catalogue lists, at their prices, with DeepSeek\'s peak hours stated right', async () => {
-        const { VENDORS } = await import('../../../react/components/preferences/vendors');
+        const { VENDORS } = await import('@beaver/agent-llm/vendors');
         const note = (id: string) => VENDORS.find((v) => v.id === id)?.note ?? '';
         expect(note('openrouter')).toContain('DeepSeek V4.1 Flash');
         expect(note('openrouter')).toContain('$0.15/M in');

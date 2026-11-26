@@ -41,6 +41,12 @@ const KNOWN_CONTEXT_WINDOWS: Record<string, number> = {
     'gemini-3.8-flash': 1_048_576,
     'gemini-3.5-flash-lite': 1_048_576,
     'gemini-4-argon': 1_048_576,
+    // OpenCode Go (its catalogue, as pi-ai 1.5 ships it, read 2026-11-25).
+    'deepseek-v4.1-flash': 1_000_000,
+    'deepseek-v4-pro': 1_000_000,
+    'glm-5.3': 1_000_000,
+    'kimi-k3.1-pro': 1_048_576,
+    'minimax-m3.1-flash': 1_000_000,
 };
 
 /**
@@ -52,6 +58,8 @@ const KNOWN_CONTEXT_WINDOWS: Record<string, number> = {
 function extraTiers(id: ProviderPresetId, model: string): ThinkingTier[] {
     if (id === 'openai' && /^gpt-6(\.\d+)?-/.test(model)) return ['xhigh', 'max'];
     if (id === 'deepseek') return ['max'];
+    // OpenCode Go's models all top out at max; MiniMax M3.1 takes xhigh as well.
+    if (id === 'opencode-go') return model.startsWith('minimax-m3.1') ? ['xhigh', 'max'] : ['max'];
     return [];
 }
 

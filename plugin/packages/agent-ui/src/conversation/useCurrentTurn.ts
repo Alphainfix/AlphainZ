@@ -1,5 +1,5 @@
 import { useLayoutEffect, useState, type RefObject } from 'react';
-import { readingRoomHeight } from '../utils/readingRoom';
+import { readingRoomHeight } from './readingRoom';
 
 /** How far down the view a question's top has to come to be the one being read. */
 const READING_LINE = 0.35;

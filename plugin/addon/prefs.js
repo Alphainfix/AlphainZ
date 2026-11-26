@@ -213,6 +213,7 @@ pref("llmKeyDeepseek", "");
 pref("llmKeyOpenrouter", "");
 pref("llmKeyZhipu", "");
 pref("llmKeyGoogle", "");
+pref("llmKeyOpencodeGo", "");
 pref("fulltextIndexAuto", true);
 // Index every PDF page as a picture too, when the embedding model takes pictures.
 pref("pageImageIndexAuto", true);
@@ -225,13 +226,13 @@ pref("openalexApiKey", "");
 pref("ollamaBaseUrl", "http://127.0.0.1:11434");
 pref("ollamaModels", "[]");
 // What the endpoint said about each model reading images, per provider:model,
-// with a timestamp — see src/services/llm/visionProbe.ts. Per computer.
+// with a timestamp — see packages/agent-llm/src/visionProbe.ts. Per computer.
 pref("visionProbeCache", "{}");
 // Endpoints the user added by hand, with the models filed under each — see
-// src/services/llm/customEndpoints.ts. Carries keys, so it never syncs.
+// packages/agent-llm/src/customEndpoints.ts. Carries keys, so it never syncs.
 pref("customEndpoints", "[]");
 // Per-provider edits to the built-in presets: an address override and a
-// replaced model catalogue — see src/services/llm/providerOverrides.ts.
+// replaced model catalogue — see packages/agent-llm/src/providerOverrides.ts.
 pref("providerOverrides", "{}");
 // Base URL override, for a custom OpenAI-compatible endpoint or a local server.
 pref("llmBaseUrl", "");
@@ -243,10 +244,10 @@ pref("embeddingProvider", "");
 // A Google key for embeddings only. Empty means the Gemini card's key.
 pref("embeddingKeyGoogle", "");
 // The last embedding request that failed, and why, until one succeeds: what
-// Settings and the chat warn about (src/services/llm/embeddingHealth.ts).
+// Settings and the chat warn about (packages/agent-llm/src/embeddingHealth.ts).
 pref("embeddingHealth", "");
 // What the Gemini API said about the embedding key's tier, and how much of the
-// free tier's day the indexer has used (src/services/llm/embeddingQuota.ts).
+// free tier's day the indexer has used (packages/agent-llm/src/embeddingQuota.ts).
 pref("embeddingQuota", "{}");
 
 // Model used for questions asked from the reader's selection popup. Empty means

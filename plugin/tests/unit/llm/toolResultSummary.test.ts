@@ -10,7 +10,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { summarizeToolResult } from '../../../src/services/llm/agentLoop';
+import { summarizeToolResult } from '@beaver/agent-llm/agentLoop';
 
 describe('summarizing a highlight', () => {
     it('names the page and the passage', () => {

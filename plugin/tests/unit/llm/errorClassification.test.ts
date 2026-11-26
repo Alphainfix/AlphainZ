@@ -9,12 +9,12 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { classifyRunError, runLocalAgent, type LocalRunCallbacks } from '../../../src/services/llm/localRunner';
-import { OpenAICompatibleProvider, describeHttpFailure, type FetchLike } from '../../../src/services/llm/openAICompatible';
-import { EmbeddingProvider } from '../../../src/services/llm/embeddings';
-import { explainVerifyFailure } from '../../../src/services/llm/verifyKey';
+import { classifyRunError, runLocalAgent, type LocalRunCallbacks } from '@beaver/agent-llm/localRunner';
+import { OpenAICompatibleProvider, describeHttpFailure, type FetchLike } from '@beaver/agent-llm/openAICompatible';
+import { EmbeddingProvider } from '@beaver/agent-llm/embeddings';
+import { explainVerifyFailure } from '@beaver/agent-llm/verifyKey';
 import { toRunError } from '@beaver/agent-core/run-state/runResumeHelpers';
-import type { ChatProvider } from '../../../src/services/llm/types';
+import type { ChatProvider } from '@beaver/agent-llm/types';
 
 const failure = (label: string, status: number, body: unknown) =>
     describeHttpFailure(label, status, undefined, async () =>

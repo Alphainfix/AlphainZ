@@ -30,8 +30,8 @@ vi.mock('../../../react/atoms/agentRunAtoms', async (importOriginal) => {
     };
 });
 
-vi.mock('../../../src/services/llm/localRunner', async (importOriginal) => ({
-    ...(await importOriginal<typeof import('../../../src/services/llm/localRunner')>()),
+vi.mock('@beaver/agent-llm/localRunner', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@beaver/agent-llm/localRunner')>()),
     runLocalAgent: vi.fn(async (options: any) => {
         captured.options = options;
     }),
@@ -54,7 +54,7 @@ vi.mock('../../../src/services/llm/agentConfig', async (importOriginal) => ({
 import { executeLocalRequest } from '../../../react/atoms/executeLocalRun';
 import { isWSChatPendingAtom } from '../../../react/atoms/agentRunAtoms';
 import { buildAgentFromPrefs } from '../../../src/services/llm/agentConfig';
-import { runLocalAgent } from '../../../src/services/llm/localRunner';
+import { runLocalAgent } from '@beaver/agent-llm/localRunner';
 import { store } from '../../../react/store';
 import { activeRunAtom, currentThreadNameAtom, threadRunsAtom } from '@beaver/agent-core/run-state/atoms';
 import { resolveAllLocalQuestions } from '../../../react/utils/localQuestions';

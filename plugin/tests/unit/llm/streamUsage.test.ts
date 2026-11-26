@@ -7,7 +7,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { addUsage, readUsage } from '../../../src/services/llm/sse';
+import { addUsage, readUsage } from '@beaver/agent-llm/sse';
 
 describe('readUsage', () => {
     it('reads the OpenAI shape', () => {

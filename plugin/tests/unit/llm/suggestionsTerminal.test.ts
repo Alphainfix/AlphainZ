@@ -9,8 +9,8 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { runAgentLoop } from '../../../src/services/llm/agentLoop';
-import type { ChatMessage, ChatProvider, StreamEvent } from '../../../src/services/llm/types';
+import { runAgentLoop } from '@beaver/agent-llm/agentLoop';
+import type { ChatMessage, ChatProvider, StreamEvent } from '@beaver/agent-llm/types';
 
 function provider(turns: Array<{ text?: string; tool?: string }>): ChatProvider & { calls: ChatMessage[][] } {
     const calls: ChatMessage[][] = [];

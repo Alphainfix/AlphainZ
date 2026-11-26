@@ -17,8 +17,8 @@ vi.mock('../../../src/utils/prefs', () => ({
 vi.mock('@beaver/agent-core/platform/logger', () => ({ logger: vi.fn() }));
 
 import { createStore } from 'jotai';
-import { writeProviderOverrides } from '../../../src/services/llm/providerOverrides';
-import { writeCustomEndpoints } from '../../../src/services/llm/customEndpoints';
+import { writeProviderOverrides } from '@beaver/agent-llm/providerOverrides';
+import { writeCustomEndpoints } from '@beaver/agent-llm/customEndpoints';
 import { localModelFromPrefs, localModelsFromPrefs, refreshLocalModelAtom, selectedModelAtom } from '../../../react/atoms/models';
 import { displayNameFor, rowLabel } from '../../../react/components/ui/buttons/ModelSelectionButton';
 

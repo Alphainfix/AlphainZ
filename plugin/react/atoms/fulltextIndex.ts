@@ -28,7 +28,7 @@ import {
     runFulltextIndex,
     type ExtractedDocument,
     type FulltextCandidate,
-} from '../../src/services/llm/fulltextIndexer';
+} from '@beaver/agent-llm/fulltextIndexer';
 import { cachedTextAsDocument, readZoteroTextCache } from '../../src/services/llm/zoteroTextCache';
 import { hasLocators } from '../../src/services/llm/sentenceLocators';
 import { searchableLibraryIdsAtom } from './profile';

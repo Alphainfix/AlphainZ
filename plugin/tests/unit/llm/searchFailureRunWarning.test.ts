@@ -5,8 +5,8 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { runLocalAgent, type LocalRunCallbacks } from '../../../src/services/llm/localRunner';
-import type { ChatProvider, StreamEvent, ToolSchema } from '../../../src/services/llm/types';
+import { runLocalAgent, type LocalRunCallbacks } from '@beaver/agent-llm/localRunner';
+import type { ChatProvider, StreamEvent, ToolSchema } from '@beaver/agent-llm/types';
 
 function provider(turns: Array<Array<{ id: string; name: string }>>): ChatProvider {
     let turn = 0;

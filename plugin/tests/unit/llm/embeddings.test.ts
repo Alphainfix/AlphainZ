@@ -7,7 +7,7 @@ import {
     itemEmbeddingText,
     quantizeToInt8,
     type FetchLike,
-} from '../../../src/services/llm/embeddings';
+} from '@beaver/agent-llm/embeddings';
 
 // ---------------------------------------------------------------------------
 // Quantization

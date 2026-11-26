@@ -8,7 +8,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { chunkDocument, chunkText, cleanChunkForEmbedding } from '../../../src/services/llm/chunking';
+import { chunkDocument, chunkText, cleanChunkForEmbedding } from '@beaver/agent-llm/chunking';
 
 const sentences = (n: number, word = 'word') =>
     Array.from({ length: n }, (_, i) => `${word} ${i} sentence text here.`).join(' ');

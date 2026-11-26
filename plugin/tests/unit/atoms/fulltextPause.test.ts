@@ -19,7 +19,7 @@
 import { createStore } from 'jotai';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ModelRequestError } from '../../../src/services/llm/sse';
+import { ModelRequestError } from '@beaver/agent-llm/sse';
 
 const jotaiStore = vi.hoisted(() => ({ current: null as any }));
 vi.mock('../../../react/store', () => ({
@@ -71,7 +71,7 @@ import {
     embeddingFailureBlame,
     runFulltextIndex,
     type FulltextCandidate,
-} from '../../../src/services/llm/fulltextIndexer';
+} from '@beaver/agent-llm/fulltextIndexer';
 
 const LONG = 'Honeybees gauge their flight distance from the image motion of the scenery. '.repeat(8);
 const extractCalls: string[] = [];

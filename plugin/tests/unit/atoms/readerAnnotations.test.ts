@@ -12,7 +12,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('@beaver/agent-core/platform/logger', () => ({ logger: vi.fn() }));
 
 import { annotationsForAttachment } from '../../../react/atoms/messageComposition';
-import { describePromptContext } from '../../../src/services/llm/runRequestToMessages';
+import { describePromptContext } from '@beaver/agent-llm/runRequestToMessages';
 
 const annotation = (id: number, type: string, deleted = false) =>
     ({ id, annotationType: type, deleted, isAttachment: () => false });

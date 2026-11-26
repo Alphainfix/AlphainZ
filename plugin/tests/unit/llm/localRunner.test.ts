@@ -3,9 +3,9 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { classifyRunError, runLocalAgent, type LocalRunCallbacks } from '../../../src/services/llm/localRunner';
-import { ModelRequestError } from '../../../src/services/llm/sse';
-import type { ChatProvider, StreamEvent, ToolSchema } from '../../../src/services/llm/types';
+import { classifyRunError, runLocalAgent, type LocalRunCallbacks } from '@beaver/agent-llm/localRunner';
+import { ModelRequestError } from '@beaver/agent-llm/sse';
+import type { ChatProvider, StreamEvent, ToolSchema } from '@beaver/agent-llm/types';
 
 // ---------------------------------------------------------------------------
 // Doubles
@@ -91,7 +91,7 @@ describe('LocalRunCallbacks / WSCallbacks parity', () => {
         'utf8',
     );
     const runnerSource = readFileSync(
-        fileURLToPath(new URL('../../../src/services/llm/localRunner.ts', import.meta.url)),
+        fileURLToPath(new URL('../../../packages/agent-llm/src/localRunner.ts', import.meta.url)),
         'utf8',
     );
 

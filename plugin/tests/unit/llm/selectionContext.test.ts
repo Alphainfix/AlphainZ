@@ -9,7 +9,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { composeUserContent, describePromptContext } from '../../../src/services/llm/runRequestToMessages';
+import { composeUserContent, describePromptContext } from '@beaver/agent-llm/runRequestToMessages';
 import { buildSystemPrompt } from '../../../src/services/llm/systemPrompt';
 
 const readerPrompt = (readerState: Record<string, any>) => ({

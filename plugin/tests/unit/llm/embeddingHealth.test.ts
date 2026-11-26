@@ -12,8 +12,8 @@ import {
     embeddingFailureSince,
     noteEmbeddingOutcome,
     readEmbeddingHealth,
-} from '../../../src/services/llm/embeddingHealth';
-import { ModelRequestError } from '../../../src/services/llm/sse';
+} from '@beaver/agent-llm/embeddingHealth';
+import { ModelRequestError } from '@beaver/agent-llm/sse';
 
 const http = (status: number, extra: Record<string, unknown> = {}) =>
     new ModelRequestError(`failed: ${status}`, { kind: 'http', status, label: 'Google Gemini', ...extra });

@@ -18,7 +18,7 @@ vi.mock('../../../src/services/llm/agentConfig', () => ({
 }));
 
 import { localEmbeddingsService } from '../../../src/services/llm/localEmbeddingsService';
-import { ModelRequestError } from '../../../src/services/llm/sse';
+import { ModelRequestError } from '@beaver/agent-llm/sse';
 
 const http = (status: number, message = `OpenAI embeddings failed: ${status}`) =>
     new ModelRequestError(message, { kind: 'http', status, label: 'OpenAI' });

@@ -58,4 +58,14 @@ describe('processPartialContent', () => {
 
         expect(result).toBe('Equation:\n\n');
     });
+
+    it('keeps Chinese full-width punctuation and superscripts as written, on screen as in export', () => {
+        const text = '能量 E = mc²，单位是焦耳（J）！';
+        expect(processPartialContent(text, false)).toBe(text);
+        expect(processPartialContent(text, true)).toBe(text);
+    });
+
+    it('still drops zero-width characters and soft hyphens', () => {
+        expect(processPartialContent('a\u200Bb\u00ADc', false)).toBe('abc');
+    });
 });

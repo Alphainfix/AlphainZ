@@ -499,6 +499,8 @@ export class OpenAICompatibleProvider implements ChatProvider {
      * turns out to have no `/responses` (see `stream`).
      */
     private activeWire: WireFormat;
+    /** Sent as the session header by requests that name no conversation (a title, a key check). */
+    private readonly ownSessionId = `alphain-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 
     constructor(config: ProviderConfig, fetchImpl: FetchLike, timeouts: Partial<StreamTimeouts> = {}) {
         this.config = config;
@@ -513,13 +515,16 @@ export class OpenAICompatibleProvider implements ChatProvider {
         return this.activeWire;
     }
 
-    /** Auth and content headers for this endpoint's convention. */
-    buildHeaders(): Record<string, string> {
+    /** Auth and content headers for this endpoint's convention, and the conversation's header where the endpoint wants one. */
+    buildHeaders(request?: ChatRequest): Record<string, string> {
         const auth: Record<string, string> =
             (this.config.authStyle ?? 'bearer') === 'x-api-key'
                 ? { 'X-Api-Key': this.config.apiKey }
                 : { Authorization: `Bearer ${this.config.apiKey}` };
-        return { 'Content-Type': 'application/json', ...auth, ...(this.config.headers ?? {}) };
+        const session: Record<string, string> = this.config.sessionHeader
+            ? { [this.config.sessionHeader]: request?.sessionId?.trim() || this.ownSessionId }
+            : {};
+        return { 'Content-Type': 'application/json', ...auth, ...session, ...(this.config.headers ?? {}) };
     }
 
     /** The request body, exposed for tests and for logging a failing call. */
@@ -664,7 +669,7 @@ export class OpenAICompatibleProvider implements ChatProvider {
                 response = await untilAborted(
                     this.fetchImpl(url, {
                         method: 'POST',
-                        headers: this.buildHeaders(),
+                        headers: this.buildHeaders(request),
                         body: JSON.stringify(this.buildBody(request)),
                         signal,
                     }),
@@ -840,6 +845,52 @@ export const PROVIDER_PRESETS = {
      * facts are the base URL and that, like DeepSeek, the model's thinking is
      * spent from the answer's budget.
      */
+    /**
+     * OpenCode Go (opencode.ai): one subscription key for a set of hosted
+     * models, with rolling five-hour, weekly and monthly allowances instead of
+     * a per-token bill. Facts from the provider's catalogue as pi-ai 1.5 ships
+     * it (read 2026-11-25).
+     *
+     * Only its chat-completions models are listed: the same key also reaches
+     * Claude, Qwen and MiniMax M3 on Anthropic's protocol, Gemini on Google's
+     * and GPT / Grok on the Responses API, none of which this preset speaks.
+     * The listed models all think before they answer and none can be told not
+     * to (`off` is absent from every one of them), so the lowest tier is the
+     * floor; DeepSeek V4 Pro takes only `high` and `max`. The DeepSeek models
+     * are DeepSeek's own (OpenCode states zero retention for them) and take
+     * `reasoning_effort` as DeepSeek's API does, and like it they accept a
+     * history whose assistant turns carry no `reasoning_content`.
+     *
+     * The service can be slow to start a reply when one of its upstreams is
+     * struggling — first words 80 s and more were seen on 2026-11-05 — so the
+     * response window is wider than the hosted default.
+     */
+    'opencode-go': {
+        label: 'OpenCode Go',
+        baseUrl: 'https://opencode.ai/inference/go/openai/v1',
+        defaultModel: 'deepseek-v4.1-flash',
+        models: ['deepseek-v4.1-flash', 'glm-5.3-flash', 'kimi-k3.1-pro', 'minimax-m3.1-flash', 'deepseek-v4-pro', 'glm-5.3'],
+        wireFormat: 'openai' as WireFormat,
+        supportsVision: true,
+        textOnlyModels: ['deepseek-v4-pro', 'glm-5.3'] as readonly string[],
+        imagesInToolResults: false,
+        defaultMaxTokens: 32_000,
+        maxOutputTokens: 131_072,
+        maxOutputTokensByModel: (model: string) =>
+            model.startsWith('deepseek-') ? 384_000 : model.startsWith('minimax-m3.1') ? 512_000 : 131_072,
+        supportsReasoningEffort: true,
+        reasoningEffortAliasesByModel: (model: string) =>
+            (model === 'deepseek-v4-pro'
+                ? { none: 'high', low: 'high', medium: 'high' }
+                : model.startsWith('minimax-m3.1')
+                    ? { none: 'low' }
+                    : { none: 'low', medium: 'high' }) as Record<string, string>,
+        streamTimeouts: { responseMs: 300_000, idleMs: PATIENT_STREAM_TIMEOUTS.idleMs } as StreamTimeouts,
+        // Since 2026-11 a request without it is refused (400, "Request is missing
+        // x-opencode-session"). The service keeps each conversation on one
+        // upstream by it, which is also what lets the prompt cache hit.
+        sessionHeader: 'x-opencode-session',
+    },
     openrouter: {
         label: 'OpenRouter',
         baseUrl: 'https://openrouter.ai/api/v1',
@@ -1093,9 +1144,18 @@ export const RETIRED_PROVIDERS: Record<string, ProviderPresetId> = {
     'deepseek-vision': 'deepseek',
 };
 
-/** A stored provider/model pair, resolved to what exists today. */
+/**
+ * A stored provider/model pair, resolved to what exists today.
+ *
+ * An id is retired only where it no longer exists: a provider whose own
+ * catalogue still lists it keeps it. OpenCode Go serves `deepseek-v4.1-flash`
+ * and `deepseek-v4-pro`, ids DeepSeek's own API retired, and sending them
+ * renamed is a 400 there ("Model deepseek-flash isn't included in OpenCode Go").
+ */
 export function retireChoice(provider: string, model: string): { provider: string; model: string } {
     const nextProvider = RETIRED_PROVIDERS[provider] ?? provider;
+    const catalogue = (PROVIDER_PRESETS as Record<string, { models?: readonly string[] }>)[nextProvider]?.models;
+    if (catalogue?.includes(model)) return { provider: nextProvider, model };
     const nextModel = RETIRED_MODELS[model] ?? model;
     return { provider: nextProvider, model: nextModel };
 }
@@ -1253,6 +1313,7 @@ export function providerFromPreset(
         reasoningSummary?: boolean;
         promptCacheRetention?: string;
         streamTimeouts?: StreamTimeouts;
+        sessionHeader?: string;
     };
     // Resolved once: several fields below depend on which model was chosen,
     // and computing it separately for each is how they drift apart.
@@ -1283,6 +1344,7 @@ export function providerFromPreset(
                 : leastEffort(presetCapabilities(id, chosenModel))),
             reasoningSummary: preset.reasoningSummary,
             promptCacheRetention: preset.promptCacheRetention,
+            ...(preset.sessionHeader ? { sessionHeader: preset.sessionHeader } : {}),
         },
         fetchImpl,
         preset.streamTimeouts ?? HOSTED_STREAM_TIMEOUTS,

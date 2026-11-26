@@ -36,6 +36,12 @@ export interface RuntimeAdapter {
      */
     getPluginPref?(key: string): unknown;
     /**
+     * Write a preference by its *unqualified* key, the counterpart of
+     * `getPluginPref`. Optional: a host with no preference store omits it, and
+     * a caller that must persist a value treats its absence as an error.
+     */
+    setPluginPref?(key: string, value: unknown): void;
+    /**
      * The host application's own version (e.g. the Zotero version), or an empty
      * string when the host has none to report.
      */

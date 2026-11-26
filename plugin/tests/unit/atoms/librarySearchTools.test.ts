@@ -31,11 +31,11 @@ vi.mock('../../../react/utils/highlightCitations', () => ({
     recordShownPassage,
     sentenceRangeNumbers: (start: number, end: number) => [start, end],
 }));
-vi.mock('../../../src/services/llm/fulltextIndexer', () => ({
+vi.mock('@beaver/agent-llm/fulltextIndexer', () => ({
     candidateKey: (candidate: any) => `${candidate.libraryId}/${candidate.key}`,
     coverageNote: () => null,
 }));
-vi.mock('../../../src/services/llm/fulltextIndex', () => ({ searchChunks }));
+vi.mock('@beaver/agent-llm/fulltextIndex', () => ({ searchChunks }));
 vi.mock('../../../src/services/llm/pageImageIndex', () => ({ searchPageImages }));
 vi.mock('../../../src/services/llm/agentConfig', () => ({
     buildEmbeddingProviderFromPrefs: () => ({ name: 'provider' }),

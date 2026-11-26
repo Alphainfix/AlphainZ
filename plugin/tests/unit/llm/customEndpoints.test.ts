@@ -25,7 +25,7 @@ import {
     updateCustomModel,
     writeCustomEndpoints,
     type CustomEndpoint,
-} from '../../../src/services/llm/customEndpoints';
+} from '@beaver/agent-llm/customEndpoints';
 import { buildAgentFromPrefs, isAgentConfigured, providerSupportsReasoningEffort } from '../../../src/services/llm/agentConfig';
 import { localModelFromPrefs, localModelsFromPrefs } from '../../../react/atoms/models';
 import { rowLabel, vendorFor } from '../../../react/components/ui/buttons/ModelSelectionButton';

@@ -9,11 +9,11 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { runAgentLoop, type LoopEvent } from '../../../src/services/llm/agentLoop';
-import { runLocalAgent, type LocalRunCallbacks } from '../../../src/services/llm/localRunner';
-import { OpenAICompatibleProvider, parseRetryAfter, type FetchLike } from '../../../src/services/llm/openAICompatible';
-import { ModelRequestError, type StreamEvent } from '../../../src/services/llm/sse';
-import type { ChatProvider } from '../../../src/services/llm/types';
+import { runAgentLoop, type LoopEvent } from '@beaver/agent-llm/agentLoop';
+import { runLocalAgent, type LocalRunCallbacks } from '@beaver/agent-llm/localRunner';
+import { OpenAICompatibleProvider, parseRetryAfter, type FetchLike } from '@beaver/agent-llm/openAICompatible';
+import { ModelRequestError, type StreamEvent } from '@beaver/agent-llm/sse';
+import type { ChatProvider } from '@beaver/agent-llm/types';
 
 const user = (content: string) => ({ role: 'user' as const, content });
 const FAST = { baseDelayMs: 0 };

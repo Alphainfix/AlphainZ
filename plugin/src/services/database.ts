@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { ThreadData } from '../../react/atoms/threads';
 import { getPref } from '../utils/prefs';
+import type { ThreadCompaction } from '@beaver/agent-llm/threadCompaction';
 import { SyncMethod, SyncType } from '../../react/atoms/sync';
 import {
     isExtractContentKind,
@@ -278,12 +279,8 @@ export interface ThreadListScope {
  * to and including it are replaced by the summary text, and everything after
  * replays as usual. `runCount` is only for the UI label.
  */
-export interface ThreadCompaction {
-    summary: string;
-    throughRunId: string;
-    createdAt: string;
-    runCount: number;
-}
+// A thread's stored summary; defined by the model layer that writes it.
+export type { ThreadCompaction };
 
 /* 
  * Interface for the 'sync_logs' table row

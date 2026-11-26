@@ -98,6 +98,7 @@ declare namespace _ZoteroTypes {
       "llmKeyOpenrouter": string;
       "llmKeyZhipu": string;
       "llmKeyGoogle": string;
+      "llmKeyOpencodeGo": string;
       "fulltextIndexAuto": boolean;
       "pageImageIndexAuto": boolean;
       "excludedLibraries": string;

@@ -13,8 +13,8 @@ import { searchableLibraryIdsAtom } from './profile';
 import { listAllCandidates } from './fulltextIndex';
 import { figureCoverageNoteFor, pageImageProvider } from './pageImageIndex';
 import { recordShownLocators, recordShownPassage, sentenceRangeNumbers } from '../utils/highlightCitations';
-import { candidateKey, coverageNote, type FulltextCandidate } from '../../src/services/llm/fulltextIndexer';
-import { searchChunks } from '../../src/services/llm/fulltextIndex';
+import { candidateKey, coverageNote, type FulltextCandidate } from '@beaver/agent-llm/fulltextIndexer';
+import { searchChunks } from '@beaver/agent-llm/fulltextIndex';
 import { searchPageImages } from '../../src/services/llm/pageImageIndex';
 import {
     buildEmbeddingProviderFromPrefs,

@@ -28,8 +28,7 @@ import type { ChatMessage, ChatProvider, ToolSchema } from './types';
 import type { ToolDispatcher } from './agentLoop';
 import { formatTokenCount } from './runLimits';
 import { isModelRequestError, isQuotaErrorCode, parsePartialToolArguments } from './sse';
-import { WRITE_TOOL_NAMES } from './writeTools';
-import { msg, t } from '../../utils/i18n';
+import { msg, t } from './i18n';
 
 /**
  * The slice of `WSCallbacks` a local run drives.
@@ -137,6 +136,8 @@ export interface LocalRunOptions {
     embeddingFailureSince?: (since: number) => string | null;
     /** Overrides how transient request failures are retried. */
     retry?: RetryPolicy;
+    /** Tools that propose or make a change; see `AgentLoopOptions.writeTools`. */
+    writeTools?: readonly string[];
 }
 
 /** The tools that embed the query; a failed embedding is warned about after them. */
@@ -256,11 +257,9 @@ const REGION_ERROR_CODES = new Set(['unsupported_country_region_territory', 'uns
 /** Codes for a request that no longer fits the model's context window. */
 const CONTEXT_ERROR_CODES = new Set(['context_length_exceeded', 'string_above_max_length', '1261']);
 
-const WRITE_TOOLS = new Set<string>(WRITE_TOOL_NAMES);
-
 /** Whether any of these messages is the result of a tool that proposes or makes a change. */
-function ranWriteTool(messages: ChatMessage[]): boolean {
-    return messages.some((message) => message.role === 'tool' && WRITE_TOOLS.has(message.name));
+function ranWriteTool(messages: ChatMessage[], writeTools: readonly string[]): boolean {
+    return messages.some((message) => message.role === 'tool' && writeTools.includes(message.name));
 }
 
 /**
@@ -402,6 +401,7 @@ export async function runLocalAgent(options: LocalRunOptions): Promise<AgentLoop
         warnings = [],
         embeddingFailureSince,
         retry,
+        writeTools = [],
     } = options;
 
     const startedAt = Date.now();
@@ -651,6 +651,9 @@ export async function runLocalAgent(options: LocalRunOptions): Promise<AgentLoop
             maxIterations,
             signal,
             onEvent,
+            writeTools,
+            // Each request names its conversation, for a provider that routes by it.
+            sessionId: threadId,
             ...(retry ? { retry } : {}),
         });
     } catch (error) {
@@ -734,7 +737,7 @@ export async function runLocalAgent(options: LocalRunOptions): Promise<AgentLoop
     if (
         result.reason === 'completed'
         && !result.text.trim()
-        && !ranWriteTool(result.messages.slice(messages.length))
+        && !ranWriteTool(result.messages.slice(messages.length), writeTools)
     ) {
         callbacks.onWarning?.({
             event: 'warning',

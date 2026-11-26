@@ -30,9 +30,9 @@ import {
     semanticSearchState,
     semanticSearchUnavailableReason,
 } from '../../../src/services/llm/agentConfig';
-import { readProviderOverrides, writeProviderOverrides } from '../../../src/services/llm/providerOverrides';
-import { writeCustomEndpoints } from '../../../src/services/llm/customEndpoints';
-import { PROVIDER_PRESETS } from '../../../src/services/llm/openAICompatible';
+import { readProviderOverrides, writeProviderOverrides } from '@beaver/agent-llm/providerOverrides';
+import { writeCustomEndpoints } from '@beaver/agent-llm/customEndpoints';
+import { PROVIDER_PRESETS } from '@beaver/agent-llm/openAICompatible';
 
 const noNetwork = (() => { throw new Error('no network expected'); }) as any;
 

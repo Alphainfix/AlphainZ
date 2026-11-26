@@ -10,7 +10,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { buildRunMessages, composeUserContent, describePromptContext } from '../../../src/services/llm/runRequestToMessages';
+import { buildRunMessages, composeUserContent, describePromptContext } from '@beaver/agent-llm/runRequestToMessages';
 
 const highlight = (key: string, text: string, page: string) => ({
     type: 'annotation', annotation_type: 'highlight', library_id: 1, library_ref: 'u', zotero_key: key, text, page_label: page,

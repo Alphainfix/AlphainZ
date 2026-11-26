@@ -188,7 +188,7 @@ describe('what the copy promises is what a request carries', () => {
     });
 
     it('sends the last 10 exchanges when there is no summary, and nothing older', async () => {
-        const { buildRunMessages } = await import('../../../src/services/llm/runRequestToMessages');
+        const { buildRunMessages } = await import('@beaver/agent-llm/runRequestToMessages');
         const messages = buildRunMessages({
             priorRuns: Array.from({ length: 12 }, (_, i) => exchange(i + 1)) as any,
             prompt: { content: 'Question 13' },
@@ -199,7 +199,7 @@ describe('what the copy promises is what a request carries', () => {
     });
 
     it('shortens only tool detail, and only in exchanges older than the last two', async () => {
-        const { buildRunMessages } = await import('../../../src/services/llm/runRequestToMessages');
+        const { buildRunMessages } = await import('@beaver/agent-llm/runRequestToMessages');
         const long = 'x'.repeat(5_000);
         const messages = buildRunMessages({
             priorRuns: [1, 2, 3].map((n) => exchange(n, long)) as any,

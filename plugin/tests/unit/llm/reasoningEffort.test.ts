@@ -23,13 +23,13 @@ import {
     reasoningEffortBody,
     REASONING_EFFORTS,
 } from '../../../src/services/llm/agentConfig';
-import { modelThinkingTiers } from '../../../src/services/llm/modelTuning';
+import { modelThinkingTiers } from '@beaver/agent-llm/modelTuning';
 import {
     PROVIDER_PRESETS,
     RETIRED_OPENROUTER_MODELS,
     presetCapabilities,
     presetSupportsVision,
-} from '../../../src/services/llm/openAICompatible';
+} from '@beaver/agent-llm/openAICompatible';
 
 beforeEach(() => {
     for (const k of Object.keys(prefs)) delete prefs[k];
@@ -98,7 +98,7 @@ describe('the OpenAI preset, per model', () => {
         parameters: { type: 'object' as const, properties: { query: { type: 'string' } }, required: ['query'] },
     };
     const bodyFor = async (model: string, effort?: string) => {
-        const { providerFromPreset } = await import('../../../src/services/llm/openAICompatible');
+        const { providerFromPreset } = await import('@beaver/agent-llm/openAICompatible');
         return providerFromPreset('openai', 'k', (() => {}) as any, {
             model,
             ...(effort ? { extraBody: { reasoning_effort: effort } } : {}),

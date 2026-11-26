@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { EmbeddingProvider, embeddingProviderFromPreset, type FetchLike } from '../../../src/services/llm/embeddings';
+import { EmbeddingProvider, embeddingProviderFromPreset, type FetchLike } from '@beaver/agent-llm/embeddings';
 import {
     figureCoverageNote,
     runPageImageIndex,
@@ -8,7 +8,7 @@ import {
     type PageImageStore,
     type RenderedPage,
 } from '../../../src/services/llm/pageImageIndex';
-import { ModelRequestError } from '../../../src/services/llm/sse';
+import { ModelRequestError } from '@beaver/agent-llm/sse';
 
 /** A Gemini endpoint that answers each image with a vector pointing one way per page. */
 function geminiImages(fail?: { status: number; body: unknown }): FetchLike & { calls: any[] } {

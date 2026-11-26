@@ -38,12 +38,14 @@
   // their types. `verify-program.mjs` re-checks any declaration file the
   // package owns with the flag off.
   //
-  // `paths` maps the one in-repo package this one is allowed to consume.
-  // @beaver/agent-core is a declared peer dependency but is never installed —
-  // it is a sibling directory that every consumer wires up by alias — so the
-  // standalone typecheck has to resolve it the same way. `verify-program.mjs`
-  // asserts this is the only mapping, so it cannot grow into a route back into
-  // the host repo.
+  // `paths` maps the in-repo packages this one is allowed to consume.
+  // @beaver/agent-core and @beaver/agent-llm are declared peer dependencies
+  // but are never installed — they are sibling directories that every
+  // consumer wires up by alias — so the standalone typecheck has to resolve
+  // them the same way. agent-llm is here for the model settings (src/settings),
+  // which show and edit what the model layer stores; it is React-free and
+  // bounded by its own gate. `verify-program.mjs` asserts these are the only
+  // mappings, so they cannot grow into a route back into the host repo.
   "compilerOptions": {
     "module": "esnext",
     "moduleResolution": "bundler",
@@ -52,7 +54,8 @@
     "types": ["react", "react-dom"],
     "jsx": "react",
     "paths": {
-      "@beaver/agent-core/*": ["../agent-core/src/*"]
+      "@beaver/agent-core/*": ["../agent-core/src/*"],
+      "@beaver/agent-llm/*": ["../agent-llm/src/*"]
     },
     "strict": true,
     "esModuleInterop": true,
@@ -191,6 +194,13 @@
     "./src/auth/OTPVerification.tsx",
     "./src/auth/otp-ui.ts",
 
+    "./src/conversation/index.ts",
+    "./src/conversation/turns.ts",
+    "./src/conversation/readingRoom.ts",
+    "./src/conversation/useCurrentTurn.ts",
+    "./src/conversation/navigation.ts",
+    "./src/conversation/workStream.ts",
+    "./src/conversation/ConversationRail.tsx",
     "./src/chat/index.ts",
     "./src/chat/Citation.tsx",
     "./src/chat/CitedSourcesList.tsx",
@@ -230,6 +240,18 @@
     "./src/utils/pageRanges.ts",
     "./src/utils/useIsomorphicLayoutEffect.ts",
     "./src/utils/creditThreshold.ts",
+
+    // The model settings both clients show, behind their own seam
+    // (settings/host.tsx). The barrel is the entry point.
+    "./src/settings/index.ts",
+    "./src/settings/host.tsx",
+    "./src/settings/SettingsElements.tsx",
+    "./src/settings/ProgressBar.tsx",
+    "./src/settings/ProviderCards.tsx",
+    "./src/settings/OllamaGuide.tsx",
+    "./src/settings/RunLimitsSection.tsx",
+    "./src/settings/CustomInstructionsSection.tsx",
+    "./src/settings/ConversationViewSection.tsx",
 
     // The client-host registry: the seam a shared component reaches client
     // behavior through. Its slice interfaces are the whole of `types.ts`, which

@@ -22,7 +22,7 @@
  * before.
  */
 
-import { getPref, setPref } from '../../utils/prefs';
+import { getPref, setPref } from './prefs';
 import { normalizeTuning, type ModelTuning } from './thinkingTiers';
 import { logger } from '@beaver/agent-core/platform/logger';
 import {

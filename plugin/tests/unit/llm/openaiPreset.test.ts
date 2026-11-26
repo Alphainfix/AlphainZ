@@ -8,7 +8,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { presetCapabilities, providerFromPreset, type FetchLike } from '../../../src/services/llm/openAICompatible';
+import { presetCapabilities, providerFromPreset, type FetchLike } from '@beaver/agent-llm/openAICompatible';
 
 const noFetch = (async () => {
     throw new Error('not called');

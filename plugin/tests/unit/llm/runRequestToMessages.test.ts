@@ -6,7 +6,7 @@ import {
     describePromptContext,
     runToMessages,
     type RunLike,
-} from '../../../src/services/llm/runRequestToMessages';
+} from '@beaver/agent-llm/runRequestToMessages';
 
 const roles = (messages: ReturnType<typeof runToMessages>) => messages.map((m) => m.role);
 

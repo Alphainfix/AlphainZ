@@ -23,7 +23,7 @@
  * think and call tools in the same request.
  */
 
-import { getPref, setPref } from '../../utils/prefs';
+import { getPref, setPref } from './prefs';
 import { logger } from '@beaver/agent-core/platform/logger';
 import { OpenAICompatibleProvider, type FetchLike } from './openAICompatible';
 import { LEGACY_THINKING_TIERS, normalizeTiers, positiveInt, type ThinkingTier } from './thinkingTiers';

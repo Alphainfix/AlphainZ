@@ -1,0 +1,36 @@
+{
+  // Standalone typecheck for the model layer: providers, streaming, the tool
+  // loop, compaction, titles, embeddings, chunking and the full-text index.
+  // It is shared by the Zotero plugin and other clients, so it is compiled
+  // WITHOUT the zotero-types ambient globals and may import nothing but
+  // @beaver/agent-core. `verify-program.mjs` asserts that and the options below.
+  //
+  //   - `lib`: ES2020 + DOM. The layer talks to model APIs with `fetch`,
+  //     streams and abort signals, which every client provides. It never touches
+  //     the document: `window`, `document` and the host globals are a lint rule
+  //     (see eslint.config.mjs), not something `lib` can express.
+  //   - `types`: empty, so no installed @types package (zotero-types above all)
+  //     becomes ambient.
+  //   - `paths`: only @beaver/agent-core.
+  //
+  // The host reaches the layer through two seams: settings go through the
+  // platform runtime adapter (`src/prefs.ts`), interface text through the
+  // translator the client installs (`src/i18n.ts`).
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM"],
+    "types": [],
+    "paths": {
+      "@beaver/agent-core/*": ["../agent-core/src/*"]
+    },
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src"]
+}

@@ -19,7 +19,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import pkg from '../../../package.json';
 
 const verify = vi.hoisted(() => ({ embedding: vi.fn() }));
-vi.mock('../../../src/services/llm/verifyKey', async (importOriginal) => ({
+vi.mock('@beaver/agent-llm/verifyKey', async (importOriginal) => ({
     ...(await importOriginal<any>()),
     verifyEmbeddingProvider: verify.embedding,
 }));

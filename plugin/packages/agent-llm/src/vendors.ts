@@ -6,11 +6,11 @@
  * Shared by the provider cards in Settings → Model and the first-run wizard.
  */
 
-import { PROVIDER_PRESETS } from '../../../src/services/llm/openAICompatible';
-import { msg } from '../../../src/utils/i18n';
+import { PROVIDER_PRESETS } from './openAICompatible';
+import { msg } from './i18n';
 
 export type ProviderId = keyof typeof PROVIDER_PRESETS;
-export type KeyPrefName = 'llmKeyDeepseek' | 'llmKeyOpenai' | 'llmKeyOpenrouter' | 'llmKeyZhipu' | 'llmKeyGoogle';
+export type KeyPrefName = 'llmKeyDeepseek' | 'llmKeyOpencodeGo' | 'llmKeyOpenai' | 'llmKeyOpenrouter' | 'llmKeyZhipu' | 'llmKeyGoogle';
 
 interface VendorProvider {
     id: ProviderId;
@@ -54,6 +54,18 @@ export const VENDORS: Vendor[] = [
         note: msg('deepseek-flash — DeepSeek V4.1 Flash: 1M context, reads figures, calls tools. $0.15/M in · '
             + '$0.60/M out, twice that at peak hours (weekdays 01:00–04:00 and 06:00–10:00 UTC). A stored '
             + 'choice of a retired V4 model runs as deepseek-flash.'),
+    },
+    {
+        id: 'opencode-go',
+        label: 'OpenCode Go',
+        keyPref: 'llmKeyOpencodeGo',
+        providers: [{ id: 'opencode-go' }],
+        keyUrl: 'https://opencode.ai/auth',
+        summary: msg('One subscription for DeepSeek V4.1 Flash, GLM 5.3, Kimi K3.1 and more.'),
+        note: msg('A monthly subscription instead of a per-token bill: DeepSeek V4.1 Flash (the default), GLM 5.3 Flash, '
+            + 'Kimi K3.1 Pro, MiniMax M3.1 Flash, DeepSeek V4 Pro and GLM 5.3 behind one key, within five-hour, weekly '
+            + 'and monthly allowances. All call tools; all but the last two read figures. They always think before '
+            + 'they answer: the lightest setting is Low, or High for DeepSeek V4 Pro.'),
     },
     {
         id: 'openrouter',

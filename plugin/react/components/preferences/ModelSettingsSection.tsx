@@ -26,9 +26,9 @@ import {
 } from '../icons/icons';
 
 import { getPref, setPref } from '../../../src/utils/prefs';
-import { EMBEDDING_PRESETS } from '../../../src/services/llm/embeddings';
-import { PROVIDER_PRESETS, retireChoice } from '../../../src/services/llm/openAICompatible';
-import { verifyEmbeddingProvider } from '../../../src/services/llm/verifyKey';
+import { EMBEDDING_PRESETS } from '@beaver/agent-llm/embeddings';
+import { PROVIDER_PRESETS, retireChoice } from '@beaver/agent-llm/openAICompatible';
+import { verifyEmbeddingProvider } from '@beaver/agent-llm/verifyKey';
 import { OpenAlexClient, OpenAlexRequestError } from '../../../src/services/literature/openalex';
 import {
     currentEmbeddingModelId,
@@ -37,7 +37,7 @@ import {
     ollamaBaseUrlFromPrefs,
     semanticSearchState,
 } from '../../../src/services/llm/agentConfig';
-import { clearEmbeddingHealth } from '../../../src/services/llm/embeddingHealth';
+import { clearEmbeddingHealth } from '@beaver/agent-llm/embeddingHealth';
 import { failureTimeText, useEmbeddingHealth } from '../../hooks/useEmbeddingHealth';
 import {
     pageImageIndexStateAtom,
@@ -64,8 +64,8 @@ import { SectionDescription, SectionHeader, SectionLabel, SettingsGroup } from '
 // Vendors and the providers they unlock
 // ---------------------------------------------------------------------------
 
-export { VENDORS, type Vendor, type KeyPrefName, type ProviderId } from './vendors';
-import { VENDORS, type KeyPrefName, type ProviderId, type Vendor } from './vendors';
+export { VENDORS, type Vendor, type KeyPrefName, type ProviderId } from '@beaver/agent-llm/vendors';
+import { VENDORS, type KeyPrefName, type ProviderId, type Vendor } from '@beaver/agent-llm/vendors';
 import { msg, t, tn } from '../../../src/utils/i18n';
 
 export const EMBEDDING_OPTIONS: Array<{ id: '' | keyof typeof EMBEDDING_PRESETS; label: string; keyPref?: KeyPrefName }> = [

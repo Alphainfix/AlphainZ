@@ -21,14 +21,14 @@ import {
     refreshSemanticSearchAvailability,
 } from '../../src/services/llm/agentConfig';
 import { threadCompactionAtom } from './threadCompaction';
-import { runLocalAgent } from '../../src/services/llm/localRunner';
+import { runLocalAgent } from '@beaver/agent-llm/localRunner';
 import {
     attachedImagesFromPrompt,
     buildRunMessages,
     type RunLike,
-} from '../../src/services/llm/runRequestToMessages';
+} from '@beaver/agent-llm/runRequestToMessages';
 import { dataProviderToolDispatcher } from '../../src/services/llm/zoteroToolDispatch';
-import type { ToolDispatcher } from '../../src/services/llm/agentLoop';
+import type { ToolDispatcher } from '@beaver/agent-llm/agentLoop';
 import {
     addAgentActionsAtom,
     addPendingApprovalAtom,
@@ -67,7 +67,7 @@ import { store } from '../store';
 import { OpenAlexClient, formatWorksForModel, type OpenAlexWork } from '../../src/services/literature/openalex';
 import { createZoteroDataProvider } from '../../src/services/zoteroDataProvider';
 import { getDeferredToolPreference } from '../../src/services/agentDataProvider/utils';
-import type { ToolSchema } from '../../src/services/llm/types';
+import type { ToolSchema } from '@beaver/agent-llm/types';
 import { logger } from '@beaver/agent-core/platform/logger';
 import { getPref } from '../../src/utils/prefs';
 import { locateWithPageHint, sentencesByLength, suggestNearbyPassages } from '../../src/services/llm/locateText';
@@ -78,7 +78,7 @@ import {
     resolveLocator,
 } from '../../src/services/llm/sentenceLocators';
 import { currentEmbeddingModelId, isSemanticSearchAvailable } from '../../src/services/llm/agentConfig';
-import { embeddingFailureSince } from '../../src/services/llm/embeddingHealth';
+import { embeddingFailureSince } from '@beaver/agent-llm/embeddingHealth';
 import {
     ASK_USER_QUESTION_TOOL,
     buildHighlightAction,
@@ -91,6 +91,7 @@ import {
     isHighlightColorName,
     MAX_ANNOTATION_EDITS,
     MAX_ORGANIZE_ITEMS,
+    WRITE_TOOL_NAMES,
     WRITE_TOOL_SCHEMAS,
 } from '../../src/services/llm/writeTools';
 import {
@@ -106,7 +107,7 @@ import {
     DEFAULT_MAX_LIBRARY_SEARCHES,
     DEFAULT_MAX_LITERATURE_LOOKUPS,
     readRunLimits,
-} from '../../src/services/llm/runLimits';
+} from '@beaver/agent-llm/runLimits';
 import { createWSCallbacks } from './agentRunAtoms';
 
 /**
@@ -2503,6 +2504,7 @@ export async function executeLocalRequest(
             embeddingFailureSince: (since: number) => embeddingFailureSince(currentEmbeddingModelId(), since),
             maxIterations: limits.modelRequests,
             outputTokenLimit: config.outputTokenLimit,
+            writeTools: WRITE_TOOL_NAMES,
         });
     } catch (error) {
         // runLocalAgent reports through onError before rethrowing; this guard

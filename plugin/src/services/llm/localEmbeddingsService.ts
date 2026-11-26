@@ -12,8 +12,8 @@
  */
 
 import { buildEmbeddingProviderFromPrefs } from './agentConfig';
-import type { EmbeddingResult } from './embeddings';
-import { isModelRequestError } from './sse';
+import type { EmbeddingResult } from '@beaver/agent-llm/embeddings';
+import { isModelRequestError } from '@beaver/agent-llm/sse';
 
 /** Matches `QueryEmbeddingResponse` in agent-core's client. */
 export interface LocalQueryEmbeddingResponse {

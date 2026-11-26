@@ -23,7 +23,7 @@ import {
     formatTokenCount,
     readRunLimits,
     resolveOutputTokens,
-} from '../../../src/services/llm/runLimits';
+} from '@beaver/agent-llm/runLimits';
 import { buildAgentFromPrefs } from '../../../src/services/llm/agentConfig';
 import { buildSystemPrompt } from '../../../src/services/llm/systemPrompt';
 

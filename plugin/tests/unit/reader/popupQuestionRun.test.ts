@@ -61,7 +61,7 @@ vi.mock('../../../src/services/systemNotifications', () => ({
 }));
 vi.mock('../../../src/beaver-extract', () => ({ prewarmMuPDFWorker: vi.fn() }));
 vi.mock('@beaver/agent-core/platform/logger', () => ({ logger: vi.fn() }));
-vi.mock('../../../src/services/llm/threadTitle', () => ({
+vi.mock('@beaver/agent-llm/threadTitle', () => ({
     generateThreadTitle: vi.fn(async () => null),
 }));
 

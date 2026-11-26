@@ -6,8 +6,8 @@ import { SettingsGroup, SettingsRow } from '../../../preferences/components/Sett
 import { VENDORS, type Vendor, type KeyPrefName } from '../../../preferences/ModelSettingsSection';
 import { OllamaGuide } from '../../../preferences/OllamaGuide';
 import { getPref, setPref } from '../../../../../src/utils/prefs';
-import { verifyChatProvider } from '../../../../../src/services/llm/verifyKey';
-import { catalogueFor } from '../../../../../src/services/llm/providerOverrides';
+import { verifyChatProvider } from '@beaver/agent-llm/verifyKey';
+import { catalogueFor } from '@beaver/agent-llm/providerOverrides';
 import { t } from '../../../../../src/utils/i18n';
 
 /** `fetch` bound to its global — see the note in agentConfig. */

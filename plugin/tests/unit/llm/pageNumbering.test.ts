@@ -14,7 +14,7 @@ vi.mock('@beaver/agent-core/platform/logger', () => ({ logger: vi.fn() }));
 
 import { buildToolRequest, TOOL_SPECS_BY_NAME } from '../../../src/services/llm/toolSchemas';
 import { pageImagesToToolResult, shapeDocumentResult } from '../../../src/services/llm/zoteroToolDispatch';
-import { describePromptContext } from '../../../src/services/llm/runRequestToMessages';
+import { describePromptContext } from '@beaver/agent-llm/runRequestToMessages';
 import { resolvePageValue } from '../../../src/services/agentDataProvider/pageLabelResolution';
 
 /** A thesis: three roman-numbered pages, then the body printed 1, 2, 3, … */

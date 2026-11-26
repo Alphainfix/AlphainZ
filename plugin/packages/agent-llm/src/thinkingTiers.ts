@@ -1,4 +1,4 @@
-import { msg } from '../../utils/i18n';
+import { msg } from './i18n';
 
 /**
  * Thinking tiers, and what a model can be told about itself.

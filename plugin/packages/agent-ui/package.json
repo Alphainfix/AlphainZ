@@ -13,6 +13,7 @@
   },
   "peerDependencies": {
     "@beaver/agent-core": "*",
+    "@beaver/agent-llm": "*",
     "@lexical/react": "^0.43.0",
     "@lexical/utils": "^0.43.0",
     "jotai": "^2.12.1",

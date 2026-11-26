@@ -30,12 +30,12 @@ import pkg from '../../../package.json';
 const verify = vi.hoisted(() => ({
     chat: vi.fn(),
 }));
-vi.mock('../../../src/services/llm/verifyKey', async (importOriginal) => ({
+vi.mock('@beaver/agent-llm/verifyKey', async (importOriginal) => ({
     ...(await importOriginal<any>()),
     verifyChatProvider: verify.chat,
 }));
 const probe = vi.hoisted(() => ({ fn: vi.fn() }));
-vi.mock('../../../src/services/llm/visionProbe', async (importOriginal) => ({
+vi.mock('@beaver/agent-llm/visionProbe', async (importOriginal) => ({
     ...(await importOriginal<any>()),
     probeVision: probe.fn,
 }));
@@ -320,7 +320,7 @@ describe('a hand-added endpoint renamed while its card is on screen', () => {
     /** A model choice synced from the other computer names its own id for the same relay. */
     const syncLands = async () => {
         setPrefs({ llmProvider: 'custom:ep-remote', llmModel: 'm1' });
-        const { adoptSyncedEndpointId } = await import('../../../src/services/llm/customEndpoints');
+        const { adoptSyncedEndpointId } = await import('@beaver/agent-llm/customEndpoints');
         expect(adoptSyncedEndpointId('custom:ep-remote', 'm1')).toBe(true);
     };
 

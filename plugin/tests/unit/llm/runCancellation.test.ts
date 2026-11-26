@@ -8,10 +8,10 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 
-import { runAgentLoop } from '../../../src/services/llm/agentLoop';
-import { runLocalAgent, type LocalRunCallbacks } from '../../../src/services/llm/localRunner';
-import { OpenAICompatibleProvider, type FetchLike } from '../../../src/services/llm/openAICompatible';
-import type { ChatProvider, StreamEvent, ToolSchema } from '../../../src/services/llm/types';
+import { runAgentLoop } from '@beaver/agent-llm/agentLoop';
+import { runLocalAgent, type LocalRunCallbacks } from '@beaver/agent-llm/localRunner';
+import { OpenAICompatibleProvider, type FetchLike } from '@beaver/agent-llm/openAICompatible';
+import type { ChatProvider, StreamEvent, ToolSchema } from '@beaver/agent-llm/types';
 import { updateRunComplete, updateRunWithPart, updateRunWithToolReturn } from '@beaver/agent-core/run-state/atoms';
 import type { AgentRun } from '@beaver/agent-core/agents/types';
 

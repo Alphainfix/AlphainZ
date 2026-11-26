@@ -7,7 +7,7 @@ import {
     msUntilPacificMidnight,
     type EmbeddingRequestOutcome,
     type FetchLike,
-} from '../../../src/services/llm/embeddings';
+} from '@beaver/agent-llm/embeddings';
 
 /** A 429 body in the shape the Gemini API sends one. */
 function limitBody(quotaId: string, retryDelay = '37s', quotaValue = '100') {
@@ -228,8 +228,8 @@ describe('a key Google does not know', () => {
     });
 
     it('is read the same from the OpenAI-compatible layer, which wraps it in an array and drops the details', async () => {
-        const { describeErrorBody } = await import('../../../src/services/llm/sse');
-        const { describeHttpFailure } = await import('../../../src/services/llm/openAICompatible');
+        const { describeErrorBody } = await import('@beaver/agent-llm/sse');
+        const { describeHttpFailure } = await import('@beaver/agent-llm/openAICompatible');
         const body = JSON.stringify([{ error: { code: 400, message: 'Please pass a valid API key', status: 'INVALID_ARGUMENT' } }]);
         expect(describeErrorBody(body)).toEqual({ detail: 'Please pass a valid API key', code: 'invalid_api_key', status: 401 });
         const failure = await describeHttpFailure('Google Gemini', 400, 'Bad Request', async () => body);
@@ -237,7 +237,7 @@ describe('a key Google does not know', () => {
     });
 
     it('leaves another 400 alone', async () => {
-        const { describeErrorBody } = await import('../../../src/services/llm/sse');
+        const { describeErrorBody } = await import('@beaver/agent-llm/sse');
         const body = JSON.stringify({ error: { code: 400, message: 'Request contains an invalid argument.', status: 'INVALID_ARGUMENT' } });
         expect(describeErrorBody(body)).toMatchObject({ code: '400', status: 400 });
     });

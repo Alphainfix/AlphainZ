@@ -10,11 +10,11 @@
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { OpenAICompatibleProvider, type FetchLike } from '../../../src/services/llm/openAICompatible';
-import { EmbeddingProvider } from '../../../src/services/llm/embeddings';
-import { verifyChatProvider, verifyEmbeddingProvider } from '../../../src/services/llm/verifyKey';
+import { OpenAICompatibleProvider, type FetchLike } from '@beaver/agent-llm/openAICompatible';
+import { EmbeddingProvider } from '@beaver/agent-llm/embeddings';
+import { verifyChatProvider, verifyEmbeddingProvider } from '@beaver/agent-llm/verifyKey';
 import { OpenAlexClient, type FetchJson } from '../../../src/services/literature/openalex';
-import type { StreamEvent } from '../../../src/services/llm/sse';
+import type { StreamEvent } from '@beaver/agent-llm/sse';
 
 const user = (content: string) => ({ role: 'user' as const, content });
 const config = { label: 'Lab server', baseUrl: 'http://10.0.0.5:8000/v1', apiKey: '', model: 'm', wireFormat: 'openai' as const };

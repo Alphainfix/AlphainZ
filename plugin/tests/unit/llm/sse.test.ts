@@ -6,7 +6,7 @@ import {
     parseToolArguments,
     splitSseLines,
     type StreamEvent,
-} from '../../../src/services/llm/sse';
+} from '@beaver/agent-llm/sse';
 
 // ---------------------------------------------------------------------------
 // Helpers

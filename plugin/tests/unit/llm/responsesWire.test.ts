@@ -18,19 +18,19 @@ vi.mock('../../../src/utils/prefs', () => ({
 }));
 vi.mock('@beaver/agent-core/platform/logger', () => ({ logger: vi.fn() }));
 
-import { isModelRequestError, parseSseStream, type StreamEvent } from '../../../src/services/llm/sse';
+import { isModelRequestError, parseSseStream, type StreamEvent } from '@beaver/agent-llm/sse';
 import {
     presetCapabilities,
     providerFromPreset,
     toResponsesInput,
     toResponsesTools,
     type FetchLike,
-} from '../../../src/services/llm/openAICompatible';
+} from '@beaver/agent-llm/openAICompatible';
 import { providerSupportsReasoningEffort } from '../../../src/services/llm/agentConfig';
-import { customProviderFromEndpoint, type CustomEndpoint } from '../../../src/services/llm/customEndpoints';
-import { runAgentLoop } from '../../../src/services/llm/agentLoop';
-import { PROBE_CODE, PROBE_IMAGE_DATA_URL, probeVision } from '../../../src/services/llm/visionProbe';
-import type { ChatMessage, ToolSchema } from '../../../src/services/llm/types';
+import { customProviderFromEndpoint, type CustomEndpoint } from '@beaver/agent-llm/customEndpoints';
+import { runAgentLoop } from '@beaver/agent-llm/agentLoop';
+import { PROBE_CODE, PROBE_IMAGE_DATA_URL, probeVision } from '@beaver/agent-llm/visionProbe';
+import type { ChatMessage, ToolSchema } from '@beaver/agent-llm/types';
 
 // ---------------------------------------------------------------------------
 // Helpers and fixtures

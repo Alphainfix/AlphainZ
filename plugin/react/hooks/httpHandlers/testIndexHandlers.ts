@@ -15,10 +15,10 @@ import {
     refreshSemanticSearchAvailability,
 } from '../../../src/services/llm/agentConfig';
 import { semanticSearchService } from '../../../src/services/semanticSearchService';
-import { searchChunks } from '../../../src/services/llm/fulltextIndex';
+import { searchChunks } from '@beaver/agent-llm/fulltextIndex';
 import { searchableLibraryIdsAtom } from '../../atoms/profile';
 import { buildEmbeddingProviderForPreset } from '../../../src/services/llm/agentConfig';
-import { EMBEDDING_PRESETS, type EmbeddingPresetId } from '../../../src/services/llm/embeddings';
+import { EMBEDDING_PRESETS, type EmbeddingPresetId } from '@beaver/agent-llm/embeddings';
 import { runPageImageIndex, searchPageImages, type PageImageIndexRunResult } from '../../../src/services/llm/pageImageIndex';
 import {
     pageImageIndexStateAtom,
@@ -133,7 +133,7 @@ export async function handleTestFulltextStatsHttpRequest(): Promise<any> {
     if (!db?.getChunkStats) return { ok: false, error: 'no database' };
 
     const { currentEmbeddingModelId } = await import('../../../src/services/llm/agentConfig');
-    const { coverageNote } = await import('../../../src/services/llm/fulltextIndexer');
+    const { coverageNote } = await import('@beaver/agent-llm/fulltextIndexer');
     const modelId = currentEmbeddingModelId();
 
     // Counted as the search tool counts: chunked documents among the PDFs in

@@ -182,6 +182,8 @@ constructs a client it never uses, and fails to load without them.
 
 ## Changelog
 
+- **0.1.81** (2026-11-26): OpenCode Go works again, and its DeepSeek model keeps its own name; Chinese punctuation in
+  answers stays as written.
 - **0.1.80** (2026-11-25): a Chinese interface, and eight more library tools over MCP (full-text and
   figure search, pages and images, highlights and comments).
 - **0.1.78** (2026-10-30): the first public release.

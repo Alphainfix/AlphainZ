@@ -1,9 +1,9 @@
 import { atom } from 'jotai';
 import { getPref, setPref } from '../../src/utils/prefs';
-import { PROVIDER_PRESETS, presetSupportsVision, retireChoice, type ProviderPresetId } from '../../src/services/llm/openAICompatible';
+import { PROVIDER_PRESETS, presetSupportsVision, retireChoice, type ProviderPresetId } from '@beaver/agent-llm/openAICompatible';
 import { KEY_PREF_BY_PROVIDER } from '../../src/services/llm/agentConfig';
-import { hydrateVisionVerdicts } from '../../src/services/llm/visionProbe';
-import { catalogueFor, hydrateProviderOverrides, readProviderOverrides, type CatalogueModel } from '../../src/services/llm/providerOverrides';
+import { hydrateVisionVerdicts } from '@beaver/agent-llm/visionProbe';
+import { catalogueFor, hydrateProviderOverrides, readProviderOverrides, type CatalogueModel } from '@beaver/agent-llm/providerOverrides';
 import {
     adoptSyncedEndpointId,
     customProviderId,
@@ -11,8 +11,9 @@ import {
     findCustomModel,
     isCustomProviderId,
     readCustomEndpoints,
-} from '../../src/services/llm/customEndpoints';
+} from '@beaver/agent-llm/customEndpoints';
 import { isOllamaEmbeddingModel, ollamaChatModels } from '../utils/ollama';
+import { currentModelChoice, localModelChoices, saveModelChoice, type ModelChoiceSources } from '@beaver/agent-llm/modelChoices';
 
 /**
  * The Ollama chat models found on this machine, if any.
@@ -31,6 +32,20 @@ export function ollamaModelsFromPrefs(): string[] {
         return [];
     }
 }
+/**
+ * What the shared model list needs from this plugin: which providers have a
+ * key in Zotero's preferences, and the Ollama models found here.
+ */
+const MODEL_SOURCES: ModelChoiceSources = {
+    hasKey(id) {
+        const keyPref = KEY_PREF_BY_PROVIDER[id];
+        // `null` means the provider runs locally and needs no key.
+        if (keyPref === null) return true;
+        const value = getPref(keyPref);
+        return typeof value === 'string' && value.trim() !== '';
+    },
+    ollamaModels: ollamaModelsFromPrefs,
+};
 import { logger } from '@beaver/agent-core/platform/logger';
 import { ProviderType, ReasoningEffort, AccessMode, ModelPricing, ModelConfig } from '@beaver/agent-core/types/models';
 
@@ -94,126 +109,12 @@ try {
  * list cannot drift from what would actually answer.
  */
 export function localModelsFromPrefs(): ModelConfig[] {
-    const trimmed = (key: string) => {
-        const value = getPref(key as any);
-        return typeof value === 'string' ? value.trim() : '';
-    };
-
-    // Verdicts the Check button earned earlier, and flags declared in a
-    // provider's catalogue, so the rows below can say "reads figures" from the
-    // first build. Verdicts are recorded after declarations so they win.
-    const overrides = readProviderOverrides();
-    hydrateProviderOverrides(overrides);
-    hydrateVisionVerdicts();
-
-    const out: ModelConfig[] = [];
-    for (const id of Object.keys(PROVIDER_PRESETS) as ProviderPresetId[]) {
-        const keyPref = KEY_PREF_BY_PROVIDER[id];
-        // `null` means the provider runs locally and needs no key.
-        if (keyPref !== null && !trimmed(keyPref)) continue;
-        const preset = PROVIDER_PRESETS[id];
-        // Ollama lists what is installed here, not a fixed catalogue; with
-        // nothing detected yet there is nothing to offer. Every other preset
-        // offers its catalogue — the user's edited one when they have one.
-        const rows: CatalogueModel[] = id === 'ollama'
-            ? ollamaModelsFromPrefs().map((model) => ({ id: model }))
-            : catalogueFor(id, overrides);
-        for (const row of rows) {
-            const model = row.id;
-            if (!model) continue;
-            out.push({
-                id: `local-${id}::${model}`,
-                provider: id as ModelConfig['provider'],
-                name: `${preset.label} · ${row.label || model}`,
-                ...(row.label ? { label: row.label } : {}),
-                snapshot: model,
-                is_default: false,
-                credit_cost: 0,
-                allow_byok: true,
-                allow_app_key: false,
-                is_custom: true,
-                // Resolved per model, not per preset: the attachment checks
-                // read this flag to decide whether an image may be attached,
-                // and one gateway can host a vision model next to a text-only
-                // one. Left unset, every preset model read as "no vision" and
-                // image attachments were refused even for models that see.
-                supports_vision: presetSupportsVision(id, model) === true,
-            });
-        }
-    }
-    /*
-     * Hand-added endpoints, each under its own name. The entry carries what
-     * the user said about the model (vision) rather than anything inferred,
-     * and `custom_model.api_base` so the picker's endpoint dedupe sees where
-     * it points. Never the key: this object is snapshotted into a preference.
-     */
-    for (const endpoint of readCustomEndpoints()) {
-        if (!endpoint.baseUrl) continue;
-        const provider = customProviderId(endpoint.id);
-        const vendor = endpoint.name || endpoint.baseUrl;
-        for (const model of endpoint.models) {
-            out.push({
-                id: `local-${provider}::${model.id}`,
-                provider: provider as ModelConfig['provider'],
-                name: `${vendor} · ${model.label || model.id}`,
-                ...(model.label ? { label: model.label } : {}),
-                snapshot: model.id,
-                is_default: false,
-                credit_cost: 0,
-                allow_byok: true,
-                allow_app_key: false,
-                is_custom: true,
-                supports_vision: model.supportsVision,
-                custom_model: { api_base: endpoint.baseUrl, format: 'openai', api_key: '', name: vendor, snapshot: model.id },
-            });
-        }
-    }
-    return out;
+    return localModelChoices(MODEL_SOURCES);
 }
 
+/** The model the preferences name, as a picker entry; null when none is chosen. */
 export function localModelFromPrefs(): ModelConfig | null {
-    // Read defensively: a pref can be absent, and a stubbed one in tests is not
-    // necessarily a string.
-    const raw = (key: 'llmProvider' | 'llmModel') => {
-        const value = getPref(key);
-        return typeof value === 'string' ? value.trim() : '';
-    };
-    if (!raw('llmProvider')) return null;
-    // A stored provider or model that has been retired shows and runs as its
-    // successor — the same mapping the runner applies, so the composer names
-    // what will actually answer instead of a model that no longer exists.
-    const { provider, model } = retireChoice(raw('llmProvider'), raw('llmModel'));
-    // The same id the picker's list uses, so the two agree on which entry is
-    // current even for a model name that is not in the preset catalogue.
-    const endpoint = isCustomProviderId(provider) ? findCustomEndpoint(provider) : null;
-    const customModel = endpoint && model ? findCustomModel(endpoint, model) : null;
-    const label = endpoint
-        ? (endpoint.name || endpoint.baseUrl || 'Custom endpoint')
-        : provider in PROVIDER_PRESETS ? PROVIDER_PRESETS[provider as ProviderPresetId].label : provider;
-    // The display name the catalogue gives this model, so the composer and the
-    // settings page call it the same thing.
-    const displayName = endpoint
-        ? customModel?.label
-        : provider in PROVIDER_PRESETS
-            ? catalogueFor(provider as ProviderPresetId).find((row) => row.id === model)?.label
-            : undefined;
-    return {
-        id: model ? `local-${provider}::${model}` : `local-${provider}`,
-        provider: provider as ModelConfig['provider'],
-        name: model ? `${label} · ${displayName || model}` : label,
-        ...(displayName ? { label: displayName } : {}),
-        snapshot: model,
-        is_default: true,
-        credit_cost: 0,
-        allow_byok: true,
-        allow_app_key: false,
-        is_custom: true,
-        ...(provider in PROVIDER_PRESETS
-            ? { supports_vision: presetSupportsVision(provider as ProviderPresetId, model || undefined) === true }
-            : endpoint
-                ? { supports_vision: customModel?.supportsVision === true }
-                : {}),
-    };
+    return currentModelChoice();
 }
 
 /*
@@ -298,15 +199,7 @@ export const beaverDefaultModelAtom = atom<ModelConfig | null>(
  * for the `local-` entries; anything else has no preference pair to write.
  */
 function persistLocalModelChoice(model: ModelConfig | null): void {
-    if (!model || !model.id.startsWith('local-') || !model.provider) return;
-    const provider = String(model.provider);
-    const snapshot = model.snapshot ? String(model.snapshot) : '';
-    const read = (key: 'llmProvider' | 'llmModel') => {
-        const value = getPref(key);
-        return typeof value === 'string' ? value.trim() : '';
-    };
-    if (read('llmProvider') !== provider) setPref('llmProvider', provider);
-    if (snapshot && read('llmModel') !== snapshot) setPref('llmModel', snapshot);
+    saveModelChoice(model);
 }
 
 /**

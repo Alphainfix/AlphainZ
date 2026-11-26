@@ -21,11 +21,11 @@ vi.mock('@beaver/agent-core/platform/logger', () => ({ logger: vi.fn() }));
 
 import { buildAgentFromPrefs, buildAgentSystemPrompt, resetSemanticSearchProbe } from '../../../src/services/llm/agentConfig';
 import { buildSystemPrompt, LIBRARY_WRITES_SETTING } from '../../../src/services/llm/systemPrompt';
-import { describePromptContext } from '../../../src/services/llm/runRequestToMessages';
+import { describePromptContext } from '@beaver/agent-llm/runRequestToMessages';
 import { TOOL_SPECS } from '../../../src/services/llm/toolSchemas';
-import { writeCustomEndpoints } from '../../../src/services/llm/customEndpoints';
-import { writeProviderOverrides } from '../../../src/services/llm/providerOverrides';
-import { resetDeclaredVision, resetProbedVision } from '../../../src/services/llm/openAICompatible';
+import { writeCustomEndpoints } from '@beaver/agent-llm/customEndpoints';
+import { writeProviderOverrides } from '@beaver/agent-llm/providerOverrides';
+import { resetDeclaredVision, resetProbedVision } from '@beaver/agent-llm/openAICompatible';
 import {
     ASK_USER_QUESTION_TOOL,
     FULLTEXT_TOOL_SCHEMA,

@@ -1,17 +1,20 @@
 import React, { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useAtomValue } from 'jotai';
-import { conversationTurnsAtom } from '../../atoms/conversationNav';
-import { userScrolledAtom, windowUserScrolledAtom } from '../../atoms/ui';
-import { useCurrentTurnIndex } from '../../hooks/useCurrentTurn';
-import { jumpToRun, scrollByWheel } from '../../utils/conversationNavigation';
-import { clipText, nearestCentreIndex, turnMeta, type ConversationTurn } from '../../utils/conversationTurns';
-import { t } from '../../../src/utils/i18n';
+import { t } from '../i18n';
+import { useCurrentTurnIndex } from './useCurrentTurn';
+import { jumpToRun, scrollByWheel } from './navigation';
+import { clipText, nearestCentreIndex, turnMeta, type ConversationTurn } from './turns';
 
-interface ConversationRailProps {
-    /** The thread view's scroll container. */
+export interface ConversationRailProps {
+    /** The thread view's scroll container; each question's run is `#run-<runId>` inside it. */
     containerRef: React.RefObject<HTMLDivElement>;
-    /** Whether this is the separate window, which keeps its own scroll state. */
-    isWindow: boolean;
+    /** The conversation's questions, oldest first. */
+    turns: readonly ConversationTurn[];
+    /**
+     * Told, before a jump scrolls, whether the view will end away from the
+     * bottom — for a client whose thread view follows the conversation's end
+     * unless the reader has scrolled away.
+     */
+    onScrolled?: (scrolledAway: boolean) => void;
 }
 
 /** Space kept between the preview card and the edges of the chat area. */
@@ -48,10 +51,9 @@ function markLabel(turn: ConversationTurn): string {
  * A click or Enter jumps to the question.
  *
  * Memoised: its parent re-renders on every streamed token, and nothing the
- * rail draws changes with one (see `conversationTurnsAtom`).
+ * rail draws changes with one (as long as the caller keeps `turns` stable).
  */
-export const ConversationRail = React.memo(function ConversationRail({ containerRef, isWindow }: ConversationRailProps) {
-    const turns = useAtomValue(conversationTurnsAtom);
+export const ConversationRail = React.memo(function ConversationRail({ containerRef, turns, onScrolled }: ConversationRailProps) {
     const runIds = useMemo(() => turns.map((turn) => turn.runId), [turns]);
     const current = useCurrentTurnIndex(containerRef, runIds);
     const count = turns.length;
@@ -76,12 +78,11 @@ export const ConversationRail = React.memo(function ConversationRail({ container
     const cardIndex = active ?? inRange(lastShown);
     const cardTurn = cardIndex !== null ? turns[cardIndex] : undefined;
     const tabStop = inRange(focused) ?? (current >= 0 ? current : 0);
-    const scrolledAtom = isWindow ? windowUserScrolledAtom : userScrolledAtom;
 
     const jump = (index: number) => {
         const container = containerRef.current;
         const turn = turns[index];
-        if (container && turn) jumpToRun(container, turn.runId, scrolledAtom);
+        if (container && turn) jumpToRun(container, turn.runId, onScrolled ?? null);
         // Out of the way of the question it just brought up.
         setDismissed(index);
     };

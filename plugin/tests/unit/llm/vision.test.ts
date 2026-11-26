@@ -5,15 +5,15 @@ import {
     toolImagesToContent,
     serializeToolResult,
     type ToolImagesResult,
-} from '../../../src/services/llm/agentLoop';
-import { toOpenAIMessages } from '../../../src/services/llm/openAICompatible';
+} from '@beaver/agent-llm/agentLoop';
+import { toOpenAIMessages } from '@beaver/agent-llm/openAICompatible';
 import { pageImagesToToolResult } from '../../../src/services/llm/zoteroToolDispatch';
 import {
     contentToText,
     hasImageParts,
     toDataUrl,
     type ChatMessage,
-} from '../../../src/services/llm/types';
+} from '@beaver/agent-llm/types';
 
 const B64 = 'iVBORw0KGgo=';
 

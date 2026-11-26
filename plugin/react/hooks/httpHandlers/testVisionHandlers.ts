@@ -7,11 +7,11 @@
  */
 
 import { checkModelVision, keyPrefForProvider } from '../../../src/services/llm/agentConfig';
-import { fetchModelIds } from '../../../src/services/llm/listModels';
-import { baseUrlOverrideFor } from '../../../src/services/llm/providerOverrides';
-import { findCustomEndpoint } from '../../../src/services/llm/customEndpoints';
-import { PROVIDER_PRESETS, presetSupportsVision, type ProviderPresetId } from '../../../src/services/llm/openAICompatible';
-import { customModelCapabilities, isCustomProviderId } from '../../../src/services/llm/customEndpoints';
+import { fetchModelIds } from '@beaver/agent-llm/listModels';
+import { baseUrlOverrideFor } from '@beaver/agent-llm/providerOverrides';
+import { findCustomEndpoint } from '@beaver/agent-llm/customEndpoints';
+import { PROVIDER_PRESETS, presetSupportsVision, type ProviderPresetId } from '@beaver/agent-llm/openAICompatible';
+import { customModelCapabilities, isCustomProviderId } from '@beaver/agent-llm/customEndpoints';
 import { getPref } from '../../../src/utils/prefs';
 
 const trimmed = (key: any): string => {

@@ -109,7 +109,7 @@ describe('reconciling the archive with Zotero', () => {
  */
 describe('cleaning up a generated title', () => {
     it('drops the quotes and the prefix models add anyway', async () => {
-        const { cleanTitle } = await import('../../../src/services/llm/threadTitle');
+        const { cleanTitle } = await import('@beaver/agent-llm/threadTitle');
         expect(cleanTitle('"CO2 夜间通量"')).toBe('CO2 夜间通量');
         expect(cleanTitle('标题：EEG 测睡眠')).toBe('EEG 测睡眠');
         expect(cleanTitle('Title: Bee odometry')).toBe('Bee odometry');
@@ -117,18 +117,18 @@ describe('cleaning up a generated title', () => {
     });
 
     it('keeps one line, and drops trailing punctuation', async () => {
-        const { cleanTitle } = await import('../../../src/services/llm/threadTitle');
+        const { cleanTitle } = await import('@beaver/agent-llm/threadTitle');
         expect(cleanTitle('EEG 测睡眠\n\n（还有更多说明）')).toBe('EEG 测睡眠');
         expect(cleanTitle('EEG 测睡眠。')).toBe('EEG 测睡眠');
     });
 
     it('clips one that ran long', async () => {
-        const { cleanTitle, MAX_TITLE_CHARS } = await import('../../../src/services/llm/threadTitle');
+        const { cleanTitle, MAX_TITLE_CHARS } = await import('@beaver/agent-llm/threadTitle');
         expect(cleanTitle('题'.repeat(200)).length).toBe(MAX_TITLE_CHARS);
     });
 
     it('gives back nothing for nothing', async () => {
-        const { cleanTitle } = await import('../../../src/services/llm/threadTitle');
+        const { cleanTitle } = await import('@beaver/agent-llm/threadTitle');
         for (const input of ['', '   ', '""', '标题：']) expect(cleanTitle(input)).toBe('');
     });
 });

@@ -15,9 +15,9 @@ vi.mock('../../../src/utils/prefs', () => ({
 vi.mock('@beaver/agent-core/platform/logger', () => ({ logger: vi.fn() }));
 
 import { checkModelVision } from '../../../src/services/llm/agentConfig';
-import { PROBE_CODE } from '../../../src/services/llm/visionProbe';
-import { presetSupportsVision, resetProbedVision } from '../../../src/services/llm/openAICompatible';
-import { readCustomEndpoints, writeCustomEndpoints } from '../../../src/services/llm/customEndpoints';
+import { PROBE_CODE } from '@beaver/agent-llm/visionProbe';
+import { presetSupportsVision, resetProbedVision } from '@beaver/agent-llm/openAICompatible';
+import { readCustomEndpoints, writeCustomEndpoints } from '@beaver/agent-llm/customEndpoints';
 
 function endpointAnswering(text: string, promptTokens = 160) {
     const calls: Array<{ url: string; init: any }> = [];

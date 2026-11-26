@@ -45,6 +45,9 @@ const zoteroAdapter: RuntimeAdapter = {
     getPluginPref(key) {
         return Zotero.Prefs.get(`${PREFS_PREFIX}.${key}`, true);
     },
+    setPluginPref(key, value) {
+        Zotero.Prefs.set(`${PREFS_PREFIX}.${key}`, value as any, true);
+    },
     hostVersion() {
         return zoteroVersion();
     },

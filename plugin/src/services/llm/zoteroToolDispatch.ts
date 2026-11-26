@@ -17,7 +17,7 @@
  */
 
 import { buildToolRequest, TOOL_SPECS, TOOL_SPECS_BY_NAME } from './toolSchemas';
-import type { ToolDispatcher, ToolImagesResult } from './agentLoop';
+import type { ToolDispatcher, ToolImagesResult } from '@beaver/agent-llm/agentLoop';
 import { hasLocators, renderPageWithLocators } from './sentenceLocators';
 
 /**

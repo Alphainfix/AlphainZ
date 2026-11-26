@@ -14,7 +14,7 @@
  * without a restart.
  */
 
-import { getPref } from '../../utils/prefs';
+import { getPref } from './prefs';
 
 /** `maxOutputTokens` value meaning "the provider's own default". */
 export const AUTO_OUTPUT_TOKENS = 0;
@@ -52,7 +52,7 @@ export interface RunLimits {
 }
 
 function storedInteger(key: string): number | null {
-    const raw = Number(getPref(key as any));
+    const raw = Number(getPref(key));
     return Number.isFinite(raw) ? Math.round(raw) : null;
 }
 

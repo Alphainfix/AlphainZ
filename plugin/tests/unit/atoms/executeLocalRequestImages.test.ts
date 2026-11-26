@@ -13,8 +13,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const captured: { options?: any } = {};
 const setup = vi.hoisted(() => ({ readsImages: true }));
 
-vi.mock('../../../src/services/llm/localRunner', async (importOriginal) => ({
-    ...(await importOriginal<typeof import('../../../src/services/llm/localRunner')>()),
+vi.mock('@beaver/agent-llm/localRunner', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@beaver/agent-llm/localRunner')>()),
     runLocalAgent: vi.fn(async (options: any) => {
         captured.options = options;
     }),

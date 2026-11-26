@@ -18,10 +18,10 @@ import {
     serializeToolResult,
     toolResultCharBudget,
     type ToolDispatcher,
-} from '../../src/services/llm/agentLoop';
-import type { ToolSchema } from '../../src/services/llm/types';
+} from '@beaver/agent-llm/agentLoop';
+import type { ToolSchema } from '@beaver/agent-llm/types';
 import { refreshSemanticSearchAvailability, semanticSearchState } from '../../src/services/llm/agentConfig';
-import { EMBEDDING_PRESETS } from '../../src/services/llm/embeddings';
+import { EMBEDDING_PRESETS } from '@beaver/agent-llm/embeddings';
 import { createZoteroDataProvider } from '../../src/services/zoteroDataProvider';
 import { getPref } from '../../src/utils/prefs';
 import { figuresTool, fulltextTool } from '../atoms/librarySearchTools';

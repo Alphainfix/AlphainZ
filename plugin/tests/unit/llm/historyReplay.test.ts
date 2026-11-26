@@ -20,8 +20,8 @@ import {
     replayFor,
     runToMessages,
     type RunLike,
-} from '../../../src/services/llm/runRequestToMessages';
-import type { ChatMessage } from '../../../src/services/llm/types';
+} from '@beaver/agent-llm/runRequestToMessages';
+import type { ChatMessage } from '@beaver/agent-llm/types';
 
 /** A run that searched, read one paper, and was cut off while reading a second. */
 function partialRun(overrides: Partial<RunLike> = {}): RunLike {

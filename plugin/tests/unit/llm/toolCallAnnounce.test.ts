@@ -11,10 +11,10 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { runLocalAgent, type LocalRunCallbacks } from '../../../src/services/llm/localRunner';
-import { toOpenAIMessages } from '../../../src/services/llm/openAICompatible';
-import { ToolCallAssembler, parseSseStream, type StreamEvent } from '../../../src/services/llm/sse';
-import type { ChatMessage, ChatProvider, ToolSchema } from '../../../src/services/llm/types';
+import { runLocalAgent, type LocalRunCallbacks } from '@beaver/agent-llm/localRunner';
+import { toOpenAIMessages } from '@beaver/agent-llm/openAICompatible';
+import { ToolCallAssembler, parseSseStream, type StreamEvent } from '@beaver/agent-llm/sse';
+import type { ChatMessage, ChatProvider, ToolSchema } from '@beaver/agent-llm/types';
 
 function readerOf(chunks: string[]): ReadableStreamDefaultReader<Uint8Array> {
     const encoder = new TextEncoder();

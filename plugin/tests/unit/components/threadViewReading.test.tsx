@@ -369,7 +369,7 @@ describe('while the answer streams', () => {
     });
 
     it('waits for the scrollbar thumb to be let go, however long it is held still', async () => {
-        const { SETTLE_FALLBACK_MS } = await import('../../../react/utils/readingRoom');
+        const { SETTLE_FALLBACK_MS } = await import('@beaver/agent-ui/conversation/readingRoom');
         const { stream, scrollThrough, later } = await openThread();
         await stream('q2', 60);
         later(1000);
@@ -387,7 +387,7 @@ describe('while the answer streams', () => {
     });
 
     it('gives the room back after a pause when the scroll sends no scrollend, as a wheel that scrolls in steps', async () => {
-        const { SETTLE_FALLBACK_MS } = await import('../../../react/utils/readingRoom');
+        const { SETTLE_FALLBACK_MS } = await import('@beaver/agent-ui/conversation/readingRoom');
         const { stream, scrollThrough, later } = await openThread();
         await stream('q2', 60);
         later(1000);
@@ -411,7 +411,7 @@ describe('while the answer streams', () => {
         restores.push(() => Object.defineProperty(owner, 'onscrollend', descriptor));
         expect('onscrollend' in window).toBe(false);
 
-        const { SETTLE_FALLBACK_MS } = await import('../../../react/utils/readingRoom');
+        const { SETTLE_FALLBACK_MS } = await import('@beaver/agent-ui/conversation/readingRoom');
         const { stream, scrollThrough, later } = await openThread();
         await stream('q2', 60);
         later(1000);
@@ -695,7 +695,7 @@ describe('around a question brought up to read', () => {
         expect(view().scrollTop).toBe(pinnedAt('q1'));
         expect(roomHeight()).toBeGreaterThan(0);
         // The room keeps the view at the end, and still q1 is the one being read.
-        const { readCurrentTurnIndex } = await import('../../../react/hooks/useCurrentTurn');
+        const { readCurrentTurnIndex } = await import('@beaver/agent-ui/conversation/useCurrentTurn');
         expect(readCurrentTurnIndex(view(), ['q0', 'q1', 'q2'])).toBe(1);
     });
 });
@@ -775,7 +775,7 @@ describe('coming back to a place, again and again', () => {
     });
 
     it('takes the scroll that puts the view back at a place for no scroll of the reader\'s when it ends without a scrollend', async () => {
-        const { SETTLE_FALLBACK_MS } = await import('../../../react/utils/readingRoom');
+        const { SETTLE_FALLBACK_MS } = await import('@beaver/agent-ui/conversation/readingRoom');
         const { store, stream, scrollTo, later } = await openThread();
         await stream('q2', 60, 'completed');
         later(1000);
@@ -1566,7 +1566,8 @@ describe('the room itself', () => {
     });
 
     it('takes whatever the runs leave of the column, and adds nothing when there is none', () => {
-        const css = fs.readFileSync(path.resolve(__dirname, '../../../addon/content/styles/beaver.css'), 'utf8');
+        // The room is shared (@beaver/agent-ui/conversation), and so is its stylesheet.
+        const css = fs.readFileSync(path.resolve(__dirname, '../../../packages/agent-ui/src/theme/agent-ui-components.css'), 'utf8');
         const utilities = fs.readFileSync(path.resolve(__dirname, '../../../packages/agent-ui/src/theme/agent-ui-utilities.css'), 'utf8');
         const rule = (sheet: string, selector: string) => {
             const at = sheet.indexOf(`${selector} {`);
@@ -1729,7 +1730,7 @@ describe('when something above a question brought up changes size', () => {
     });
 
     it('takes a wheel turned over the question rail for the reader\'s own scroll too', async () => {
-        const { SETTLE_FALLBACK_MS } = await import('../../../react/utils/readingRoom');
+        const { SETTLE_FALLBACK_MS } = await import('@beaver/agent-ui/conversation/readingRoom');
         const { stream, scrollThrough, later } = await openThread({ q0: 300, q1: 300 });
         const { scrollByWheel } = await import('../../../react/utils/conversationNavigation');
         await stream('q2', 60);
@@ -1755,7 +1756,7 @@ describe('when something above a question brought up changes size', () => {
         [[40, 152, 40]],
         [[80, 104, 80]],
     ])('comes back to the question from a quick turn up and straight back over the rail, though the smooth scroll swings (%j ms apart)', async (gaps: number[]) => {
-        const { SETTLE_FALLBACK_MS } = await import('../../../react/utils/readingRoom');
+        const { SETTLE_FALLBACK_MS } = await import('@beaver/agent-ui/conversation/readingRoom');
         const { scrollByWheel } = await import('../../../react/utils/conversationNavigation');
         const { stream, later } = await openThread({ q0: 300, q1: 300 });
         await stream('q2', 60);
@@ -1824,7 +1825,7 @@ describe('when something above a question brought up changes size', () => {
     });
 
     it('adds up a touchpad\'s fractions of a pixel over the rail, so a turn up and straight back comes back', async () => {
-        const { SETTLE_FALLBACK_MS } = await import('../../../react/utils/readingRoom');
+        const { SETTLE_FALLBACK_MS } = await import('@beaver/agent-ui/conversation/readingRoom');
         const { scrollByWheel } = await import('../../../react/utils/conversationNavigation');
         DPR = 2;
         ROUNDS = true;
@@ -1847,7 +1848,7 @@ describe('when something above a question brought up changes size', () => {
     });
 
     it('takes the notches of a wheel turned over the question rail for one scroll, given back once they stop', async () => {
-        const { SETTLE_FALLBACK_MS } = await import('../../../react/utils/readingRoom');
+        const { SETTLE_FALLBACK_MS } = await import('@beaver/agent-ui/conversation/readingRoom');
         const { scrollByWheel } = await import('../../../react/utils/conversationNavigation');
         const { stream, later } = await openThread({ q0: 300, q1: 300 });
         await stream('q2', 60);
@@ -2047,7 +2048,7 @@ describe('letting the room go', () => {
         await scrollTo(0);
         expect(reach()).toBe(null);
         expect(scrollHeight()).toBe(800);
-        const { readCurrentTurnIndex } = await import('../../../react/hooks/useCurrentTurn');
+        const { readCurrentTurnIndex } = await import('@beaver/agent-ui/conversation/useCurrentTurn');
         expect(readCurrentTurnIndex(view(), ['q0', 'q1', 'q2'])).toBe(2);
     });
 });

@@ -6,7 +6,7 @@
  * to be diffable and its reasons recorded next to it.
  */
 
-import { DEFAULT_MAX_LITERATURE_LOOKUPS } from './runLimits';
+import { DEFAULT_MAX_LITERATURE_LOOKUPS } from '@beaver/agent-llm/runLimits';
 
 export interface PromptContext {
     /** Whether semantic library search is usable (needs an embedding index). */

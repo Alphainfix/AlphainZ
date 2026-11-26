@@ -62,7 +62,7 @@ vi.mock('../../../src/beaver-extract', () => ({
 }));
 vi.mock('@beaver/agent-core/platform/logger', () => ({ logger: vi.fn() }));
 
-import { EmbeddingProvider, type FetchLike } from '../../../src/services/llm/embeddings';
+import { EmbeddingProvider, type FetchLike } from '@beaver/agent-llm/embeddings';
 import { fulltextIndexStateAtom } from '../../../react/atoms/fulltextIndex';
 import { embeddingIndexStateAtom } from '../../../react/atoms/embeddingIndex';
 import { fulltextSweepDueAtom } from '../../../react/atoms/indexSchedule';

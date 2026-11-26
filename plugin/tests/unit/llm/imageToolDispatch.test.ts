@@ -15,7 +15,7 @@ import {
     shapeDocumentResult,
     ZOTERO_TOOL_NAMES,
 } from '../../../src/services/llm/zoteroToolDispatch';
-import { attachedImagesFromPrompt } from '../../../src/services/llm/runRequestToMessages';
+import { attachedImagesFromPrompt } from '@beaver/agent-llm/runRequestToMessages';
 
 const context = { toolCallId: 'call-1' };
 

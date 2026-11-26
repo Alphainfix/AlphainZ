@@ -28,7 +28,7 @@ import { joinSentences, t } from '../../src/utils/i18n';
 async function missingModelHint(): Promise<string | null> {
     const { isAgentConfigured } = await import('../../src/services/llm/agentConfig');
     if (isAgentConfigured()) return null;
-    const { PROVIDER_PRESETS } = await import('../../src/services/llm/openAICompatible');
+    const { PROVIDER_PRESETS } = await import('@beaver/agent-llm/openAICompatible');
     const provider = String(getPref('llmProvider') ?? '').trim();
     const label = (PROVIDER_PRESETS as Record<string, { label?: string } | undefined>)[provider]?.label;
     return label

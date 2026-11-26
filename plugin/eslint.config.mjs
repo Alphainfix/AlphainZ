@@ -456,6 +456,30 @@ export default tseslint.config(
     // verifies its whole import closure stays inside the package — but it only
     // sees files in the tsconfig `files` list; this block covers every file in
     // the package as you write it. See docs-zotero/client-host-architecture.md.
+    // The model layer (providers, streaming, the tool loop, compaction,
+    // embeddings, the full-text index) is shared with the Obsidian plugin from
+    // the same source, so it keeps the core's rules — no Zotero, no React, no
+    // app graph — and never reaches for a window or a document. Settings reach
+    // it through the runtime adapter, interface text through its translator.
+    // `npm run typecheck:llm` is the stronger gate.
+    {
+        files: ["packages/agent-llm/src/**/*.ts"],
+        rules: {
+            "no-restricted-globals": [
+                "error",
+                ...l1CoreGlobals,
+                ...["window", "document", "IOUtils", "PathUtils", "Components", "ChromeUtils", "Services"].map((name) => ({
+                    name,
+                    message: "The model layer runs in every client; host and document access belong to the client.",
+                })),
+            ],
+            "no-restricted-imports": [
+                "error",
+                { paths: l1CorePackageBans, patterns: l1CoreImportBans },
+            ],
+            "no-restricted-syntax": ["error", ...l1CoreAmbientTypeBan],
+        },
+    },
     {
         files: ["packages/agent-ui/src/**/*.{ts,tsx}"],
         rules: {

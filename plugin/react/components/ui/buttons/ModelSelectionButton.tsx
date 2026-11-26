@@ -11,124 +11,18 @@ import {
 } from '../../../atoms/models';
 import type { ModelConfig } from '../../../atoms/models';
 import { getPref, setPref } from '../../../../src/utils/prefs';
-import { modelThinkingTiers } from '../../../../src/services/llm/modelTuning';
-import { THINKING_TIER_NAMES, nearestTier } from '../../../../src/services/llm/thinkingTiers';
+import { modelThinkingTiers } from '@beaver/agent-llm/modelTuning';
+import { THINKING_TIER_NAMES, nearestTier } from '@beaver/agent-llm/thinkingTiers';
 import {
     PROVIDER_PRESETS,
     presetCapabilities,
     type ProviderPresetId,
-} from '../../../../src/services/llm/openAICompatible';
-import { customEndpointLabel, isCustomProviderId } from '../../../../src/services/llm/customEndpoints';
+} from '@beaver/agent-llm/openAICompatible';
+import { EFFORT_LABELS, dedupeByEndpoint, displayNameFor, groupByVendor, rowLabel } from '@beaver/agent-llm/modelChoices';
 import { msg, t, tn } from '../../../../src/utils/i18n';
 
-/** What each thinking setting means where the user is choosing it. */
-const EFFORT_LABELS: Record<string, string> = {
-    none: msg('Off — answer straight away'),
-    minimal: msg('Minimal'),
-    low: msg('Low — brief planning'),
-    medium: msg('Medium'),
-    high: msg('High — think it through'),
-    xhigh: msg('Extra high'),
-    max: msg('Max — the longest thinking'),
-};
-
-/**
- * Which heading a model sits under.
- *
- * The list is every model the stored keys reach, which is a dozen rows across
- * three vendors — flat, that is a wall of `provider · model` strings with no
- * shape. Grouping by vendor is the shape the user already thinks in, and it
- * lets the row itself drop the vendor prefix.
- *
- */
-const VENDOR_OF_PRESET: Partial<Record<ProviderPresetId, string>> = {
-    deepseek: 'DeepSeek',
-    openrouter: 'OpenRouter',
-    zhipu: msg('Zhipu (BigModel)'),
-    google: 'Google Gemini',
-    openai: 'OpenAI',
-    ollama: msg('Ollama (local)'),
-};
-
-/** Vendor headings in the order they should appear. */
-export const VENDOR_ORDER = ['DeepSeek', 'OpenRouter', 'Zhipu (BigModel)', 'Google Gemini', 'OpenAI', 'Ollama (local)', 'Added by you'];
-
-const OTHER_VENDOR = msg('Added by you');
-
-export function vendorFor(model: ModelConfig): string {
-    // A hand-added endpoint is its own vendor, under the name the user gave it.
-    if (isCustomProviderId(String(model.provider))) {
-        return customEndpointLabel(String(model.provider)) ?? OTHER_VENDOR;
-    }
-    return VENDOR_OF_PRESET[model.provider as ProviderPresetId] ?? OTHER_VENDOR;
-}
-
-/**
- * What a model is called on its own, without the vendor: the display name its
- * provider's catalogue gave it, else the model id. The same text everywhere the
- * sidebar names a model — the picker's rows and the composer button — so what
- * was typed under "Display name" in Settings is what the user then sees.
- */
-export function displayNameFor(model: Pick<ModelConfig, 'label' | 'snapshot' | 'name'>): string {
-    return model.label?.trim() || model.snapshot?.trim() || model.name || '';
-}
-
-/** The row label: the model's own name, since the vendor is the heading above it. */
-export function rowLabel(model: ModelConfig): string {
-    const snapshot = model.snapshot?.trim();
-    if (!snapshot) return model.name;
-    const own = displayNameFor(model);
-    // Per model: a gateway preset can list a text-only model beside one that
-    // reads images, and the row must describe the model, not the gateway. A
-    // hand-added model says what the user (or the Check button) said.
-    const vision = isCustomProviderId(String(model.provider))
-        ? model.supports_vision === true
-        : presetCapabilities(model.provider as ProviderPresetId, snapshot).supportsVision;
-    return vision ? t('{name} · reads figures', { name: own }) : own;
-}
-
-/**
- * Drop entries that name the same endpoint and model as another.
- *
- * Two lists feed the picker: the presets, derived from the stored keys, and
- * whatever the user typed into the custom-provider editor. Anyone who
- * configured DeepSeek both ways — which was the only way to reach it before
- * the presets existed — got each of those models twice, under two different
- * names, with nothing to say which one the request would use. Presets win
- * because they carry the endpoint's quirks; a hand-added entry survives only
- * if it points somewhere no preset does.
- */
-export function dedupeByEndpoint(models: ModelConfig[]): ModelConfig[] {
-    const host = (url?: string) => {
-        if (!url) return '';
-        try {
-            return new URL(url).host.toLowerCase();
-        } catch {
-            return url.trim().toLowerCase();
-        }
-    };
-    const keyOf = (model: ModelConfig) => {
-        const preset = PROVIDER_PRESETS[model.provider as ProviderPresetId];
-        const base = preset ? preset.baseUrl : model.custom_model?.api_base;
-        return `${host(base)}::${(model.snapshot ?? '').trim().toLowerCase()}`;
-    };
-    const seen = new Set<string>();
-    const out: ModelConfig[] = [];
-    // Presets first, so a preset always wins the key over a hand-added twin.
-    for (const model of [...models].sort((a, b) => Number(!!a.custom_model) - Number(!!b.custom_model))) {
-        const key = keyOf(model);
-        // Nothing to compare on — keep it rather than silently dropping a
-        // model the user can no longer reach any other way.
-        if (key === '::') {
-            out.push(model);
-            continue;
-        }
-        if (seen.has(key)) continue;
-        seen.add(key);
-        out.push(model);
-    }
-    return out;
-}
+// What the picker lists and how it names it is shared with every client's picker (@beaver/agent-llm/modelChoices).
+export { VENDOR_ORDER, vendorFor, displayNameFor, rowLabel, dedupeByEndpoint } from '@beaver/agent-llm/modelChoices';
 
 // Only a backstop against a pathological model id; the common case is
 // well under this and shows whole.
@@ -375,25 +269,11 @@ const ModelSelectionButton: React.FC<{
 
         items.push(backRow(t('Model')));
 
-        const byVendor = new Map<string, ModelConfig[]>();
-        for (const model of chooseModels) {
-            const vendor = vendorFor(model);
-            const bucket = byVendor.get(vendor);
-            if (bucket) bucket.push(model);
-            else byVendor.set(vendor, [model]);
-        }
         // Presets in their fixed order, then the user's endpoints by name, then
         // the leftover heading last.
-        const rank = (vendor: string) => {
-            const i = VENDOR_ORDER.indexOf(vendor);
-            if (vendor === OTHER_VENDOR) return VENDOR_ORDER.length + 1;
-            return i < 0 ? VENDOR_ORDER.length : i;
-        };
-        const vendors = [...byVendor.keys()].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
-
-        for (const vendor of vendors) {
+        for (const { vendor, models } of groupByVendor(chooseModels)) {
             items.push({ label: t(vendor), isGroupHeader: true, onClick: () => {} });
-            for (const model of byVendor.get(vendor) ?? []) {
+            for (const model of models) {
                 const withAccess: ModelConfig = model.is_custom
                     ? model
                     : { ...model, access_mode: model.allow_app_key ? 'app_key' : 'byok' };

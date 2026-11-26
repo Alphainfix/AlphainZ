@@ -36,8 +36,8 @@
 
 import { logger } from '@beaver/agent-core/platform/logger';
 import type { BeaverDB } from './database';
-import { runToMessages } from './llm/runRequestToMessages';
-import { toOpenAIMessages } from './llm/openAICompatible';
+import { runToMessages } from '@beaver/agent-llm/runRequestToMessages';
+import { toOpenAIMessages } from '@beaver/agent-llm/openAICompatible';
 import config from '../../package.json';
 
 /**

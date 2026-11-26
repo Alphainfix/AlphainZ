@@ -14,9 +14,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
 
-const ROOTS = ['react', 'src', 'packages/agent-ui/src', 'packages/agent-core/src'];
+const ROOTS = ['react', 'src', 'packages/agent-ui/src', 'packages/agent-core/src', 'packages/agent-llm/src'];
 const MODULES = [/\/src\/utils\/i18n$/, /\/utils\/i18n$/, /^\.{1,2}(\/\.\.)*\/i18n$/, /^@beaver\/agent-ui\/i18n$/, /\/i18nNodes$/, /^\.\/i18n$/,
-    /^@beaver\/agent-core\/i18n\/translate$/, /\/i18n\/translate$/];
+    /^@beaver\/agent-core\/i18n\/translate$/, /\/i18n\/translate$/, /^@beaver\/agent-llm\/i18n$/];
 /** Which arguments of each function are interface strings. */
 const ARGS = { t: [0], tr: [0], msg: [0], tn: [1, 2] };
 

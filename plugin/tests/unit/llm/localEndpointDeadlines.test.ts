@@ -10,9 +10,9 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { providerFromPreset, type FetchLike, type OpenAICompatibleProvider } from '../../../src/services/llm/openAICompatible';
-import { customProviderFromEndpoint, type CustomEndpoint } from '../../../src/services/llm/customEndpoints';
-import type { StreamEvent } from '../../../src/services/llm/sse';
+import { providerFromPreset, type FetchLike, type OpenAICompatibleProvider } from '@beaver/agent-llm/openAICompatible';
+import { customProviderFromEndpoint, type CustomEndpoint } from '@beaver/agent-llm/customEndpoints';
+import type { StreamEvent } from '@beaver/agent-llm/sse';
 
 const encoder = new TextEncoder();
 const frame = (payload: Record<string, unknown>) => `data: ${JSON.stringify(payload)}\n\n`;

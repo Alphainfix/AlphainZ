@@ -23,7 +23,7 @@
  * across restarts until the next Check.
  */
 
-import { getPref, setPref } from '../../utils/prefs';
+import { getPref, setPref } from './prefs';
 import { logger } from '@beaver/agent-core/platform/logger';
 import {
     PROVIDER_PRESETS,

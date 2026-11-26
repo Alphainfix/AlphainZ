@@ -9,7 +9,7 @@ import {
 } from '../../atoms/conversationNav';
 import { currentThreadIdAtom } from '../../atoms/threads';
 import { isThreadListViewAtom, userScrolledAtom, windowUserScrolledAtom } from '../../atoms/ui';
-import { useCurrentTurnIndex } from '../../hooks/useCurrentTurn';
+import { useCurrentTurnIndex } from '@beaver/agent-ui/conversation/useCurrentTurn';
 import { jumpToRun } from '../../utils/conversationNavigation';
 import { answerSnippet, filterTurns, highlightSegments } from '../../utils/conversationTurns';
 import { t } from '../../../src/utils/i18n';

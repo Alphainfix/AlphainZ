@@ -11,7 +11,7 @@
  */
 
 import { resolveObjectIdReference, UNRESOLVED_LIBRARY_ID } from '@beaver/agent-core/identity/libraryRef';
-import type { ToolSchema } from './types';
+import type { ToolSchema } from '@beaver/agent-llm/types';
 
 /** A model-facing tool bound to one wire event. */
 export interface ToolSpec {

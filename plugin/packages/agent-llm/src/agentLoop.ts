@@ -23,7 +23,6 @@ import type {
     ToolSchema,
 } from './types';
 import { addUsage } from './sse';
-import { WRITE_TOOL_NAMES } from './writeTools';
 
 /**
  * Executes one tool. Resolving is a success (whatever the payload); rejecting is
@@ -97,6 +96,13 @@ export interface AgentLoopOptions {
     maxToolResultChars?: number;
     /** How a request that failed transiently is sent again. */
     retry?: RetryPolicy;
+    /**
+     * Tools that propose or make a change. Each one's card is its own output,
+     * so a turn that pairs them with `return_suggestions` still ends the run.
+     */
+    writeTools?: readonly string[];
+    /** The conversation's id, sent with each request (see `ChatRequest.sessionId`). */
+    sessionId?: string;
 }
 
 /**
@@ -456,12 +462,28 @@ async function runTurnWithRetries(
  * Never throws: every failure resolves as a result carrying `error`, because a
  * half-finished run still holds a transcript worth keeping.
  */
+/** The provider, with every request it streams naming the conversation. */
+function withSession(provider: ChatProvider, sessionId: string | undefined): ChatProvider {
+    if (!sessionId) return provider;
+    return {
+        get label() {
+            return provider.label;
+        },
+        get model() {
+            return provider.model;
+        },
+        get wireFormat() {
+            return provider.wireFormat;
+        },
+        stream: (request, onEvent) => provider.stream({ ...request, sessionId: request.sessionId ?? sessionId }, onEvent),
+    };
+}
+
 export async function runAgentLoop(
     initialMessages: ChatMessage[],
     options: AgentLoopOptions,
 ): Promise<AgentLoopResult> {
     const {
-        provider,
         tools = [],
         dispatch,
         maxIterations = DEFAULT_MAX_ITERATIONS,
@@ -469,6 +491,8 @@ export async function runAgentLoop(
         onEvent,
         maxToolResultChars = DEFAULT_MAX_TOOL_RESULT_CHARS,
     } = options;
+    const provider = withSession(options.provider, options.sessionId);
+    const noFollowUpTools = new Set<string>([SUGGESTIONS_TOOL, ...(options.writeTools ?? [])]);
     const retryPolicy: Required<RetryPolicy> = { ...DEFAULT_RETRY, ...(options.retry ?? {}) };
 
     const emit = (event: LoopEvent) => onEvent?.(event);
@@ -587,7 +611,7 @@ export async function runAgentLoop(
 
         if (signal?.aborted) return settle('cancelled');
 
-        if (endsWithSuggestions(turn.toolCalls)) return settle('completed');
+        if (endsWithSuggestions(turn.toolCalls, noFollowUpTools)) return settle('completed');
     }
 
     return settle('iteration_limit');
@@ -595,9 +619,6 @@ export async function runAgentLoop(
 
 /** The tool that puts follow-up chips under a finished answer. */
 const SUGGESTIONS_TOOL = 'return_suggestions';
-
-/** Calls whose result the model does not need to read before it is done. */
-const NO_FOLLOW_UP_TOOLS = new Set<string>([SUGGESTIONS_TOOL, ...WRITE_TOOL_NAMES]);
 
 /**
  * Whether a turn that called `return_suggestions` ends the run.
@@ -608,14 +629,17 @@ const NO_FOLLOW_UP_TOOLS = new Set<string>([SUGGESTIONS_TOOL, ...WRITE_TOOL_NAME
  * want to sign off restated its entire answer instead: the transcript showed
  * the same answer twice, because it had genuinely been generated twice.
  *
+ * `noFollowUpTools` is the suggestions tool and the run's write tools: calls
+ * whose result the model does not need to read before it is done.
+ *
  * That holds when everything else in the batch is a write, whose proposal card
  * is its own output. A read in the same batch is different: the model has not
  * seen what it asked for, so it gets another turn to use it.
  */
-function endsWithSuggestions(calls: Array<{ name: string }>): boolean {
+function endsWithSuggestions(calls: Array<{ name: string }>, noFollowUpTools: ReadonlySet<string>): boolean {
     return (
         calls.some((call) => call.name === SUGGESTIONS_TOOL)
-        && calls.every((call) => NO_FOLLOW_UP_TOOLS.has(call.name))
+        && calls.every((call) => noFollowUpTools.has(call.name))
     );
 }
 

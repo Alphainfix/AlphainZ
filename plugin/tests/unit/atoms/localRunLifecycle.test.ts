@@ -88,7 +88,7 @@ vi.mock('../../../src/utils/interruptedThreadPrefs', () => ({
     saveInterruptedThread: saveInterruptedThreadMock,
 }));
 // No title requests: they would go to a model.
-vi.mock('../../../src/services/llm/threadTitle', () => ({
+vi.mock('@beaver/agent-llm/threadTitle', () => ({
     generateThreadTitle: vi.fn(async () => null),
 }));
 

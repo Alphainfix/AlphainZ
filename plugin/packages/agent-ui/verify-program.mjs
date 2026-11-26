@@ -13,8 +13,9 @@
 //
 // 0. The manifest is resolvable: every peer the package declares is pinned by
 //    the repo root (the package is never installed on its own, so the
-//    typecheck must see the version the plugin ships), the in-repo peer
-//    @beaver/agent-core really is a sibling package, the subpath export map is
+//    typecheck must see the version the plugin ships), the in-repo peers
+//    @beaver/agent-core and @beaver/agent-llm really are sibling packages, the
+//    subpath export map is
 //    the one both clients rely on, and no stray install sits beside the
 //    package.
 // 1. The tsconfig `files` list matches the real import closure of the entry
@@ -23,7 +24,8 @@
 //    `files` alone cannot enforce either — it seeds the program without
 //    bounding it, and every listed file is in the program by construction.
 // 2. No file in the closure lives outside the package, other than dependency
-//    declarations under node_modules and the sibling agent-core package. This
+//    declarations under node_modules and the sibling agent-core and agent-llm
+//    packages. This
 //    is what catches a component reaching back into the host repo.
 // 3. Every bare import specifier written by a package file names a dependency
 //    the package declares, and never a Node builtin — the package runs in a
@@ -41,7 +43,8 @@
 // 4. The compiler options that make the isolation meaningful hold their exact
 //    allowed values — `types` is precisely react + react-dom, `lib` is
 //    precisely ES2020 + DOM, `jsx` compiles for both clients' runtimes, and
-//    `paths` maps nothing but the sibling agent-core. Without this, widening
+//    `paths` maps nothing but the sibling agent-core and agent-llm. Without
+//    this, widening
 //    any of them hands the package a whole host surface with every other check
 //    still green.
 // 5. Neither zotero-types nor @types/office-js is anywhere in the program, and
@@ -70,10 +73,13 @@ import ts from "typescript";
 const pkgDir = path.dirname(fileURLToPath(import.meta.url));
 const srcDir = path.join(pkgDir, "src");
 const repoRoot = path.resolve(pkgDir, "..", "..");
-// The one in-repo package agent-ui may consume. It is a declared peer that is
+// The in-repo packages agent-ui may consume. Each is a declared peer that is
 // never installed, so it is resolved through the tsconfig `paths` mapping and
-// treated like a dependency by the escapee check below.
+// treated like a dependency by the escapee check below. agent-llm (the model
+// layer) is there for the model settings, which show and edit what it stores;
+// like agent-core it is React-free and bounded by a gate of its own.
 const siblingCoreDir = path.join(repoRoot, "packages", "agent-core");
+const siblingLlmDir = path.join(repoRoot, "packages", "agent-llm");
 const configPath = path.join(pkgDir, "tsconfig.json");
 const { config, error } = ts.readConfigFile(configPath, ts.sys.readFile);
 if (error) {
@@ -144,26 +150,33 @@ for (const [name, range] of Object.entries(manifest.dependencies ?? {})) {
 // A peer's range belongs to whoever consumes the package, so it has no reason
 // to match the root's. It still has to be pinned somewhere in the root, or the
 // typecheck — and the webpack bundle, which compiles this package from source —
-// resolves it from a hoisted copy nothing controls. @beaver/agent-core is the
-// exception: it is the sibling package in this same repo, so "pinned" means
-// "present on disk under packages/", which is checked instead.
+// resolves it from a hoisted copy nothing controls. @beaver/agent-core and
+// @beaver/agent-llm are the exception: they are sibling packages in this same
+// repo, so "pinned" means "present on disk under packages/", which is checked
+// instead.
 const IN_REPO_PEER = "@beaver/agent-core";
+const IN_REPO_PEERS = new Map([
+  [IN_REPO_PEER, siblingCoreDir],
+  ["@beaver/agent-llm", siblingLlmDir],
+]);
 for (const name of Object.keys(manifest.peerDependencies ?? {})) {
-  if (name === IN_REPO_PEER) continue;
+  if (IN_REPO_PEERS.has(name)) continue;
   if (!rootPinned.has(name)) {
     setupErrors.push(
       `peer dependency '${name}' is not pinned by the repo root — the typecheck would resolve it from a hoisted copy nothing pins.`,
     );
   }
 }
-if (!declaredDeps.has(IN_REPO_PEER)) {
-  setupErrors.push(
-    `${IN_REPO_PEER} must stay a declared peer dependency — it is the only other package agent-ui may consume, and dropping the declaration would make its imports look undeclared.`,
-  );
-} else if (!ts.sys.fileExists(path.join(siblingCoreDir, "package.json"))) {
-  setupErrors.push(
-    `${IN_REPO_PEER} is declared as a peer but packages/agent-core is not present — it is resolved from the sibling directory, not from an install.`,
-  );
+for (const [name, dir] of IN_REPO_PEERS) {
+  if (!declaredDeps.has(name)) {
+    setupErrors.push(
+      `${name} must stay a declared peer dependency — it is one of the in-repo packages agent-ui may consume, and dropping the declaration would make its imports look undeclared.`,
+    );
+  } else if (!ts.sys.fileExists(path.join(dir, "package.json"))) {
+    setupErrors.push(
+      `${name} is declared as a peer but ${path.relative(repoRoot, dir)} is not present — it is resolved from the sibling directory, not from an install.`,
+    );
+  }
 }
 if (ts.sys.directoryExists(path.join(pkgDir, "node_modules"))) {
   setupErrors.push(
@@ -239,17 +252,22 @@ for (const [flag, expected] of [
     );
   }
 }
-// The only path mapping allowed. Anything else would be a route back into the
-// host repo that the escapee check below could not distinguish from the
-// sibling package.
+// The only path mappings allowed. Anything else would be a route back into
+// the host repo that the escapee check below could not distinguish from the
+// sibling packages.
+const ALLOWED_PATHS = {
+  "@beaver/agent-core/*": ["../agent-core/src/*"],
+  "@beaver/agent-llm/*": ["../agent-llm/src/*"],
+};
 const pathKeys = Object.keys(parsed.options.paths ?? {});
 if (
-  pathKeys.length !== 1 ||
-  pathKeys[0] !== `${IN_REPO_PEER}/*` ||
-  !sameSet(parsed.options.paths?.[pathKeys[0]], ["../agent-core/src/*"])
+  pathKeys.length !== Object.keys(ALLOWED_PATHS).length ||
+  !pathKeys.every(
+    (key) => key in ALLOWED_PATHS && sameSet(parsed.options.paths?.[key], ALLOWED_PATHS[key]),
+  )
 ) {
   setupErrors.push(
-    `tsconfig \`paths\` must map only "${IN_REPO_PEER}/*" to ["../agent-core/src/*"]; it is ${JSON.stringify(parsed.options.paths)}. It exists so the one in-repo peer resolves standalone, not as a general escape hatch.`,
+    `tsconfig \`paths\` must map exactly ${JSON.stringify(ALLOWED_PATHS)}; it is ${JSON.stringify(parsed.options.paths)}. It exists so the in-repo peers resolve standalone, not as a general escape hatch.`,
   );
 }
 
@@ -280,15 +298,20 @@ if (
 // credit limit's bounds and parsing for every client to agree on, and no shared
 // component reads them — each client imports it directly from its own settings
 // UI. Nothing inside the package would otherwise make it reachable.
+//
+// The settings barrel is a root like the composer's: the model settings are
+// mounted by each client, and nothing inside the package imports them.
 const entryPaths = [
   "src/icons/index.tsx",
   "src/primitives/index.ts",
   "src/host/index.ts",
   "src/i18n/index.ts",
   "src/chat/index.ts",
+  "src/conversation/index.ts",
   "src/auth/index.ts",
   "src/composer/index.ts",
   "src/utils/creditThreshold.ts",
+  "src/settings/index.ts",
 ].map((p) => path.join(pkgDir, p));
 
 const listed = parsed.fileNames.map((f) => path.resolve(f));
@@ -327,6 +350,9 @@ const isDependency = (f) =>
 // gate covers.
 const siblingCoreSrc = path.join(siblingCoreDir, "src");
 const isSiblingCore = (f) => f.startsWith(siblingCoreSrc + path.sep);
+// agent-llm the same way: its own gate (`npm run typecheck:llm`) bounds it.
+const siblingLlmSrc = path.join(siblingLlmDir, "src");
+const isSiblingLlm = (f) => f.startsWith(siblingLlmSrc + path.sep);
 
 const closureSet = new Set(closure);
 // `files` describes the package's own surface, so the two-way match is scoped
@@ -335,10 +361,10 @@ const unlisted = closure.filter((f) => isInPackage(f) && !listedSet.has(f));
 const stale = listed.filter((f) => !closureSet.has(f));
 // Even a listed-and-reachable file must live inside the package — a shared
 // component must not reach back into either client's repo. Dependency
-// declarations and the sibling agent-core are the only legitimate ways to be
+// declarations and the sibling agent-core and agent-llm are the only legitimate ways to be
 // outside it.
 const escapees = closure.filter(
-  (f) => !isInPackage(f) && !isDependency(f) && !isSiblingCore(f),
+  (f) => !isInPackage(f) && !isDependency(f) && !isSiblingCore(f) && !isSiblingLlm(f),
 );
 
 // The ambient type packages that must never enter the program, by name. `types`

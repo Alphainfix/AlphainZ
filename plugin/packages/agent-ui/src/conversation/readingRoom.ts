@@ -429,7 +429,7 @@ export function attachReadingRoom(
         inputAt: -Infinity, sequenceStart: null, held: false, wheelUntil: 0, putUntil: 0, timer: null, observer: null, onTrim, onPlace,
     };
     // The column changes size when the runs outgrow the room, the spacer when they do not.
-    const win = container.ownerDocument.defaultView as (Window & typeof globalThis) | null;
+    const win = container.ownerDocument.defaultView;
     if (typeof win?.ResizeObserver === 'function') {
         room.observer = new win.ResizeObserver(() => follow(container, room));
         room.observer.observe(column);

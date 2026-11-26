@@ -2890,11 +2890,15 @@ export const ZH_CN: Readonly<Record<string, string>> = {
   "{count} lookups (custom)":
     "{count} 次查询（自定义）",
 
-  // react/components/preferences/vendors.ts
+  // packages/agent-llm/src/vendors.ts
   "The recommended first pick: reads figures, calls tools, low price.":
     "首选推荐：能看图、能调用工具，价格低。",
   "deepseek-flash — DeepSeek V4.1 Flash: 1M context, reads figures, calls tools. $0.15/M in · $0.60/M out, twice that at peak hours (weekdays 01:00–04:00 and 06:00–10:00 UTC). A stored choice of a retired V4 model runs as deepseek-flash.":
     "deepseek-flash——DeepSeek V4.1 Flash：100 万上下文，能看图、能调用工具。输入每百万 0.15 美元 · 输出每百万 0.60 美元，高峰时段（工作日 UTC 01:00–04:00 和 06:00–10:00）加倍。之前选择的已停用 V4 模型会按 deepseek-flash 运行。",
+  "One subscription for DeepSeek V4.1 Flash, GLM 5.3, Kimi K3.1 and more.":
+    "一个订阅就能用 DeepSeek V4.1 Flash、GLM 5.3、Kimi K3.1 等模型。",
+  "A monthly subscription instead of a per-token bill: DeepSeek V4.1 Flash (the default), GLM 5.3 Flash, Kimi K3.1 Pro, MiniMax M3.1 Flash, DeepSeek V4 Pro and GLM 5.3 behind one key, within five-hour, weekly and monthly allowances. All call tools; all but the last two read figures. They always think before they answer: the lightest setting is Low, or High for DeepSeek V4 Pro.":
+    "按月订阅，不按 token 计费：一个 key 就能用 DeepSeek V4.1 Flash（默认）、GLM 5.3 Flash、Kimi K3.1 Pro、MiniMax M3.1 Flash、DeepSeek V4 Pro 和 GLM 5.3，用量按 5 小时、每周和每月的额度计算。都能调用工具，除了最后两个都能看图。它们总会先思考再回答：最轻的档位是 Low，DeepSeek V4 Pro 是 High。",
   "GLM 5.3 Flash and DeepSeek V4.1 Flash behind one key.":
     "一个 key 就能用 GLM 5.3 Flash 和 DeepSeek V4.1 Flash。",
   "Reaches GLM 5.3 Flash (1.3M context, reads figures, ~$0.08/M in) and DeepSeek V4.1 Flash (1M context, reads figures, $0.15/M in · $0.60/M out, no peak hours). Both call tools.":
@@ -4790,7 +4794,7 @@ export const ZH_CN: Readonly<Record<string, string>> = {
   "{count} unreadable":
     "{count} 个无法读取",
 
-  // src/services/llm/embeddingHealth.ts
+  // packages/agent-llm/src/embeddingHealth.ts
   "The embedding provider":
     "嵌入服务",
   "{who} failed: {text}.":
@@ -4824,7 +4828,7 @@ export const ZH_CN: Readonly<Record<string, string>> = {
   "{who} failed.":
     "{who} 出错。",
 
-  // src/services/llm/fulltextIndexer.ts
+  // packages/agent-llm/src/fulltextIndexer.ts
   "Figure indexing paused: {details}":
     "图片索引已暂停：{details}",
   "Indexing paused: {details}":
@@ -4854,7 +4858,7 @@ export const ZH_CN: Readonly<Record<string, string>> = {
   "{who} had a server error ({status}).":
     "{who} 的服务器出错（{status}）。",
 
-  // src/services/llm/localRunner.ts
+  // packages/agent-llm/src/localRunner.ts
   "Settings → Model → Providers":
     "设置 → 模型 → 服务商",
   "Run cancelled.":
@@ -4920,7 +4924,7 @@ export const ZH_CN: Readonly<Record<string, string>> = {
   "The connection closed before the model finished, so this answer may be incomplete. Ask it to continue, or retry.":
     "模型还没写完连接就断开了，所以这个回答可能不完整。可以让它继续，或重试。",
 
-  // src/services/llm/thinkingTiers.ts
+  // packages/agent-llm/src/thinkingTiers.ts
   "Low":
     "低",
   "High":
@@ -4928,7 +4932,7 @@ export const ZH_CN: Readonly<Record<string, string>> = {
   "Max":
     "最高",
 
-  // src/services/llm/verifyKey.ts
+  // packages/agent-llm/src/verifyKey.ts
   "{provider} said: “{detail}”":
     "{provider} 说：“{detail}”",
   "Could not reach {provider}. Check the network, or the base URL if this is a local server.":

@@ -15,8 +15,8 @@ import {
     knownTier,
     pacificDate,
     resetEmbeddingPacing,
-} from '../../../src/services/llm/embeddingQuota';
-import { ModelRequestError } from '../../../src/services/llm/sse';
+} from '@beaver/agent-llm/embeddingQuota';
+import { ModelRequestError } from '@beaver/agent-llm/sse';
 
 const KEY = 'AIzaSy-free-test-key';
 const limit = (quotaTier: 'free' | 'paid') => ({

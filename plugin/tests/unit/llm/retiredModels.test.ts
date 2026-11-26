@@ -16,7 +16,7 @@ vi.mock('../../../src/utils/prefs', () => ({
 vi.mock('@beaver/agent-core/platform/logger', () => ({ logger: vi.fn() }));
 
 import { KEY_PREF_BY_PROVIDER, buildAgentFromPrefs, isAgentConfigured } from '../../../src/services/llm/agentConfig';
-import { PROVIDER_PRESETS, RETIRED_MODELS, retireChoice } from '../../../src/services/llm/openAICompatible';
+import { PROVIDER_PRESETS, RETIRED_MODELS, retireChoice } from '@beaver/agent-llm/openAICompatible';
 import { localModelFromPrefs, localModelsFromPrefs } from '../../../react/atoms/models';
 
 beforeEach(() => {
@@ -37,6 +37,22 @@ describe('retireChoice', () => {
         expect(retireChoice('openai', 'gpt-4o-mini')).toEqual({ provider: 'openai', model: 'gpt-4o-mini' });
         expect(retireChoice('custom:ep-1', 'deepseek-v4-pro')).toEqual({ provider: 'custom:ep-1', model: 'deepseek-flash' });
         expect(Object.values(RETIRED_MODELS).every((id) => !(id in RETIRED_MODELS))).toBe(true);
+    });
+
+    it('leaves an id alone on a provider that still serves it', () => {
+        // OpenCode Go still lists ids DeepSeek's own API retired.
+        for (const live of ['deepseek-v4.1-flash', 'deepseek-v4-pro']) {
+            expect(PROVIDER_PRESETS['opencode-go'].models).toContain(live);
+            expect(retireChoice('opencode-go', live)).toEqual({ provider: 'opencode-go', model: live });
+        }
+        // ...while on DeepSeek's own API the same ids still resolve to their successor.
+        expect(retireChoice('deepseek', 'deepseek-v4.1-flash')).toEqual({ provider: 'deepseek', model: 'deepseek-flash' });
+        // And no preset's own model is ever renamed into another id.
+        for (const [id, preset] of Object.entries(PROVIDER_PRESETS)) {
+            for (const model of (preset as { models?: readonly string[] }).models ?? []) {
+                expect(retireChoice(id, model).model).toBe(model);
+            }
+        }
     });
 
     it('has no vision preset left, and the DeepSeek preset carries one model that reads images', () => {

@@ -183,6 +183,13 @@ export interface ProviderConfig {
      * makes the second question cheap.
      */
     promptCacheRetention?: string;
+    /**
+     * A header that names the conversation (`ChatRequest.sessionId`), for an
+     * endpoint that routes each conversation to one upstream and refuses a
+     * request without it. A request without a session id sends one this
+     * provider made up, the same for all its requests.
+     */
+    sessionHeader?: string;
 }
 
 export interface ChatRequest {
@@ -190,6 +197,12 @@ export interface ChatRequest {
     tools?: ToolSchema[];
     /** Aborts the in-flight request and closes the stream. */
     signal?: AbortSignal;
+    /**
+     * The conversation the request belongs to. A provider that keeps each
+     * conversation on one upstream (OpenCode Go's `x-opencode-session`) sends
+     * it; the others ignore it.
+     */
+    sessionId?: string;
 }
 
 export interface ChatProvider {

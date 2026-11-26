@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { runAgentLoop, serializeToolResult, type LoopEvent } from '../../../src/services/llm/agentLoop';
-import type { ChatMessage, ChatProvider, StreamEvent, ToolSchema } from '../../../src/services/llm/types';
+import { runAgentLoop, serializeToolResult, type LoopEvent } from '@beaver/agent-llm/agentLoop';
+import type { ChatMessage, ChatProvider, StreamEvent, ToolSchema } from '@beaver/agent-llm/types';
 
 // ---------------------------------------------------------------------------
 // Test doubles

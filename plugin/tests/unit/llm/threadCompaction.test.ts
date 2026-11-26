@@ -16,7 +16,7 @@ import {
     planCompaction,
     runAnswerText,
     type CompactableRun,
-} from '../../../src/services/llm/threadCompaction';
+} from '@beaver/agent-llm/threadCompaction';
 
 const run = (id: string, question = `q-${id}`, answer = `a-${id}`): CompactableRun => ({
     id,
